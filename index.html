@@ -207,12 +207,8 @@
 </body>
 
 <script>
-  // CONFIGURADO PARA SUA API RAILWAY ✅
   const API_BASE_URL = 'https://api-sf-production.up.railway.app';
 
-  function atualizarBadgeEnv() {
-    // seu código ambiente
-  }
 
   document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -237,7 +233,6 @@
     messageEl.className = 'login-message';
 
     try {
-      // ✅ SUA API RAILWAY
       const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 
@@ -256,9 +251,7 @@
         messageEl.innerHTML = `✅ <strong>Usuário confirmado com sucesso!</strong><br>${fullEmail}`;
         messageEl.className = 'login-message success';
         
-        // Redireciona após 2s
         setTimeout(() => {
-          // window.location.href = '/dashboard'; // descomente quando tiver dashboard
           console.log('Login OK:', result);
         }, 2000);
         
