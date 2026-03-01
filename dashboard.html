@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sociedade Franciosi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind config (precisa ficar no HTML) -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            border: "hsl(var(--border))",
+            background: "hsl(var(--background))",
+            foreground: "hsl(var(--foreground))",
+            primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
+            secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
+            muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
+            accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
+            destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
+            card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
+            sidebar: {
+              background: "hsl(var(--sidebar-background))",
+              foreground: "hsl(var(--sidebar-foreground))",
+              border: "hsl(var(--sidebar-border))"
+            },
+            success: { DEFAULT: "hsl(var(--success))", foreground: "hsl(var(--success-foreground))" },
+            warning: { DEFAULT: "hsl(var(--warning))", foreground: "hsl(var(--warning-foreground))" },
+            info: { DEFAULT: "hsl(var(--info))", foreground: "hsl(var(--info-foreground))" }
+          },
+          borderRadius: { lg: "var(--radius)" }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="app.js"></script>
+</head>
+
+<body>
+  <!-- Botão abre menu -->
+  <button id="floatingMenuBtn"
+    class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground"
+    title="Abrir menu">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div id="overlay" aria-hidden="true"></div>
+
+  <!-- Sidebar -->
+  <nav id="sidebar" class="bg-sidebar-background border-r border-sidebar-border shadow-2xl">
+    <div class="p-6 border-b border-sidebar-border flex items-center justify-between gap-4">
+      <div class="text-lg font-extrabold tracking-tight">
+        <span class="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Sociedade Franciosi</span>
+      </div>
+
+      <button id="closeSidebarBtn"
+        class="w-11 h-11 rounded-xl bg-white/55 border border-sidebar-border/60 hover:bg-white/80 transition-all text-sidebar-foreground text-xl shadow"
+        title="Fechar menu">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="menu-items hide-scrollbar flex-1 px-3 py-3">
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+           data-page="home">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
+          <i class="fas fa-house"></i>
+        </div>
+        <span class="font-medium truncate">Início</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+           data-page="orders">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-success/15 text-success shrink-0">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <span class="font-medium truncate">Pedidos</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="clients">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0"><i class="fas fa-users"></i></div>
+        <span class="font-medium truncate">Clientes</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="shipments">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-warning/15 text-warning shrink-0"><i class="fas fa-truck"></i></div>
+        <span class="font-medium truncate">Remessas</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="payments">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-destructive/15 text-destructive shrink-0"><i class="fas fa-credit-card"></i></div>
+        <span class="font-medium truncate">Pagamentos</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="products">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0"><i class="fas fa-box"></i></div>
+        <span class="font-medium truncate">Produtos</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="production">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-success/15 text-success shrink-0"><i class="fas fa-industry"></i></div>
+        <span class="font-medium truncate">Produção</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="stock">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0"><i class="fas fa-warehouse"></i></div>
+        <span class="font-medium truncate">Estoque</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="fazendas">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-accent/15 text-accent shrink-0"><i class="fas fa-seedling"></i></div>
+        <span class="font-medium truncate">Fazendas</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="user-management">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0"><i class="fas fa-user-cog"></i></div>
+        <span class="font-medium truncate">Gestão Usuários</span>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-sidebar-border">
+      <div class="flex items-center gap-3 rounded-2xl px-4 py-4 hover:bg-secondary transition-all">
+        <div id="userAvatar" class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white bg-primary shadow shrink-0">LS</div>
+        <div class="flex-1 min-w-0">
+          <div id="userDisplayName" class="font-bold text-sidebar-foreground leading-tight truncate">Usuário</div>
+          <div id="userDomain" class="text-sm text-muted-foreground truncate">Domínio</div>
+        </div>
+        <button id="logoutBtn"
+          class="w-11 h-11 rounded-xl bg-white/55 border border-sidebar-border/60 hover:bg-destructive hover:text-white transition-all shrink-0"
+          title="Sair">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main" class="min-h-screen w-full px-6 md:px-10 py-10">
+    <!-- HOME -->
+    <section id="home" class="page-content active">
+      <div class="pl-20 pr-2">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100dvh-5rem)]">
+          <div class="lg:col-span-4 h-full">
+            <div class="glass rounded-2xl p-6 shadow space-y-4 h-full flex flex-col">
+              <div>
+                <h1 id="helloTitleHome" class="text-xl font-bold">Olá, Usuário!</h1>
+                <p id="todayLabel" class="text-sm text-muted-foreground">Carregando...</p>
+              </div>
+
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Calendário</label>
+                <input id="calendarInput" type="date"
+                  class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" />
+              </div>
+
+              <button
+                id="AgendarSalaReuniao"
+                type="button"
+                class="mt-3 w-full rounded-xl bg-primary text-white px-4 py-3 font-medium
+                      hover:opacity-90 transition-all
+                      focus:outline-none focus:ring-2 focus:ring-primary/30
+                      flex items-center justify-center gap-2"
+                aria-label="Agendar sala de reunião"
+                title="Agendar sala de reunião"
+              >
+                <i class="fas fa-calendar-plus" aria-hidden="true"></i>
+                <span>Agendar sala de reunião</span>
+              </button>
+
+              <div class="rounded-xl border border-border bg-muted/40 p-4 flex-1 flex flex-col">
+                <p class="text-sm font-semibold">Resumo do dia</p>
+
+                <div id="resumoDiaLista" class="mt-3 space-y-2 overflow-auto"></div>
+
+                <p id="resumoDiaVazio" class="text-sm text-muted-foreground mt-3">
+                  Nenhum evento cadastrado.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-8 h-full">
+            <div class="glass rounded-2xl p-6 shadow h-full flex flex-col">
+              <div>
+                <h2 class="text-lg font-semibold">Sociedade Franciosi</h2>
+                <p class="text-sm text-muted-foreground">Painel informativo</p>
+              </div>
+
+              <div class="mt-4 overflow-hidden rounded-2xl border border-border bg-muted/40 flex-1">
+                <img
+                  src="imagens/PaginaPrincipal.jpg"
+                  alt="Imagem do painel"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PEDIDOS (placeholder) -->
+    <section id="orders" class="page-content">
+      <div class="glass rounded-2xl p-6 shadow">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="font-semibold">Pedidos</h3>
+            <p class="text-sm text-muted-foreground">Gerencie os pedidos cadastrados no sistema</p>
+          </div>
+
+          <button
+            id="newOrderBtn"
+            type="button"
+            aria-label="Novo pedido"
+            title="Novo pedido"
+            class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90
+                  flex items-center justify-center transition-all
+                  focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            <i class="fas fa-plus" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- outras páginas placeholders -->
+    <section id="clients" class="page-content"><div class="glass rounded-2xl p-6 shadow">Clientes</div></section>
+    <section id="shipments" class="page-content"><div class="glass rounded-2xl p-6 shadow">Remessas</div></section>
+    <section id="payments" class="page-content"><div class="glass rounded-2xl p-6 shadow">Pagamentos</div></section>
+    <section id="products" class="page-content"><div class="glass rounded-2xl p-6 shadow">Produtos</div></section>
+    <section id="production" class="page-content"><div class="glass rounded-2xl p-6 shadow">Produção</div></section>
+    <section id="stock" class="page-content"><div class="glass rounded-2xl p-6 shadow">Estoque</div></section>
+    <section id="fazendas" class="page-content"><div class="glass rounded-2xl p-6 shadow">Fazendas</div></section>
+
+    <!-- GEstão de Usuários -->
+    <section id="user-management" class="page-content md:ml-12">
+      <div class="glass rounded-2xl p-6 shadow space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="font-semibold">Gestão de Usuários</h3>
+            <p class="text-sm text-muted-foreground">Gerencie os usuários cadastrados</p>
+          </div>
+
+          <button id="btnNovoUsuario" type="button"
+            class="rounded-xl bg-primary text-white px-4 py-2 font-medium hover:opacity-90 transition-all flex items-center gap-2">
+            <i class="fas fa-user-plus" aria-hidden="true"></i>
+            <span>Novo usuário</span>
+          </button>
+        </div>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm">
+            <thead class="bg-muted/40 text-muted-foreground">
+              <tr>
+                <th class="text-left font-semibold px-4 py-3">Nome</th>
+                <th class="text-left font-semibold px-4 py-3">Email</th>
+                <th class="text-left font-semibold px-4 py-3">Setor</th>
+                <th class="text-left font-semibold px-4 py-3">Status</th>
+                <th class="text-right font-semibold px-4 py-3">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyGestaoUsuarios" class="divide-y divide-border"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
