@@ -1400,3 +1400,165 @@ document.addEventListener('click', async (e) => {
     }
   }
 });
+
+function ativarAbaPedidos(nomeAba) {
+  const abaDash = document.getElementById('abaPedidosDashboard');
+  const abaTab = document.getElementById('abaPedidosTabela');
+  const painelDash = document.getElementById('painelPedidosDashboard');
+  const painelTab = document.getElementById('painelPedidosTabela');
+  const btnNovo = document.getElementById('btnNovoPedido');
+
+  const isTabela = nomeAba === 'tabela';
+
+  // aria-selected
+  abaDash?.setAttribute('aria-selected', isTabela ? 'false' : 'true');
+  abaTab?.setAttribute('aria-selected', isTabela ? 'true' : 'false');
+
+  // classes (estilo ativo/inativo)
+  if (abaDash && abaTab) {
+    if (!isTabela) {
+      abaDash.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow text-foreground";
+      abaTab.className  = "px-4 py-2 rounded-lg text-sm font-medium transition-all text-muted-foreground hover:text-foreground";
+    } else {
+      abaTab.className  = "px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow text-foreground";
+      abaDash.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all text-muted-foreground hover:text-foreground";
+    }
+  }
+
+  // painéis
+  if (painelDash) painelDash.hidden = isTabela;
+  if (painelTab)  painelTab.hidden  = !isTabela;
+
+  // botão novo pedido (só na tabela)
+  if (btnNovo) btnNovo.classList.toggle('hidden', !isTabela);
+}
+
+document.getElementById('abaPedidosDashboard')?.addEventListener('click', () => ativarAbaPedidos('dashboard'));
+document.getElementById('abaPedidosTabela')?.addEventListener('click', () => ativarAbaPedidos('tabela'));
+
+// estado inicial
+ativarAbaPedidos('dashboard');
+
+function mostrarMsgMarketing(msg) {
+  const el = document.getElementById('marketingMsg');
+  if (!el) return;
+  if (!msg) { el.classList.add('hidden'); el.textContent = ''; return; }
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function escapeHtml(s) {
+  return String(s ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+async function listarImagensMarketing() {
+  const APIBASE = sessionStorage.getItem('api_base') || sessionStorage.getItem('apibase');
+  if (!APIBASE) throw new Error('API base não configurada.');
+
+  mostrarMsgMarketing('Carregando imagens...');
+  const r = await fetch(`${APIBASE}/api/marketing/imagens`, { method: 'GET' });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data?.message || 'Erro ao listar imagens.');
+
+  const itens = Array.isArray(data.items) ? data.items : [];
+
+  const grid = document.getElementById('gridMarketing');
+  const vazio = document.getElementById('marketingVazio');
+  if (!grid || !vazio) return;
+
+  grid.innerHTML = '';
+  if (!itens.length) {
+    vazio.classList.remove('hidden');
+    mostrarMsgMarketing('');
+    return;
+  }
+  vazio.classList.add('hidden');
+
+  grid.innerHTML = itens.map((it) => {
+    // it: { name, url }
+    return `
+      <div class="rounded-2xl border border-border bg-white/60 overflow-hidden shadow-sm">
+        <button type="button"
+          class="w-full aspect-[4/3] bg-muted/30 overflow-hidden"
+          title="Visualizar"
+          onclick="abrirImagemMarketing('${escapeHtml(it.url)}')">
+          <img src="${escapeHtml(it.url)}" alt="${escapeHtml(it.name)}" class="w-full h-full object-cover" />
+        </button>
+
+        <div class="p-3 flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <div class="text-sm font-semibold truncate">${escapeHtml(it.name)}</div>
+          </div>
+
+          <button type="button"
+            class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-destructive hover:text-white transition-all
+                   flex items-center justify-center shrink-0"
+            title="Remover"
+            onclick="removerImagemMarketing('${escapeHtml(it.name)}')">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  mostrarMsgMarketing('');
+}
+
+// visualização simples (nova aba)
+function abrirImagemMarketing(url) {
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+async function enviarImagensMarketing(files) {
+  const APIBASE = sessionStorage.getItem('api_base') || sessionStorage.getItem('apibase');
+  if (!APIBASE) throw new Error('API base não configurada.');
+  if (!files || !files.length) return;
+
+  const fd = new FormData();
+  for (const f of files) fd.append('files', f);
+
+  mostrarMsgMarketing('Enviando...');
+  const r = await fetch(`${APIBASE}/api/marketing/imagens`, { method: 'POST', body: fd });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data?.message || 'Erro ao enviar imagens.');
+
+  mostrarMsgMarketing('Enviado com sucesso.');
+  await listarImagensMarketing();
+}
+
+async function removerImagemMarketing(nomeArquivo) {
+  const APIBASE = sessionStorage.getItem('api_base') || sessionStorage.getItem('apibase');
+  if (!APIBASE) throw new Error('API base não configurada.');
+  if (!nomeArquivo) return;
+
+  if (!confirm(`Remover a imagem "${nomeArquivo}"?`)) return;
+
+  mostrarMsgMarketing('Removendo...');
+  const r = await fetch(`${APIBASE}/api/marketing/imagens/${encodeURIComponent(nomeArquivo)}`, { method: 'DELETE' });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data?.message || 'Erro ao remover imagem.');
+
+  await listarImagensMarketing();
+  mostrarMsgMarketing('');
+}
+
+document.getElementById('btnAtualizarMarketing')?.addEventListener('click', () => {
+  listarImagensMarketing().catch(e => alert(e.message || e));
+});
+
+document.getElementById('inputImagensMarketing')?.addEventListener('change', async (e) => {
+  try {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    await enviarImagensMarketing(files);
+  } catch (err) {
+    alert(err?.message || err);
+  } finally {
+    e.target.value = '';
+  }
+});

@@ -115,3 +115,24 @@ input[type="datetime-local"]{
 /* Hide scrollbar but keep scroll */
 .no-scrollbar::-webkit-scrollbar { display: none; }   /* Chrome/Safari/Edge */
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; } /* Firefox/IE-legacy */
+
+/* Esconde scrollbars no site inteiro, mas mantém o scroll */
+html, body {
+  -ms-overflow-style: none;   /* IE e Edge antigo */
+  scrollbar-width: none;      /* Firefox */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;              /* Chrome/Safari/Edge */
+}
+
+/* E também para qualquer container com overflow */
+* {
+  -ms-overflow-style: none;   /* IE e Edge antigo */
+  scrollbar-width: none;      /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  display: none;              /* Chrome/Safari/Edge */
+}

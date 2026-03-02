@@ -79,46 +79,19 @@
       </div>
 
       <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
-           data-page="orders">
+           data-page="secao-pedidos">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-success/15 text-success shrink-0">
           <i class="fas fa-shopping-cart"></i>
         </div>
         <span class="font-medium truncate">Pedidos</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="clients">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0"><i class="fas fa-users"></i></div>
-        <span class="font-medium truncate">Clientes</span>
-      </div>
-
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="shipments">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-warning/15 text-warning shrink-0"><i class="fas fa-truck"></i></div>
-        <span class="font-medium truncate">Remessas</span>
-      </div>
-
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="payments">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-destructive/15 text-destructive shrink-0"><i class="fas fa-credit-card"></i></div>
-        <span class="font-medium truncate">Pagamentos</span>
-      </div>
-
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="products">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0"><i class="fas fa-box"></i></div>
-        <span class="font-medium truncate">Produtos</span>
-      </div>
-
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="production">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-success/15 text-success shrink-0"><i class="fas fa-industry"></i></div>
-        <span class="font-medium truncate">Produção</span>
-      </div>
-
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="stock">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0"><i class="fas fa-warehouse"></i></div>
-        <span class="font-medium truncate">Estoque</span>
-      </div>
-
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="fazendas">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-accent/15 text-accent shrink-0"><i class="fas fa-seedling"></i></div>
-        <span class="font-medium truncate">Fazendas</span>
+      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+          data-page="secao-marketing">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-accent/20 text-foreground shrink-0">
+          <i class="fas fa-bullhorn"></i>
+        </div>
+        <span class="font-medium truncate">Marketing</span>
       </div>
 
       <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="user-management">
@@ -207,38 +180,221 @@
       </div>
     </section>
 
-    <!-- PEDIDOS (placeholder) -->
-    <section id="orders" class="page-content">
-      <div class="glass rounded-2xl p-6 shadow">
+    <!-- PEDIDOS -->
+    <section id="secao-pedidos" class="page-content md:ml-12">
+      <div class="glass rounded-2xl p-6 shadow space-y-4">
         <div class="flex items-start justify-between gap-4">
-          <div>
-            <h3 class="font-semibold">Pedidos</h3>
-            <p class="text-sm text-muted-foreground">Gerencie os pedidos cadastrados no sistema</p>
+            <div>
+              <h3 class="font-semibold">Pedidos</h3>
+              <p class="text-sm text-muted-foreground">Gerencie os pedidos cadastrados no sistema</p>
+            </div>
+
+            <!-- Botão aparece só na aba Tabela (o JS controla) -->
+            <button
+              id="btnNovoPedido"
+              type="button"
+              aria-label="Novo pedido"
+              title="Novo pedido"
+              class="hidden w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90
+                    flex items-center justify-center transition-all
+                    focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
           </div>
 
-          <button
-            id="newOrderBtn"
-            type="button"
-            aria-label="Novo pedido"
-            title="Novo pedido"
-            class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90
-                  flex items-center justify-center transition-all
-                  focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <i class="fas fa-plus" aria-hidden="true"></i>
-          </button>
+          <!-- Abas -->
+          <div class="mt-4">
+            <div class="inline-flex rounded-xl border border-border bg-white/50 p-1"
+                role="tablist" aria-label="Abas de pedidos">
+              <button
+                id="abaPedidosDashboard"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                aria-controls="painelPedidosDashboard"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-all
+                      bg-white shadow text-foreground"
+              >
+                Dashboard
+              </button>
+
+              <button
+                id="abaPedidosTabela"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="painelPedidosTabela"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-all
+                      text-muted-foreground hover:text-foreground"
+              >
+                Tabela
+              </button>
+            </div>
+          </div>
+
+          <!-- Conteúdo: Dashboard -->
+          <div id="painelPedidosDashboard" role="tabpanel" aria-labelledby="abaPedidosDashboard" class="mt-4 space-y-6">
+
+            <!-- Cards KPI (igual ao estilo da imagem) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              <!-- Card 1 -->
+              <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <p class="text-sm font-medium text-foreground">Progresso Volume</p>
+                  <i class="fas fa-arrow-trend-up text-muted-foreground"></i>
+                </div>
+
+                <div class="mt-3 text-3xl font-extrabold">0,0%</div>
+
+                <div class="mt-3">
+                  <div class="h-2 w-full rounded-full bg-muted/60 overflow-hidden">
+                    <div class="h-2 rounded-full bg-primary" style="width: 0%"></div>
+                  </div>
+                  <p class="mt-2 text-xs text-muted-foreground">0 kg de 0 kg</p>
+                </div>
+              </div>
+
+              <!-- Card 2 -->
+              <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <p class="text-sm font-medium text-foreground">Progresso Receita</p>
+                  <i class="fas fa-dollar-sign text-muted-foreground"></i>
+                </div>
+
+                <div class="mt-3 text-3xl font-extrabold">0,0%</div>
+
+                <div class="mt-3">
+                  <div class="h-2 w-full rounded-full bg-muted/60 overflow-hidden">
+                    <div class="h-2 rounded-full bg-primary" style="width: 0%"></div>
+                  </div>
+                  <p class="mt-2 text-xs text-muted-foreground">R$ 0,00 de R$ 0,00</p>
+                </div>
+              </div>
+
+              <!-- Card 3 -->
+              <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <p class="text-sm font-medium text-foreground">Meus Clientes</p>
+                  <i class="fas fa-users text-muted-foreground"></i>
+                </div>
+
+                <div class="mt-3 text-3xl font-extrabold">0</div>
+                <p class="mt-2 text-xs text-muted-foreground">clientes ativos</p>
+              </div>
+
+              <!-- Card 4 -->
+              <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <p class="text-sm font-medium text-foreground">Pedidos Pendentes</p>
+                  <i class="fas fa-clipboard-list text-muted-foreground"></i>
+                </div>
+
+                <div class="mt-3 text-3xl font-extrabold">0</div>
+                <p class="mt-2 text-xs text-muted-foreground">em aberto</p>
+              </div>
+            </div>
+
+            <!-- Card grande (área do dashboard) -->
+            <div class="rounded-2xl border border-border bg-white/50 shadow-sm p-6">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h4 class="font-semibold text-foreground">Visão geral</h4>
+                  <p class="text-sm text-muted-foreground">Resumo e indicadores dos pedidos</p>
+                </div>
+
+                <button
+                  type="button"
+                  class="rounded-xl border border-border bg-white/60 hover:bg-white/90 px-4 py-2 text-sm font-semibold transition-all
+                        focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  id="btnAtualizarDashboardPedidos"
+                >
+                  Atualizar
+                </button>
+              </div>
+
+              <!-- Conteúdo interno: você decide (gráficos/tabelas/resumo) -->
+              <div class="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="rounded-2xl border border-border bg-muted/30 p-4 min-h-[220px]">
+                  <div class="text-sm font-semibold text-foreground">Pedidos por status</div>
+                  <div class="text-sm text-muted-foreground mt-2">Placeholder</div>
+                </div>
+
+                <div class="rounded-2xl border border-border bg-muted/30 p-4 min-h-[220px]">
+                  <div class="text-sm font-semibold text-foreground">Últimos pedidos</div>
+                  <div class="text-sm text-muted-foreground mt-2">Placeholder</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Conteúdo: Tabela -->
+          <div id="painelPedidosTabela" role="tabpanel" aria-labelledby="abaPedidosTabela" class="mt-4" hidden>
+            <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+              <table class="min-w-full text-sm">
+                <thead class="bg-muted/40 text-muted-foreground">
+                  <tr>
+                    <th class="text-left font-semibold px-4 py-3">Pedido</th>
+                    <th class="text-left font-semibold px-4 py-3">Cliente</th>
+                    <th class="text-left font-semibold px-4 py-3">Data</th>
+                    <th class="text-left font-semibold px-4 py-3">Status</th>
+                    <th class="text-right font-semibold px-4 py-3">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyPedidos" class="divide-y divide-border"></tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
 
-    <!-- outras páginas placeholders -->
-    <section id="clients" class="page-content"><div class="glass rounded-2xl p-6 shadow">Clientes</div></section>
-    <section id="shipments" class="page-content"><div class="glass rounded-2xl p-6 shadow">Remessas</div></section>
-    <section id="payments" class="page-content"><div class="glass rounded-2xl p-6 shadow">Pagamentos</div></section>
-    <section id="products" class="page-content"><div class="glass rounded-2xl p-6 shadow">Produtos</div></section>
-    <section id="production" class="page-content"><div class="glass rounded-2xl p-6 shadow">Produção</div></section>
-    <section id="stock" class="page-content"><div class="glass rounded-2xl p-6 shadow">Estoque</div></section>
-    <section id="fazendas" class="page-content"><div class="glass rounded-2xl p-6 shadow">Fazendas</div></section>
+    <!-- MARKETING -->
+    <section id="secao-marketing" class="page-content md:ml-12">
+      <div class="glass rounded-2xl p-6 shadow space-y-4">
+
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="font-semibold">Marketing</h3>
+            <p class="text-sm text-muted-foreground">Gerencie imagens armazenadas no volume (Railway)</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btnAtualizarMarketing" type="button"
+              class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90
+                    flex items-center justify-center transition-all
+                    focus:outline-none focus:ring-2 focus:ring-primary/30"
+              title="Atualizar lista">
+              <i class="fas fa-rotate-right"></i>
+            </button>
+
+            <label for="inputImagensMarketing"
+              class="rounded-xl bg-primary text-white px-4 py-2 font-medium hover:opacity-90 transition-all cursor-pointer
+                    flex items-center gap-2">
+              <i class="fas fa-cloud-arrow-up"></i>
+              <span>Adicionar</span>
+            </label>
+
+            <input id="inputImagensMarketing" type="file" accept="image/*" multiple class="hidden" />
+          </div>
+        </div>
+
+        <div id="marketingMsg" class="text-sm text-muted-foreground hidden"></div>
+
+        <!-- Galeria -->
+        <div id="gridMarketing"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <!-- cards das imagens entram via JS -->
+        </div>
+
+        <div id="marketingVazio" class="text-sm text-muted-foreground">
+          Nenhuma imagem enviada ainda.
+        </div>
+
+      </div>
+    </section>
 
     <!-- GEstão de Usuários -->
     <section id="user-management" class="page-content md:ml-12">
