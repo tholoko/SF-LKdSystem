@@ -413,7 +413,7 @@
     // Produção = '' (você pediu assim). Homologação = URL do Railway.
     function getApiBaseFromEnv() {
       const env = document.getElementById('environmentSelect')?.value;
-      if (env === 'producao') return 'https://api-sf-production.up.railway.app';
+      if (env === 'homologacao') return 'https://api-sf-production.up.railway.app';
       return '';
     }
 
