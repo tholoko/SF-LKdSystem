@@ -136,3 +136,7 @@ body::-webkit-scrollbar {
 *::-webkit-scrollbar {
   display: none;              /* Chrome/Safari/Edge */
 }
+
+/* Evita estouro vertical em layouts flex/grid */
+.page-content.active { min-height: 0; }
+#main { min-height: 100vh; }
