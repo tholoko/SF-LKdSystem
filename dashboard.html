@@ -187,7 +187,7 @@
   @media (max-width: 640px) {
     input[type="date"],
     input[type="datetime-local"] {
-      max-width: 80%;
+      max-width: 90%;
     }
   }
 
@@ -220,49 +220,46 @@
   }
 
   @media (max-width: 1023px) {
-    html, body {
-      height: auto;
-      overflow-y: auto;
-    }
-
-    body {
-      min-height: 100dvh;
-    }
-
-    #main {
-      min-height: auto;
-      height: auto;
-      overflow: visible;
+    .home-mobile-tabs-wrap {
+      display: block !important;
     }
 
     .home-desktop-layout {
       display: block !important;
       height: auto !important;
-    }
-
-    .home-mobile-panel {
-      display: none;
-    }
-
-    .home-mobile-panel.active {
-      display: block;
-    }
-
-    .home-mobile-panel + .home-mobile-panel {
-      margin-top: 1rem;
-    }
-
-    .home-scroll-area {
       overflow: visible !important;
-      max-height: none !important;
     }
 
-    .home-media-fit {
-      min-height: 560px;
-      height: auto;
-      flex: none;
+    .home-left-column,
+    .home-right-column {
+      display: contents !important;
+    }
+
+    #homePainelPanel,
+    #homeCalendarioPanel {
+      display: none !important;
+      width: 100% !important;
+    }
+
+    #homePainelPanel.active,
+    #homeCalendarioPanel.active {
+      display: block !important;
     }
   }
+
+  @media (max-width: 1023px) {
+    #homePainelPanel,
+    #homeCalendarioPanel {
+      display: none !important;
+    }
+
+    #homePainelPanel.active,
+    #homeCalendarioPanel.active {
+      display: block !important;
+    }
+  }
+
+
 
   @media (min-width: 1024px) {
     html, body {
@@ -1119,6 +1116,12 @@
     box-shadow: 0 4px 16px rgba(0,0,0,0.35) !important;
   }
 
+  @media (max-width: 1023px) {
+    #weatherHeroCard {
+      display: none !important;
+    }
+  }
+
 </style>
 
 </head>
@@ -1235,26 +1238,6 @@
     <!-- HOME -->
     <section id="home" class="page-content active">
       <div class="home-page-shell pl-0 lg:pl-6 pr-0 lg:pr-1">
-        <div class="home-mobile-tabs-wrap lg:hidden">
-          <div class="glass rounded-2xl p-2 shadow">
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                class="home-mobile-tab-btn active rounded-xl px-4 py-3 text-sm font-semibold transition-all border border-border bg-white/70 text-foreground"
-                data-home-tab="painel">
-                Painel informativo
-              </button>
-
-              <button
-                type="button"
-                class="home-mobile-tab-btn rounded-xl px-4 py-3 text-sm font-semibold transition-all border border-border bg-white/40 text-muted-foreground"
-                data-home-tab="calendario">
-                Calendário
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div class="home-desktop-layout">
           <div class="home-left-column">
             <div class="glass rounded-2xl p-4 md:p-5 shadow">
@@ -1355,7 +1338,7 @@
               </div>
             </div>
 
-            <div id="homeCalendarioPanel" class="home-mobile-panel active min-h-0 home-calendar-card">
+            <div id="homeCalendarioPanel" class="home-mobile-panel min-h-0 home-calendar-card">
               <div class="glass rounded-2xl p-5 shadow flex flex-col home-card-fit h-full min-h-0">
                 <div>
                   <h2 class="text-lg font-semibold">Calendário</h2>
@@ -1372,23 +1355,24 @@
                   <button
                     id="AgendarSalaReuniao"
                     type="button"
-                    class="mt-1 w-full rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 flex items-center justify-center gap-2"
+                    class="mt-1 w-full rounded-xl bg-primary text-white px-4 py-3 text-sm font-semibold hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 flex items-center justify-center gap-2"
                     aria-label="Agendar sala de reunião"
                     title="Agendar sala de reunião">
-                    <i class="fas fa-calendar-plus" aria-hidden="true"></i>
-                    <span>Agendar sala de reunião</span>
+                    <i class="fas fa-calendar-plus text-sm" aria-hidden="true"></i>
+                    <span>Sala Reunião</span>
                   </button>
 
                   <button
                     id="AgendarCarro"
                     type="button"
-                    class="mt-1 w-full rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 flex items-center justify-center gap-2"
+                    class="mt-1 w-full rounded-xl bg-primary text-white px-4 py-3 text-sm font-semibold hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 flex items-center justify-center gap-2"
                     aria-label="Agendar carro"
                     title="Agendar carro">
-                    <i class="fas fa-car" aria-hidden="true"></i>
-                    <span>Agendar carro</span>
+                    <i class="fas fa-car text-sm" aria-hidden="true"></i>
+                    <span>Veículo</span>
                   </button>
                 </div>
+
 
 
                 <div class="rounded-xl border border-border bg-muted/40 p-4 flex-1 flex flex-col min-h-[220px] lg:min-h-0 home-scroll-area">
@@ -1463,6 +1447,25 @@
                 </div>
 
               </div>
+            </div>
+          </div>
+        </div>
+        <div class="home-mobile-tabs-wrap lg:hidden">
+          <div class="glass rounded-2xl p-2 shadow">
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                class="home-mobile-tab-btn active rounded-xl px-4 py-3 text-sm font-semibold transition-all border border-border bg-white/70 text-foreground"
+                data-home-tab="painel">
+                Painel informativo
+              </button>
+
+              <button
+                type="button"
+                class="home-mobile-tab-btn rounded-xl px-4 py-3 text-sm font-semibold transition-all border border-border bg-white/40 text-muted-foreground"
+                data-home-tab="calendario">
+                Calendário
+              </button>
             </div>
           </div>
         </div>
@@ -2061,6 +2064,5 @@
     </section>
 
   </main>
-
 </body>
 </html>
