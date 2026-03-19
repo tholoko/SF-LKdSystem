@@ -1121,6 +1121,39 @@
       display: none !important;
     }
   }
+
+  .form-label-sm {
+    font-size: 0.78rem;
+    line-height: 1rem;
+    font-weight: 500;
+  }
+
+  .form-control-sm {
+    min-height: 38px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.82rem;
+    line-height: 1.1rem;
+    border-radius: 0.75rem;
+  }
+
+  .form-btn-sm {
+    min-height: 38px;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.82rem;
+    line-height: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .form-title-sm {
+    font-size: 1rem;
+    line-height: 1.25rem;
+  }
+
+  .form-subtitle-sm {
+    font-size: 0.78rem;
+    line-height: 1rem;
+  }
+
 </style>
 
 </head>
@@ -1146,63 +1179,63 @@
       </div>
 
       <button id="closeSidebarBtn"
-        class="w-11 h-11 rounded-xl bg-white/55 border border-sidebar-border/60 hover:bg-white/80 transition-all text-sidebar-foreground text-xl shadow"
+        class="w-11 h-11 rounded-xl bg-white/55 border border-sidebar-border/60 hover:bg-white/80 transition-all text-sidebar-foreground form-title-sm shadow"
         title="Fechar menu">
         <i class="fas fa-times"></i>
       </button>
     </div>
 
     <div class="menu-items hide-scrollbar flex-1 px-3 py-3">
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="home">
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="home">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
           <i class="fas fa-house"></i>
         </div>
         <span class="font-medium truncate">Início</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-pedidos">
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-pedidos">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-success/15 text-success shrink-0">
           <i class="fas fa-shopping-cart"></i>
         </div>
         <span class="font-medium truncate">Pedidos</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-clientes">
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-clientes">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
           <i class="fas fa-building"></i>
         </div>
         <span class="font-medium truncate">Clientes</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-marketing">
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-marketing">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-accent/20 text-foreground shrink-0">
           <i class="fas fa-bullhorn"></i>
         </div>
         <span class="font-medium truncate">Marketing</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-emails-automaticos">
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-emails-automaticos">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0">
           <i class="fas fa-envelope"></i>
         </div>
         <span class="font-medium truncate">E-mails Automáticos</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="user-management">
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="user-management">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
           <i class="fas fa-user-cog"></i>
         </div>
         <span class="font-medium truncate">Gestão Usuários</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="inventory-control">
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="inventory-control">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-warning/15 text-warning shrink-0">
           <i class="fas fa-boxes-stacked"></i>
         </div>
         <span class="font-medium truncate">Estoque</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
           data-page="secao-perfis">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0">
           <i class="fas fa-id-badge"></i>
@@ -1216,13 +1249,13 @@
         <div
           id="userAvatar"
           class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white bg-primary shadow shrink-0 cursor-pointer transform transition-all duration-200 hover:scale-110 hover:opacity-90"
-          title="Alterar foto"
+          title=""
         >
           US
         </div>
         <div class="flex-1 min-w-0">
           <div id="userDisplayName" class="font-bold text-sidebar-foreground leading-tight truncate">Usuário</div>
-          <div id="userDomain" class="text-sm text-muted-foreground truncate">Domínio</div>
+          <div id="userDomain" class="form-subtitle-sm truncate">Domínio</div>
         </div>
         <button id="logoutBtn"
           class="w-11 h-11 rounded-xl bg-white/55 border border-sidebar-border/60 hover:bg-destructive hover:text-white transition-all shrink-0"
@@ -1252,12 +1285,12 @@
                   </button>
 
                   <div>
-                    <h1 id="helloTitleHome" class="text-lg md:text-xl font-bold">Olá, Usuário!</h1>
-                    <p id="todayLabel" class="text-sm text-muted-foreground">Carregando...</p>
+                    <h1 id="helloTitleHome" class="text-lg md:form-title-sm font-bold">Olá, Usuário!</h1>
+                    <p id="todayLabel" class="form-subtitle-sm">Carregando...</p>
                   </div>
                 </div>
 
-                <div id="weatherHeroCard" class="home-weather-card relative overflow-hidden rounded-2xl border border-white/20 px-3 py-2.5 min-w-0 shadow-xl h-[140px]">
+                <div id="weatherHeroCard" class="home-weather-card blank-mode relative overflow-hidden rounded-2xl border border-white/20 px-3 py-2.5 min-w-0 shadow-xl h-[140px]">
                   <!-- Background Image -->
                   <div id="weatherHeroBg" class="home-weather-bg" style="background-image: url('https://pplx-res.cloudinary.com/image/upload/pplx_search_images/747d2bfffda9ec2b1d42c19efcd0193134ddedf7.jpg');"></div>
                   
@@ -1265,7 +1298,7 @@
                   <div class="home-weather-overlay"></div>
                   
                   <!-- Content -->
-                  <div class="home-weather-content relative z-10 flex flex-col h-full justify-between">
+                  <div class="home-weather-content climate-hidden relative z-10 flex flex-col h-full justify-between">
                     <!-- Header -->
                     <div class="flex items-start justify-between gap-2 pt-1">
                       <div class="min-w-0 flex-1">
@@ -1309,7 +1342,7 @@
                     </div>
 
                     <!-- 8 QUADROS (aparece no modo limpo) -->
-                    <div class="weather-grid-container hidden opacity-0">                      
+                    <div class="weather-grid-container opacity-100">                     
                       <!-- QUADRO 2 -->
                       <a href="https://franciosi.autosky.cloud/" class="weather-grid-item" data-tooltip="SAP" target="_blank">
                         <img src="imagens/sap.png" alt="SAP">
@@ -1342,7 +1375,7 @@
                 <div class="flex items-start justify-between gap-3">
                   <div class="min-w-0 flex-1">
                     <h2 class="text-lg font-semibold">Calendário</h2>
-                    <p class="text-sm text-muted-foreground">Selecione uma data para visualizar agendametos.</p>
+                    <p class="form-subtitle-sm">Selecione uma data para visualizar agendametos.</p>
                   </div>
 
                   <div class="home-mobile-tabs-wrap lg:hidden shrink-0">
@@ -1359,14 +1392,14 @@
 
                 <div class="space-y-2 mt-4">
                   <input id="calendarInput" type="date"
-                    class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" />
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30" />
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
                   <button
                     id="AgendarSalaReuniao"
                     type="button"
-                    class="mt-1 w-full rounded-xl bg-primary text-white px-4 py-3 text-sm font-semibold hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 flex items-center justify-center gap-2"
+                    class="mt-1 w-full rounded-xl bg-primary text-white form-control-sm text-sm font-semibold hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 flex items-center justify-center gap-2"
                     aria-label="Agendar sala de reunião"
                     title="Agendar sala de reunião">
                     <i class="fas fa-calendar-plus text-sm" aria-hidden="true"></i>
@@ -1376,7 +1409,7 @@
                   <button
                     id="AgendarCarro"
                     type="button"
-                    class="mt-1 w-full rounded-xl bg-primary text-white px-4 py-3 text-sm font-semibold hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 flex items-center justify-center gap-2"
+                    class="mt-1 w-full rounded-xl bg-primary text-white form-control-sm text-sm font-semibold hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 flex items-center justify-center gap-2"
                     aria-label="Agendar carro"
                     title="Agendar carro">
                     <i class="fas fa-car text-sm" aria-hidden="true"></i>
@@ -1387,7 +1420,7 @@
                 <div class="rounded-xl border border-border bg-muted/40 p-4 flex-1 flex flex-col min-h-[220px] lg:min-h-0 home-scroll-area">
                   <p class="text-sm font-semibold">Resumo do dia</p>
                   <div id="resumoDiaLista" class="mt-3 space-y-2 overflow-auto no-scrollbar"></div>
-                  <p id="resumoDiaVazio" class="text-sm text-muted-foreground mt-3">
+                  <p id="resumoDiaVazio" class="form-subtitle-sm mt-3">
                     Nenhum evento cadastrado.
                   </p>
                 </div>
@@ -1402,7 +1435,7 @@
                 <div class="flex items-start justify-between gap-3">
                   <div class="min-w-0 flex-1">
                     <h2 class="text-lg font-semibold">Sociedade Franciosi</h2>
-                    <p class="text-sm text-muted-foreground">Painel informativo</p>
+                    <p class="form-subtitle-sm">Painel informativo</p>
                   </div>
 
                   <div class="home-mobile-tabs-wrap lg:hidden shrink-0">
@@ -1436,7 +1469,7 @@
                   </div>
                 </div>
 
-                <div class="mt-3 rounded-2xl border border-border bg-white/70 backdrop-blur-sm px-4 py-3">
+                <div class="mt-3 rounded-2xl border border-border bg-white/70 backdrop-blur-sm form-control-sm">
                   <div class="flex items-center justify-between gap-3">
                     <button
                       id="btnPainelAnterior"
@@ -1491,7 +1524,7 @@
 
             <div>
               <h3 class="font-semibold">Pedidos</h3>
-              <p class="text-sm text-muted-foreground">Gerencie os pedidos cadastrados no sistema</p>
+              <p class="form-subtitle-sm">Gerencie os pedidos cadastrados no sistema</p>
             </div>
           </div>
 
@@ -1513,7 +1546,7 @@
               role="tab"
               aria-selected="true"
               aria-controls="painelPedidosDashboard"
-              class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow text-foreground">
+              class="px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground">
               Dashboard
             </button>
 
@@ -1523,7 +1556,7 @@
               role="tab"
               aria-selected="false"
               aria-controls="painelPedidosTabela"
-              class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-muted-foreground hover:text-foreground">
+              class="px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground">
               Pedidos
             </button>
           </div>
@@ -1533,7 +1566,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
               <div class="flex items-center justify-between gap-3">
-                <p class="text-sm font-medium text-foreground">Progresso Volume</p>
+                <p class="form-label-sm text-foreground">Progresso Volume</p>
                 <i class="fas fa-arrow-trend-up text-muted-foreground"></i>
               </div>
               <div class="mt-3 text-3xl font-extrabold">0,0%</div>
@@ -1547,7 +1580,7 @@
 
             <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
               <div class="flex items-center justify-between gap-3">
-                <p class="text-sm font-medium text-foreground">Progresso Receita</p>
+                <p class="form-label-sm text-foreground">Progresso Receita</p>
                 <i class="fas fa-dollar-sign text-muted-foreground"></i>
               </div>
               <div class="mt-3 text-3xl font-extrabold">0,0%</div>
@@ -1561,7 +1594,7 @@
 
             <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
               <div class="flex items-center justify-between gap-3">
-                <p class="text-sm font-medium text-foreground">Meus Clientes</p>
+                <p class="form-label-sm text-foreground">Meus Clientes</p>
                 <i class="fas fa-users text-muted-foreground"></i>
               </div>
               <div class="mt-3 text-3xl font-extrabold">0</div>
@@ -1570,7 +1603,7 @@
 
             <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
               <div class="flex items-center justify-between gap-3">
-                <p class="text-sm font-medium text-foreground">Pedidos Pendentes</p>
+                <p class="form-label-sm text-foreground">Pedidos Pendentes</p>
                 <i class="fas fa-clipboard-list text-muted-foreground"></i>
               </div>
               <div class="mt-3 text-3xl font-extrabold">0</div>
@@ -1582,7 +1615,7 @@
             <div class="flex items-start justify-between gap-4">
               <div>
                 <h4 class="font-semibold text-foreground">Visão geral</h4>
-                <p class="text-sm text-muted-foreground">Resumo e indicadores dos pedidos</p>
+                <p class="form-subtitle-sm">Resumo e indicadores dos pedidos</p>
               </div>
 
               <button
@@ -1596,12 +1629,12 @@
             <div class="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div class="rounded-2xl border border-border bg-muted/30 p-4 min-h-[220px]">
                 <div class="text-sm font-semibold text-foreground">Pedidos por status</div>
-                <div class="text-sm text-muted-foreground mt-2">Placeholder</div>
+                <div class="form-subtitle-sm mt-2">Placeholder</div>
               </div>
 
               <div class="rounded-2xl border border-border bg-muted/30 p-4 min-h-[220px]">
                 <div class="text-sm font-semibold text-foreground">Últimos pedidos</div>
-                <div class="text-sm text-muted-foreground mt-2">Placeholder</div>
+                <div class="form-subtitle-sm mt-2">Placeholder</div>
               </div>
             </div>
           </div>
@@ -1612,11 +1645,11 @@
             <table class="min-w-full text-sm">
               <thead class="bg-muted/40 text-muted-foreground">
                 <tr>
-                  <th class="text-left font-semibold px-4 py-3">Pedido</th>
-                  <th class="text-left font-semibold px-4 py-3">Cliente</th>
-                  <th class="text-left font-semibold px-4 py-3">Data</th>
-                  <th class="text-left font-semibold px-4 py-3">Status</th>
-                  <th class="text-right font-semibold px-4 py-3">Ações</th>
+                  <th class="text-left font-semibold form-control-sm">Pedido</th>
+                  <th class="text-left font-semibold form-control-sm">Cliente</th>
+                  <th class="text-left font-semibold form-control-sm">Data</th>
+                  <th class="text-left font-semibold form-control-sm">Status</th>
+                  <th class="text-right font-semibold form-control-sm">Ações</th>
                 </tr>
               </thead>
               <tbody id="tbodyPedidos" class="divide-y divide-border"></tbody>
@@ -1642,7 +1675,7 @@
 
             <div>
               <h3 class="font-semibold">Clientes</h3>
-              <p class="text-sm text-muted-foreground">Gerencie clientes e filiais</p>
+              <p class="form-subtitle-sm">Gerencie clientes e filiais</p>
             </div>
           </div>
 
@@ -1663,20 +1696,20 @@
 
         <input id="inputBuscaClientes" type="text"
           placeholder="Buscar por razão social ou CPF/CNPJ..."
-          class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" />
+          class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30" />
 
-        <div id="clientesMsg" class="text-sm text-muted-foreground hidden"></div>
+        <div id="clientesMsg" class="form-subtitle-sm hidden"></div>
 
         <div class="overflow-auto rounded-2xl border border-border bg-white/50">
           <table class="min-w-full text-sm">
             <thead class="bg-muted/40 text-muted-foreground">
               <tr>
-                <th class="text-left font-semibold px-4 py-3">Razão Social</th>
-                <th class="text-left font-semibold px-4 py-3">CPF/CNPJ</th>
-                <th class="text-left font-semibold px-4 py-3">Cidade/UF</th>
-                <th class="text-left font-semibold px-4 py-3">Contato</th>
-                <th class="text-left font-semibold px-4 py-3">Telefone</th>
-                <th class="text-right font-semibold px-4 py-3">Ações</th>
+                <th class="text-left font-semibold form-control-sm">Razão Social</th>
+                <th class="text-left font-semibold form-control-sm">CPF/CNPJ</th>
+                <th class="text-left font-semibold form-control-sm">Cidade/UF</th>
+                <th class="text-left font-semibold form-control-sm">Contato</th>
+                <th class="text-left font-semibold form-control-sm">Telefone</th>
+                <th class="text-right font-semibold form-control-sm">Ações</th>
               </tr>
             </thead>
             <tbody id="tbodyClientes" class="divide-y divide-border"></tbody>
@@ -1702,19 +1735,19 @@
 
               <div>
                 <h2 class="text-2xl font-semibold text-foreground">Controle de estoque</h2>
-                <p class="text-sm text-muted-foreground">Gestão de materiais do escritório.</p>
+                <p class="form-subtitle-sm">Gestão de materiais do escritório.</p>
               </div>
             </div>
 
             <div class="flex flex-wrap gap-2">
               <button id="btnNovoProdutoEstoque" type="button"
-                      class="rounded-xl bg-primary text-white px-4 py-3 text-sm font-medium hover:opacity-90 transition-all">
+                      class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
                 <i class="fas fa-download mr-2" aria-hidden="true"></i>
                 Importar do sistema
               </button>
 
               <button id="btnImportarPdfEstoque" type="button"
-                class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all">
+                class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
                 <i class="fas fa-file-pdf mr-2" aria-hidden="true"></i>
                 Importar XML/PDF
               </button>
@@ -1726,12 +1759,12 @@
         <div class="glass rounded-2xl border border-border p-4 md:p-6 space-y-4">
           <div class="flex flex-wrap gap-2">
             <button id="abaEstoqueEscritorio" type="button" aria-selected="true"
-              class="px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white text-foreground shadow-sm transition-all">
+              class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all">
               Almoxarifado
             </button>
 
             <button id="abaEstoqueCentroCusto" type="button" aria-selected="false"
-              class="px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">
+              class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">
               Centro de custo
             </button>
           </div>
@@ -1739,22 +1772,22 @@
           <!-- Painel Estoque -->
           <div id="painelEstoqueEscritorio" class="space-y-4">
             <div id="estoqueEscritorioErro"
-              class="hidden rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"></div>
+              class="hidden rounded-xl border border-destructive/20 bg-destructive/10 form-control-sm text-sm text-destructive"></div>
 
             <div class="overflow-x-auto rounded-2xl border border-border bg-white/40">
               <table class="min-w-full text-sm">
                 <thead class="bg-white/50 border-b border-border">
                   <tr>
-                    <th class="px-4 py-3 text-left font-semibold text-foreground">Código</th>
-                    <th class="px-4 py-3 text-left font-semibold text-foreground">Descrição</th>
-                    <th class="px-4 py-3 text-left font-semibold text-foreground">Qtd. disponível</th>
-                    <th class="px-4 py-3 text-left font-semibold text-foreground">Qtd. em pedido</th>
-                    <th class="px-4 py-3 text-right font-semibold text-foreground">Ações</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Código</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Descrição</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Qtd. disponível</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Qtd. em pedido</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Ações</th>
                   </tr>
                 </thead>
                 <tbody id="tbodyEstoqueEscritorio">
                   <tr>
-                    <td colspan="4" class="px-4 py-6 text-sm text-muted-foreground">Nenhum item carregado.</td>
+                    <td colspan="4" class="px-4 py-6 form-subtitle-sm">Nenhum item carregado.</td>
                   </tr>
                 </tbody>
               </table>
@@ -1763,18 +1796,18 @@
           <!-- Painel Centro de Custo -->
           <div id="painelEstoqueCentroCusto" class="hidden space-y-4">
             <div id="estoqueCentroCustoErro"
-              class="hidden rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"></div>
+              class="hidden rounded-xl border border-destructive/20 bg-destructive/10 form-control-sm text-sm text-destructive"></div>
 
             <div class="flex items-center justify-between gap-3">
               <div>
                 <h3 class="text-base font-semibold text-foreground">Materiais recebidos</h3>
-                <p class="text-sm text-muted-foreground">Itens transferidos para o seu centro de custo.</p>
+                <p class="form-subtitle-sm">Itens transferidos para o seu centro de custo.</p>
               </div>
 
               <button
                 id="btnAbrirPendenciasCentroCusto"
                 type="button"
-                class="hidden relative rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100 transition-all"
+                class="hidden relative rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 form-label-sm text-amber-700 hover:bg-amber-100 transition-all"
               >
                 <i class="fas fa-bell mr-2"></i>
                 Pendências
@@ -1798,17 +1831,17 @@
               <table class="min-w-full text-sm">
                 <thead class="bg-white/50 border-b border-border">
                   <tr>
-                    <th class="px-4 py-3 text-left font-semibold text-foreground">Código</th>
-                    <th class="px-4 py-3 text-left font-semibold text-foreground">Descrição</th>
-                    <th class="px-4 py-3 text-right font-semibold text-foreground">Quantidade</th>
-                    <th class="px-4 py-3 text-right font-semibold text-foreground">Em tranferência</th>
-                    <th class="px-4 py-3 text-left font-semibold text-foreground">UN</th>
-                    <th class="px-4 py-3 text-right font-semibold text-foreground">Ações</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Código</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Descrição</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Quantidade</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Em tranferência</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">UN</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Ações</th>
                   </tr>
                 </thead>
                 <tbody id="tbodyEstoqueCentroCusto">
                   <tr>
-                    <td colspan="8" class="px-4 py-6 text-sm text-muted-foreground text-center">
+                    <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
                       Nenhum item carregado.
                     </td>
                   </tr>
@@ -1837,7 +1870,7 @@
 
             <div>
               <h3 class="font-semibold">Marketing</h3>
-              <p class="text-sm text-muted-foreground">Gerencie imagens do painel informativo</p>
+              <p class="form-subtitle-sm">Gerencie imagens do painel informativo</p>
             </div>
           </div>
 
@@ -1858,9 +1891,9 @@
           </div>
         </div>
 
-        <div id="marketingMsg" class="text-sm text-muted-foreground hidden"></div>
+        <div id="marketingMsg" class="form-subtitle-sm hidden"></div>
         <div id="gridMarketing" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
-        <div id="marketingVazio" class="text-sm text-muted-foreground">Nenhuma imagem enviada ainda.</div>
+        <div id="marketingVazio" class="form-subtitle-sm">Nenhuma imagem enviada ainda.</div>
       </div>
     </section>
 
@@ -1880,7 +1913,7 @@
 
             <div>
               <h3 class="font-semibold">Gestão de Usuários</h3>
-              <p class="text-sm text-muted-foreground">Gerencie os usuários cadastrados</p>
+              <p class="form-subtitle-sm">Gerencie os usuários cadastrados</p>
             </div>
           </div>
 
@@ -1897,12 +1930,12 @@
           <table class="min-w-full text-sm">
             <thead>
               <tr>
-                <th class="px-4 py-3 text-left">Usuário</th>
-                <th class="px-4 py-3 text-left">Setor</th>
-                <th class="px-4 py-3 text-left">Perfil</th>
-                <th class="px-4 py-3 text-left">Centro de custo</th>
-                <th class="px-4 py-3 text-left">Status</th>
-                <th class="px-4 py-3 text-right">Ações</th>
+                <th class="form-control-sm text-left">Usuário</th>
+                <th class="form-control-sm text-left">Setor</th>
+                <th class="form-control-sm text-left">Perfil</th>
+                <th class="form-control-sm text-left">Centro de custo</th>
+                <th class="form-control-sm text-left">Status</th>
+                <th class="form-control-sm text-right">Ações</th>
               </tr>
             </thead>
             <tbody id="tbodyGestaoUsuarios"></tbody>
@@ -1927,7 +1960,7 @@
 
             <div>
               <h3 class="font-semibold">Perfis</h3>
-              <p class="text-sm text-muted-foreground">Cadastre e gerencie permissões dos perfis</p>
+              <p class="form-subtitle-sm">Cadastre e gerencie permissões dos perfis</p>
             </div>
           </div>
 
@@ -1938,16 +1971,16 @@
           </button>
         </div>
 
-        <div id="perfilMsg" class="text-sm text-muted-foreground hidden"></div>
+        <div id="perfilMsg" class="form-subtitle-sm hidden"></div>
 
         <div class="overflow-auto rounded-2xl border border-border bg-white/50">
           <table class="min-w-full text-sm">
             <thead class="bg-muted/40 text-muted-foreground">
               <tr>
-                <th class="text-left font-semibold px-4 py-3">Perfil</th>
-                <th class="text-left font-semibold px-4 py-3">Status</th>
-                <th class="text-left font-semibold px-4 py-3">Atualizado em</th>
-                <th class="text-right font-semibold px-4 py-3">Ações</th>
+                <th class="text-left font-semibold form-control-sm">Perfil</th>
+                <th class="text-left font-semibold form-control-sm">Status</th>
+                <th class="text-left font-semibold form-control-sm">Atualizado em</th>
+                <th class="text-right font-semibold form-control-sm">Ações</th>
               </tr>
             </thead>
             <tbody id="tbodyPerfis"></tbody>
@@ -1972,7 +2005,7 @@
 
             <div>
               <h3 class="font-semibold">Emails Automáticos</h3>
-              <p class="text-sm text-muted-foreground">Configure remetentes e destinatários para captura automática</p>
+              <p class="form-subtitle-sm">Configure remetentes e destinatários para captura automática</p>
             </div>
           </div>
 
@@ -1995,12 +2028,12 @@
         <div class="mt-4">
           <div class="inline-flex rounded-xl border border-border bg-white/50 p-1" role="tablist" aria-label="Abas emails">
             <button id="abaRemetentes" type="button" role="tab" aria-selected="true" aria-controls="painelRemetentes"
-              class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow text-foreground">
+              class="px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground">
               Remetentes
             </button>
 
             <button id="abaDestinatarios" type="button" role="tab" aria-selected="false" aria-controls="painelDestinatarios"
-              class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-muted-foreground hover:text-foreground">
+              class="px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground">
               Destinatários
             </button>
           </div>
@@ -2009,19 +2042,19 @@
         <div id="painelRemetentes" role="tabpanel" aria-labelledby="abaRemetentes" class="mt-4 space-y-4">
           <input id="inputBuscaRemetentes" type="text"
             placeholder="Buscar por email ou nome..."
-            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-info/30" />
+            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30" />
 
-          <div id="emailsMsg" class="text-sm text-muted-foreground hidden"></div>
+          <div id="emailsMsg" class="form-subtitle-sm hidden"></div>
 
           <div class="overflow-auto rounded-2xl border border-border bg-white/50">
             <table class="min-w-full text-sm">
               <thead class="bg-muted/40 text-muted-foreground">
                 <tr>
-                  <th class="text-left font-semibold px-4 py-3">#</th>
-                  <th class="text-left font-semibold px-4 py-3">Email</th>
-                  <th class="text-left font-semibold px-4 py-3">Nome</th>
-                  <th class="text-left font-semibold px-4 py-3">Status</th>
-                  <th class="text-right font-semibold px-4 py-3">Ações</th>
+                  <th class="text-left font-semibold form-control-sm">#</th>
+                  <th class="text-left font-semibold form-control-sm">Email</th>
+                  <th class="text-left font-semibold form-control-sm">Nome</th>
+                  <th class="text-left font-semibold form-control-sm">Status</th>
+                  <th class="text-right font-semibold form-control-sm">Ações</th>
                 </tr>
               </thead>
               <tbody id="tbodyRemetentes" class="divide-y divide-border"></tbody>
@@ -2031,12 +2064,12 @@
 
         <div id="painelDestinatarios" role="tabpanel" aria-labelledby="abaDestinatarios" class="mt-4 space-y-4" hidden>
           <div class="flex items-start gap-4">
-            <select id="selectRemetenteDest" class="flex-1 rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-info/30">
+            <select id="selectRemetenteDest" class="flex-1 rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30">
               <option value="">Selecione um remetente...</option>
             </select>
 
             <button id="btnNovoDestinatario" type="button"
-              class="rounded-xl bg-info text-white px-4 py-3 font-medium hover:opacity-90 transition-all flex items-center gap-2">
+              class="rounded-xl bg-info text-white form-btn-sm hover:opacity-90 transition-all flex items-center gap-2">
               <i class="fas fa-plus"></i>
               <span>Novo destinatário</span>
             </button>
@@ -2044,19 +2077,19 @@
 
           <input id="inputBuscaDestinatarios" type="text"
             placeholder="Buscar por email ou nome..."
-            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-info/30" />
+            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30" />
 
-          <div id="emailsDestMsg" class="text-sm text-muted-foreground hidden"></div>
+          <div id="emailsDestMsg" class="form-subtitle-sm hidden"></div>
 
           <div class="overflow-auto rounded-2xl border border-border bg-white/50">
             <table class="min-w-full text-sm">
               <thead class="bg-muted/40 text-muted-foreground">
                 <tr>
-                  <th class="text-left font-semibold px-4 py-3">Remetente</th>
-                  <th class="text-left font-semibold px-4 py-3">Email Dest.</th>
-                  <th class="text-left font-semibold px-4 py-3">Nome Dest.</th>
-                  <th class="text-left font-semibold px-4 py-3">Status</th>
-                  <th class="text-right font-semibold px-4 py-3">Ações</th>
+                  <th class="text-left font-semibold form-control-sm">Remetente</th>
+                  <th class="text-left font-semibold form-control-sm">Email Dest.</th>
+                  <th class="text-left font-semibold form-control-sm">Nome Dest.</th>
+                  <th class="text-left font-semibold form-control-sm">Status</th>
+                  <th class="text-right font-semibold form-control-sm">Ações</th>
                 </tr>
               </thead>
               <tbody id="tbodyDestinatarios" class="divide-y divide-border"></tbody>
