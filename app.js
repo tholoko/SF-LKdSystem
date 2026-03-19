@@ -4309,16 +4309,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
-  function resetHomePanelsDesktop() {
-    if (window.innerWidth >= 1024) {
-      homePainelPanel.classList.add('active');
-      homeCalendarioPanel.classList.add('active');
-    } else {
-      const activeBtn = document.querySelector('.home-mobile-tab-btn.active');
-      setHomeTab(activeBtn?.dataset.homeTab || 'painel');
-    }
-  }
-
   homeTabButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
       setHomeTab(btn.dataset.homeTab);
@@ -4329,7 +4319,15 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', resetHomePanelsDesktop);
 });
 
-
+  function resetHomePanelsDesktop() {
+    if (window.innerWidth >= 1024) {
+      homePainelPanel.classList.add('active');
+      homeCalendarioPanel.classList.add('active');
+    } else {
+      const activeBtn = document.querySelector('.home-mobile-tab-btn.active');
+      setHomeTab(activeBtn?.dataset.homeTab || 'painel');
+    }
+  }
 
 // =====================
 // CLIENTES + FILIAIS (MySQL API)
