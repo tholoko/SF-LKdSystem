@@ -7,6 +7,10 @@ let APIBASE = sessionStorage.getItem('api_base') || '';
 let USUARIOLOGADO = sessionStorage.getItem('usuario');
 let EMAILLOGADO = sessionStorage.getItem('userEmail');
 
+
+
+
+
 async function openSidebarSafe() {
   try {
     const sidebar = document.getElementById('sidebar');
@@ -107,46 +111,7 @@ document.getElementById('closeSidebarBtn')?.addEventListener('click', closeSideb
 document.getElementById('overlay')?.addEventListener('click', closeSidebarSafe);
 
 
-const homeTabButtons = document.querySelectorAll('.home-mobile-tab-btn');
-const homePainelPanel = document.getElementById('homePainelPanel');
-const homeCalendarioPanel = document.getElementById('homeCalendarioPanel');
 
-function setHomeTab(tab) {
-  homeTabButtons.forEach(btn => {
-    const active = btn.dataset.homeTab === tab;
-    btn.classList.toggle('active', active);
-    btn.classList.toggle('bg-white/70', active);
-    btn.classList.toggle('text-foreground', active);
-    btn.classList.toggle('bg-white/40', !active);
-    btn.classList.toggle('text-muted-foreground', !active);
-  });
-
-  if (window.innerWidth < 1024) {
-    if (tab === 'painel') {
-      homePainelPanel?.classList.add('active');
-      homeCalendarioPanel?.classList.remove('active');
-    } else {
-      homeCalendarioPanel?.classList.add('active');
-      homePainelPanel?.classList.remove('active');
-    }
-  }
-}
-
-homeTabButtons.forEach(btn => {
-  btn.addEventListener('click', () => setHomeTab(btn.dataset.homeTab));
-});
-
-function resetHomePanelsDesktop() {
-  if (window.innerWidth >= 1024) {
-    homePainelPanel?.classList.add('active');
-    homeCalendarioPanel?.classList.add('active');
-  } else {
-    const activeBtn = document.querySelector('.home-mobile-tab-btn.active');
-    setHomeTab(activeBtn?.dataset.homeTab || 'painel');
-  }
-}
-
-window.addEventListener('resize', resetHomePanelsDesktop);
 
 function isNightHour(date = new Date()) {
   const hour = date.getHours();
@@ -4289,13 +4254,81 @@ function atualizarCorBotoesAgendamento() {
     botao.style.backgroundColor = cor;
     botao.style.borderColor = cor;
   });
+
+  document.querySelectorAll('.home-mobile-tab-btn').forEach(botao => {
+    const ativo = botao.classList.contains('active');
+
+    if (isCopy) {
+      if (ativo) {
+        botao.style.backgroundColor = '#ff0000';
+        botao.style.borderColor = '#ff0000';
+        botao.style.color = '#ffffff';
+      } else {
+        botao.style.backgroundColor = 'rgba(255, 0, 0, 0.08)';
+        botao.style.borderColor = '#ff0000';
+        botao.style.color = '#ff0000';
+      }
+    } else {
+      botao.style.backgroundColor = '';
+      botao.style.borderColor = '';
+      botao.style.color = '';
+    }
+  });
 }
 
 
 document.addEventListener('DOMContentLoaded', () => {
   atualizarAmbienteLabel();
   atualizarCorBotoesAgendamento();
+
+  const homeTabButtons = document.querySelectorAll('.home-mobile-tab-btn');
+  const homePainelPanel = document.getElementById('homePainelPanel');
+  const homeCalendarioPanel = document.getElementById('homeCalendarioPanel');
+
+  function setHomeTab(tab) {
+    homeTabButtons.forEach((btn) => {
+      const active = btn.dataset.homeTab === tab;
+      btn.classList.toggle('active', active);
+      btn.classList.toggle('bg-white/70', active);
+      btn.classList.toggle('text-foreground', active);
+      btn.classList.toggle('bg-white/40', !active);
+      btn.classList.toggle('text-muted-foreground', !active);
+    });
+
+    if (window.innerWidth < 1024) {
+      if (tab === 'painel') {
+        homePainelPanel.classList.add('active');
+        homeCalendarioPanel.classList.remove('active');
+      } else {
+        homeCalendarioPanel.classList.add('active');
+        homePainelPanel.classList.remove('active');
+      }
+    }
+
+    atualizarCorBotoesAgendamento();
+  }
+
+
+  function resetHomePanelsDesktop() {
+    if (window.innerWidth >= 1024) {
+      homePainelPanel.classList.add('active');
+      homeCalendarioPanel.classList.add('active');
+    } else {
+      const activeBtn = document.querySelector('.home-mobile-tab-btn.active');
+      setHomeTab(activeBtn?.dataset.homeTab || 'painel');
+    }
+  }
+
+  homeTabButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      setHomeTab(btn.dataset.homeTab);
+    });
+  });
+
+  resetHomePanelsDesktop();
+  window.addEventListener('resize', resetHomePanelsDesktop);
 });
+
 
 
 // =====================
