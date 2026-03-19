@@ -490,8 +490,8 @@ function AbrirModalAgendamentoSala() {
             <!-- Header fixo -->
             <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4 shrink-0">
               <div>
-                <h3 id="roomModalTitle" class="text-xl font-semibold text-foreground">Agendar sala de reunião</h3>
-                <p class="text-sm text-muted-foreground">Selecione a sala, data, horário e participantes</p>
+                <h3 id="roomModalTitle" class="form-title-sm font-semibold text-foreground">Agendar sala de reunião</h3>
+                <p class="form-subtitle-sm">Selecione a sala, data, horário e participantes</p>
               </div>
 
               <button id="closeRoomModal" type="button"
@@ -510,9 +510,9 @@ function AbrirModalAgendamentoSala() {
                   <div class="h-full overflow-hidden flex flex-col">
                     <div class="space-y-4">
                       <div class="space-y-2">
-                        <label for="roomName" class="text-sm font-medium">Sala de reunião</label>
+                        <label for="roomName" class="form-label-sm">Sala de reunião</label>
                         <select id="roomName"
-                          class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                          class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                           required>
                           <option value="" selected disabled hidden>Selecione uma sala...</option>
                           <option value="Sala 01">Sala 01</option>
@@ -523,24 +523,24 @@ function AbrirModalAgendamentoSala() {
 
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="space-y-2">
-                          <label for="roomStartDT" class="text-sm font-medium">Data e hora início</label>
+                          <label for="roomStartDT" class="form-label-sm">Data e hora início</label>
                           <input id="roomStartDT" type="datetime-local"
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             required />
                         </div>
 
                         <div class="space-y-2">
-                          <label for="roomEndDT" class="text-sm font-medium">Data e hora fim</label>
+                          <label for="roomEndDT" class="form-label-sm">Data e hora fim</label>
                           <input id="roomEndDT" type="datetime-local"
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             required />
                         </div>
                       </div>
 
                       <div class="space-y-2">
-                        <label for="roomReason" class="text-sm font-medium">Motivo</label>
+                        <label for="roomReason" class="form-label-sm">Motivo</label>
                         <input id="roomReason" type="text"
-                          class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                          class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                           placeholder="Ex.: Reunião de planejamento"
                           required />
                       </div>
@@ -557,7 +557,7 @@ function AbrirModalAgendamentoSala() {
                       <div class="space-y-2 flex-1 overflow-hidden flex flex-col">
                         <div class="flex items-center justify-between gap-3 flex-wrap">
                           <div class="flex items-center gap-3 flex-wrap">
-                            <label class="text-sm font-medium">Participantes</label>
+                            <label class="form-label-sm">Participantes</label>
                             <span id="usersCount" class="text-xs text-muted-foreground"></span>
                           </div>
 
@@ -581,25 +581,25 @@ function AbrirModalAgendamentoSala() {
                         </div>
 
                         <input id="filtroUsers" type="text"
-                          class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                          class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                           placeholder="Buscar por nome ou email..." />
 
                         <!-- Aqui fica o ÚNICO scroll (lista de usuários) -->
                         <div id="usersBox"
                           class="rounded-xl border border-border bg-white/50 p-3 flex-1 overflow-auto no-scrollbar space-y-2 min-h-0">
-                          <p id="usersLoading" class="text-sm text-muted-foreground">Carregando usuários...</p>
+                          <p id="usersLoading" class="form-subtitle-sm">Carregando usuários...</p>
                         </div>
                       </div>
 
                       <!-- Botões -->
                       <div class="pt-2 flex flex-col sm:flex-row gap-3 shrink-0">
                         <button id="btnSalvarAgendamentoSala" type="submit"
-                          class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+                          class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
                           Salvar
                         </button>
 
                         <button id="btnCancelarAgendamentoSala" type="button"
-                          class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
+                          class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all">
                           Cancelar
                         </button>
                       </div>
@@ -729,7 +729,7 @@ function AbrirModalAgendamentoSala() {
     const visiveis = getVisibleUsers();
 
     if (!visiveis.length) {
-      usersBox.innerHTML = `<p class="text-sm text-muted-foreground">Nenhum usuário encontrado.</p>`;
+      usersBox.innerHTML = `<p class="form-subtitle-sm">Nenhum usuário encontrado.</p>`;
       atualizarContador([]);
       return;
     }
@@ -881,8 +881,8 @@ function AbrirModalAgendamentoSala() {
           <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
             <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
               <div>
-                <h3 id="conflitoTitle" class="text-xl font-semibold text-foreground">Conflito de agendamento</h3>
-                <p class="text-sm text-muted-foreground">Já existe um agendamento nesse intervalo</p>
+                <h3 id="conflitoTitle" class="form-title-sm font-semibold text-foreground">Conflito de agendamento</h3>
+                <p class="form-subtitle-sm">Já existe um agendamento nesse intervalo</p>
               </div>
 
               <button id="btnFecharConflito" type="button"
@@ -904,7 +904,7 @@ function AbrirModalAgendamentoSala() {
 
               <div class="pt-2">
                 <button id="btnOkConflito" type="button"
-                  class="w-full rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+                  class="w-full rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
                   OK
                 </button>
               </div>
@@ -1281,7 +1281,7 @@ function AbrirModalDetalheAgendamento(item) {
         <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
           <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
             <div>
-              <h3 class="text-xl font-semibold text-foreground">Detalhes do agendamento</h3>
+              <h3 class="form-title-sm font-semibold text-foreground">Detalhes do agendamento</h3>
             </div>
             <button id="btnFecharAgDetalhe" type="button"
               class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
@@ -1300,7 +1300,7 @@ function AbrirModalDetalheAgendamento(item) {
 
             <div class="pt-4">
               <button id="btnOkAgDetalhe" type="button"
-                class="w-full rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+                class="w-full rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
                 OK
               </button>
             </div>
@@ -1583,7 +1583,7 @@ function rowUsuario(u) {
 
   return `
     <tr>
-      <td class="px-4 py-3">
+      <td class="form-control-sm">
         <div class="flex items-center gap-3">
           ${avatarUsuarioHtml(u)}
           <div class="min-w-0">
@@ -1592,11 +1592,11 @@ function rowUsuario(u) {
           </div>
         </div>
       </td>
-      <td class="px-4 py-3">${escapeHtml(setor || '—')}</td>
-      <td class="px-4 py-3">${escapeHtml(perfil || '—')}</td>
-      <td class="px-4 py-3">${escapeHtml(localTrabalho || '—')}</td>
-      <td class="px-4 py-3">${statusBadge(status)}</td>
-      <td class="px-4 py-3">
+      <td class="form-control-sm">${escapeHtml(setor || '—')}</td>
+      <td class="form-control-sm">${escapeHtml(perfil || '—')}</td>
+      <td class="form-control-sm">${escapeHtml(localTrabalho || '—')}</td>
+      <td class="form-control-sm">${statusBadge(status)}</td>
+      <td class="form-control-sm">
         <div class="flex justify-end gap-2">
           <button
             class="btnViewUsuario w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all"
@@ -1722,7 +1722,7 @@ async function carregarGestaoUsuarios() {
 
     const tbody = document.getElementById('tbodyGestaoUsuarios');
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-sm text-muted-foreground">Carregando usuários...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 form-subtitle-sm">Carregando usuários...</td></tr>`;
     }
 
     const [usuariosResp, perfisResp, setoresResp, locaisResp] = await Promise.all([
@@ -1745,7 +1745,7 @@ async function carregarGestaoUsuarios() {
     if (!tbody) return;
 
     if (!usuarios.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-sm text-muted-foreground">Nenhum usuário cadastrado.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 form-subtitle-sm">Nenhum usuário cadastrado.</td></tr>`;
       return;
     }
 
@@ -1786,26 +1786,39 @@ function setAbaGestaoUsuario(nome) {
   const abaPess = document.getElementById('guAbaPessoal');
   const painelCorp = document.getElementById('guPainelCorporativo');
   const painelPess = document.getElementById('guPainelPessoal');
-
   const pessoalAtiva = nome === 'pessoal';
+
+  if (!painelCorp || !painelPess) {
+    console.error('Abas de gestão não encontradas.', {
+      painelCorp,
+      painelPess,
+      abaCorp,
+      abaPess
+    });
+    return;
+  }
 
   if (abaCorp) {
     abaCorp.setAttribute('aria-selected', pessoalAtiva ? 'false' : 'true');
     abaCorp.className = pessoalAtiva
-      ? 'px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all'
-      : 'px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white text-foreground shadow-sm transition-all';
+      ? 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all'
+      : 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all';
   }
 
   if (abaPess) {
     abaPess.setAttribute('aria-selected', pessoalAtiva ? 'true' : 'false');
     abaPess.className = pessoalAtiva
-      ? 'px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white text-foreground shadow-sm transition-all'
-      : 'px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all';
+      ? 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all'
+      : 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all';
   }
 
-  if (painelCorp) painelCorp.hidden = pessoalAtiva;
-  if (painelPess) painelPess.hidden = !pessoalAtiva;
+  painelCorp.hidden = pessoalAtiva;
+  painelPess.hidden = !pessoalAtiva;
+
+  painelCorp.classList.toggle('hidden', pessoalAtiva);
+  painelPess.classList.toggle('hidden', !pessoalAtiva);
 }
+
 
 function abrirModalGestaoUsuario({ modo, usuario }) {
   removerModalGestaoUsuario();
@@ -1927,10 +1940,10 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
           <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
             <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
               <div>
-                <h3 class="text-xl font-semibold text-foreground">
+                <h3 class="form-title-sm font-semibold text-foreground">
                   ${isView ? 'Visualizar usuário' : isEdit ? 'Editar usuário' : 'Novo usuário'}
                 </h3>
-                <p class="text-sm text-muted-foreground">
+                <p class="form-subtitle-sm">
                   ${isView ? 'Consulta de dados do usuário' : 'Dados corporativos, pessoais e segurança'}
                 </p>
               </div>
@@ -1949,13 +1962,13 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
               <div class="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-6">
                 <div class="space-y-4">
                   <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-3">
-                    <label class="text-sm font-medium block">Foto do usuário</label>
+                    <label class="form-label-sm block">Foto do usuário</label>
 
                     <div class="w-28 h-28 rounded-full overflow-hidden bg-muted flex items-center justify-center mx-auto border border-border">
                       <img id="guFotoPreview"
-                           src="${escapeHtml(fotoAtualAbs)}"
-                           alt="Foto do usuário"
-                           class="w-full h-full object-cover ${fotoAtualAbs ? '' : 'hidden'}">
+                        src="${escapeHtml(fotoAtualAbs)}"
+                        alt="Foto do usuário"
+                        class="w-full h-full object-cover ${fotoAtualAbs ? '' : 'hidden'}">
                       <span id="guFotoPlaceholder" class="text-xs text-muted-foreground ${fotoAtualAbs ? 'hidden' : ''}">
                         Sem foto
                       </span>
@@ -1990,25 +2003,25 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
                     <div class="grid grid-cols-1 gap-2">
                       <button id="btnMostrarAlteracaoSenhaGU" type="button"
-                        class="rounded-xl border border-border bg-white/70 px-4 py-3 text-sm font-medium hover:bg-white transition-all">
+                        class="rounded-xl border border-border bg-white/70 form-control-sm form-label-sm hover:bg-white transition-all">
                         Alterar com senha atual
                       </button>
                     </div>
 
                     <div id="guBlocoAlteracaoSenha" class="hidden space-y-3">
                       <div class="space-y-2">
-                        <label class="text-sm font-medium">Senha atual</label>
+                        <label class="form-label-sm">Senha atual</label>
                         <input id="guSenhaAtual" type="password"
-                          class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                          class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                           placeholder="Informe a senha atual"
                           autocomplete="new-password"
                           data-lpignore="true">
                       </div>
 
                       <div class="space-y-2">
-                        <label class="text-sm font-medium">Nova senha</label>
+                        <label class="form-label-sm">Nova senha</label>
                         <input id="guNovaSenha" type="password" minlength="6"
-                          class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                          class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                           placeholder="Mínimo 6 caracteres"
                           autocomplete="new-password"
                           data-lpignore="true">
@@ -2016,7 +2029,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
                       <div class="grid grid-cols-1 gap-2">
                         <button id="btnTrocarSenhaGU" type="button"
-                          class="rounded-xl border border-border bg-white/70 px-4 py-3 text-sm font-medium hover:bg-white transition-all">
+                          class="rounded-xl border border-border bg-white/70 form-control-sm form-label-sm hover:bg-white transition-all">
                           Salvar nova senha
                         </button>
                       </div>
@@ -2028,9 +2041,9 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
                   ${isNew ? `
                   <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-2">
-                    <label class="text-sm font-medium">Senha inicial</label>
+                    <label class="form-label-sm">Senha inicial</label>
                     <input id="guSenha" type="password" minlength="6" required
-                      class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                       placeholder="Mínimo 6 caracteres"
                       autocomplete="new-password"
                       data-lpignore="true" />
@@ -2042,12 +2055,12 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                 <div class="space-y-4 min-w-0">
                   <div class="flex flex-wrap gap-2">
                     <button id="guAbaCorporativo" type="button" aria-selected="true"
-                      class="px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white text-foreground shadow-sm transition-all">
+                      class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all">
                       Corporativo
                     </button>
 
                     <button id="guAbaPessoal" type="button" aria-selected="false"
-                      class="px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">
+                      class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">
                       Pessoal
                     </button>
                   </div>
@@ -2056,17 +2069,17 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                     <div class="rounded-2xl border border-border bg-white/40 p-4">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2 md:col-span-2">
-                          <label class="text-sm font-medium">Nome</label>
+                          <label class="form-label-sm">Nome</label>
                           <input id="guNome" type="text" required ${inputReadonlyAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(u.NOME ?? u.nome ?? '')}"
                             autocomplete="off" />
                         </div>
 
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">E-mail corporativo</label>
+                          <label class="form-label-sm">E-mail corporativo</label>
                           <input id="guEmailCorporativo" type="email" required ${inputReadonlyAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(emailCorporativo)}"
                             autocomplete="off"
                             autocapitalize="off"
@@ -2076,27 +2089,27 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                         </div>
 
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">Telefone corporativo</label>
+                          <label class="form-label-sm">Telefone corporativo</label>
                           <input id="guTelefoneCorporativo" type="text" ${inputReadonlyAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(telefoneCorporativo)}"
                             placeholder="(77) 9XXXX-XXXX"
                             autocomplete="off" />
                         </div>
 
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">Perfil</label>
+                          <label class="form-label-sm">Perfil</label>
                           <select id="guPerfil" required ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30">
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
                             ${perfilOptions}
                           </select>
                         </div>
 
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">Setor</label>
+                          <label class="form-label-sm">Setor</label>
                           <div class="flex gap-2">
                             <select id="guSetor" required ${formDisabledAttr}
-                              class="flex-1 rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30 uppercase">
+                              class="flex-1 rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30 uppercase">
                               ${setorOptions}
                             </select>
 
@@ -2110,12 +2123,11 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                           </div>
                         </div>
 
-
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">Centro de Custo</label>
+                          <label class="form-label-sm">Centro de Custo</label>
                           <div class="flex gap-2">
                             <select id="guLocalTrabalho" ${formDisabledAttr}
-                              class="flex-1 rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30">
+                              class="flex-1 rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
                               ${localTrabalhoOptions}
                             </select>
 
@@ -2130,9 +2142,9 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                         </div>
 
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">Status</label>
+                          <label class="form-label-sm">Status</label>
                           <select id="guStatus" required ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30">
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
                             ${['Ativo', 'Desativado'].map(s => {
                               const selected = statusAtual === s ? 'selected' : '';
                               return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(s)}</option>`;
@@ -2143,89 +2155,64 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                     </div>
                   </div>
 
-                  <div id="guPainelPessoal" class="space-y-4" hidden>
-                    <div class="rounded-2xl border border-border bg-white/40 p-4">
+                  <div id="guPainelPessoal" class="space-y-4 hidden">
+                    <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-4">
+                      <div>
+                        <h4 class="text-sm font-semibold text-foreground">Dados pessoais</h4>
+                        <p class="text-xs text-muted-foreground">Informações civis e de contato pessoal do usuário</p>
+                      </div>
+
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">CPF</label>
+                          <label class="form-label-sm">CPF</label>
                           <input id="guCpf" type="text" ${inputReadonlyAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(cpfAtual)}"
                             placeholder="000.000.000-00"
                             autocomplete="off" />
                         </div>
 
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">RG</label>
+                          <label class="form-label-sm">RG</label>
                           <input id="guRg" type="text" ${inputReadonlyAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(rgAtual)}"
                             autocomplete="off" />
                         </div>
 
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">CNH</label>
-                          <input id="guCnh" type="text" ${inputReadonlyAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(cnhAtual)}"
-                            autocomplete="off" />
-                        </div>
-
-                        <div class="space-y-2">
-                          <label class="text-sm font-medium">Categoria CNH</label>
-                          <input id="guCnhCategoria" type="text" maxlength="5" ${inputReadonlyAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30 uppercase"
-                            value="${escapeHtml(cnhCategoriaAtual)}"
-                            placeholder="A, B, AB..."
-                            autocomplete="off" />
-                        </div>
-
-                        <div class="space-y-2">
-                          <label class="text-sm font-medium">Validade da CNH</label>
-                          <input id="guCnhValidade" type="date" ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(cnhValidadeAtual)}" />
-                        </div>
-
-                        <div class="space-y-2">
-                          <label class="text-sm font-medium">Data de nascimento</label>
+                          <label class="form-label-sm">Data de nascimento</label>
                           <input id="guDataNascimento" type="date" ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(dataNascimentoAtual)}" />
                         </div>
 
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">Estado civil</label>
+                          <label class="form-label-sm">Estado civil</label>
                           <select id="guEstadoCivil" ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30">
-                            ${[
-                              '',
-                              'Solteiro(a)',
-                              'Casado(a)',
-                              'Divorciado(a)',
-                              'Viúvo(a)',
-                              'União estável'
-                            ].map(s => {
-                              const selected = (estadoCivilAtual || '') === s ? 'selected' : '';
-                              const label = s || 'Selecione...';
-                              return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(label)}</option>`;
-                            }).join('')}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
+                            ${['', 'Solteiro(a)', 'Casado(a)', 'Divorciado(a)', 'Viúvo(a)', 'União estável']
+                              .map((s) => {
+                                const selected = estadoCivilAtual === s ? 'selected' : '';
+                                const label = s || 'Selecione...';
+                                return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(label)}</option>`;
+                              }).join('')}
                           </select>
                         </div>
 
                         <div class="space-y-2">
-                          <label class="text-sm font-medium">Telefone pessoal</label>
+                          <label class="form-label-sm">Telefone pessoal</label>
                           <input id="guTelefonePessoal" type="text" ${inputReadonlyAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(telefonePessoalAtual)}"
                             placeholder="(77) 9XXXX-XXXX"
                             autocomplete="off" />
                         </div>
 
-                        <div class="space-y-2 md:col-span-2">
-                          <label class="text-sm font-medium">E-mail pessoal</label>
+                        <div class="space-y-2">
+                          <label class="form-label-sm">E-mail pessoal</label>
                           <input id="guEmailPessoal" type="email" ${inputReadonlyAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(emailPessoalAtual)}"
                             autocomplete="off"
                             autocapitalize="off"
@@ -2233,73 +2220,108 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                             spellcheck="false"
                             data-lpignore="true" />
                         </div>
+                      </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-4">
+                      <div>
+                        <h4 class="text-sm font-semibold text-foreground">CNH</h4>
+                        <p class="text-xs text-muted-foreground">Dados da carteira e arquivo anexado</p>
+                      </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                          <label class="form-label-sm">CNH</label>
+                          <input id="guCnh" type="text" ${inputReadonlyAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            value="${escapeHtml(cnhAtual)}"
+                            autocomplete="off" />
+                        </div>
+
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Categoria CNH</label>
+                          <input id="guCnhCategoria" type="text" maxlength="5" ${inputReadonlyAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30 uppercase"
+                            value="${escapeHtml(cnhCategoriaAtual)}"
+                            placeholder="A, B, AB..."
+                            autocomplete="off" />
+                        </div>
 
                         <div class="space-y-2 md:col-span-2">
-                          <label class="text-sm font-medium">Arquivo da CNH</label>
+                          <label class="form-label-sm">Validade da CNH</label>
+                          <input id="guCnhValidade" type="date" ${formDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            value="${escapeHtml(cnhValidadeAtual)}" />
+                        </div>
 
-                          ${isView ? `
-                            ${
-                              cnhArquivoAtualAbs
-                                ? `<a href="${escapeHtml(cnhArquivoAtualAbs)}" target="_blank" rel="noopener noreferrer"
-                                    class="inline-flex items-center gap-2 rounded-xl border border-border bg-white/70 px-4 py-3 text-sm hover:bg-white transition-all">
-                                    <i class="fas fa-paperclip"></i>
-                                    Ver arquivo anexado
-                                  </a>`
-                                : `<div class="rounded-xl border border-dashed border-border bg-white/40 px-4 py-3 text-sm text-muted-foreground">
-                                    Nenhum arquivo anexado.
-                                  </div>`
-                            }
-                          ` : `
-                            <div class="flex flex-col gap-3">
-                              <input id="guCnhArquivoInput" type="file" accept=".pdf,image/*"
-                                class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 text-sm"
-                                autocomplete="off" />
+                        <div class="space-y-2 md:col-span-2">
+                          <label class="form-label-sm">Arquivo da CNH</label>
 
-                              <div id="guCnhArquivoAtualWrap" class="${cnhArquivoAtualAbs ? '' : 'hidden'}">
-                                <a id="guCnhArquivoAtualLink"
-                                  href="${escapeHtml(cnhArquivoAtualAbs)}"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  class="inline-flex items-center gap-2 rounded-xl border border-border bg-white/70 px-4 py-3 text-sm hover:bg-white transition-all">
+                          ${isView
+                            ? (cnhArquivoAtualAbs
+                                ? `
+                                <a href="${escapeHtml(cnhArquivoAtualAbs)}" target="_blank" rel="noopener noreferrer"
+                                  class="inline-flex items-center gap-2 rounded-xl border border-border bg-white/70 form-control-sm text-sm hover:bg-white transition-all">
                                   <i class="fas fa-paperclip"></i>
-                                  Ver arquivo atual
+                                  Visualizar CNH
                                 </a>
+                              `
+                                : `
+                                <div class="rounded-xl border border-dashed border-border bg-white/40 form-control-sm form-subtitle-sm">
+                                  Nenhum arquivo anexado.
+                                </div>
+                              `)
+                            : `
+                              <div class="space-y-3">
+                                <div class="flex flex-col lg:flex-row gap-2 lg:items-center">
+                                  <input id="guCnhArquivoInput" type="file" accept=".pdf,image/*"
+                                    class="flex-1 min-w-0 rounded-xl border border-border bg-white/70 form-control-sm text-sm"
+                                    autocomplete="off" />
+
+                                  <div id="guCnhArquivoAtualWrap" class="${cnhArquivoAtualAbs ? '' : 'hidden'} shrink-0">
+                                    <a id="guCnhArquivoAtualLink" href="${escapeHtml(cnhArquivoAtualAbs)}" target="_blank" rel="noopener noreferrer"
+                                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-white/70 form-control-sm text-sm hover:bg-white transition-all whitespace-nowrap">
+                                      <i class="fas fa-paperclip"></i>
+                                      Visualizar CNH
+                                    </a>
+                                  </div>
+
+                                  <button id="btnRemoverCnhArquivoGU" type="button"
+                                    class="shrink-0 rounded-xl border border-border bg-white/60 form-control-sm text-sm hover:bg-white/90 transition-all whitespace-nowrap">
+                                    Remover CNH
+                                  </button>
+                                </div>
+
+                                <div id="guCnhArquivoNovoWrap"
+                                  class="hidden rounded-xl border border-border bg-white/50 form-control-sm text-sm text-foreground"></div>
+
+                                <p class="text-xs text-muted-foreground">
+                                  Aceita PDF, JPG, PNG, JPEG ou WEBP.
+                                </p>
                               </div>
 
-                              <div id="guCnhArquivoNovoWrap" class="hidden rounded-xl border border-border bg-white/50 px-4 py-3 text-sm text-foreground"></div>
-
-                              <button id="btnRemoverCnhArquivoGU" type="button"
-                                class="rounded-xl border border-border bg-white/60 px-4 py-2 text-sm hover:bg-white/90 transition-all">
-                                Remover arquivo da CNH
-                              </button>
-
-                              <p class="text-xs text-muted-foreground">
-                                Aceita PDF, JPG, PNG, JPEG ou WEBP.
-                              </p>
-                            </div>
-                          `}
+                            `}
                         </div>
                       </div>
                     </div>
                   </div>
-
 
                   <p id="guErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
 
                   <div class="pt-2 flex flex-col sm:flex-row gap-3">
                     ${isView ? `
                     <button id="btnCancelarGU" type="button"
-                      class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
+                      class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all">
                       Fechar
                     </button>
                     ` : `
                     <button id="btnSalvarGU" type="submit"
-                      class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+                      class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
                       Salvar
                     </button>
 
                     <button id="btnCancelarGU" type="button"
-                      class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
+                      class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all">
                       Cancelar
                     </button>
                     `}
@@ -2312,6 +2334,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
       </div>
     </div>
   `;
+
 
   document.body.appendChild(modal);
 
@@ -2759,6 +2782,9 @@ async function apiUploadCnhUsuarioArquivo(file) {
 }
 
 async function abrirModalTrocarFotoPerfil() {
+
+  return;
+  
   const userId = sessionStorage.getItem('id');
   if (!userId) {
     alert('Usuário não identificado.');
@@ -2797,8 +2823,8 @@ async function abrirModalTrocarFotoPerfil() {
         <div class="w-full max-w-md glass rounded-2xl shadow-2xl border border-border overflow-hidden">
           <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
             <div>
-              <h3 class="text-xl font-semibold text-foreground">Alterar foto</h3>
-              <p class="text-sm text-muted-foreground">Selecione e ajuste sua foto de perfil.</p>
+              <h3 class="form-title-sm font-semibold text-foreground">Alterar foto</h3>
+              <p class="form-subtitle-sm">Selecione e ajuste sua foto de perfil.</p>
             </div>
             <button
               id="btnFecharTrocarFoto"
@@ -2812,7 +2838,7 @@ async function abrirModalTrocarFotoPerfil() {
 
           <form id="formTrocarFotoPerfil" class="px-6 py-6 space-y-4">
             <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-3">
-              <label class="text-sm font-medium block">Foto do usuário</label>
+              <label class="form-label-sm block">Foto do usuário</label>
 
               <div class="w-28 h-28 rounded-full overflow-hidden bg-muted flex items-center justify-center mx-auto border border-border">
                 <img id="tfFotoPreview" src="${fotoAtual}" alt="Foto do usuário" class="w-full h-full object-cover ${fotoAtual ? '' : 'hidden'}">
@@ -2848,13 +2874,13 @@ async function abrirModalTrocarFotoPerfil() {
               <button
                 id="btnCancelarTrocarFoto"
                 type="button"
-                class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
+                class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all">
                 Cancelar
               </button>
               <button
                 id="btnSalvarTrocarFoto"
                 type="submit"
-                class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+                class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
                 Salvar foto
               </button>
             </div>
@@ -3156,11 +3182,11 @@ function ativarAbaPedidos(nomeAba) {
   // classes (estilo ativo/inativo)
   if (abaDash && abaTab) {
     if (!isTabela) {
-      abaDash.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow text-foreground";
-      abaTab.className  = "px-4 py-2 rounded-lg text-sm font-medium transition-all text-muted-foreground hover:text-foreground";
+      abaDash.className = "px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground";
+      abaTab.className  = "px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground";
     } else {
-      abaTab.className  = "px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow text-foreground";
-      abaDash.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all text-muted-foreground hover:text-foreground";
+      abaTab.className  = "px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground";
+      abaDash.className = "px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground";
     }
   }
 
@@ -4439,7 +4465,7 @@ function renderTabelaClientes() {
   if (!itens.length) {
     tbody.innerHTML = `
       <tr>
-        <td class="px-4 py-6 text-sm text-muted-foreground" colspan="5">Nenhum cliente encontrado.</td>
+        <td class="px-4 py-6 form-subtitle-sm" colspan="5">Nenhum cliente encontrado.</td>
       </tr>
     `;
     return;
@@ -4466,18 +4492,18 @@ function renderTabelaClientes() {
 
     return `
       <tr class="hover:bg-white/40 transition-all">
-        <td class="px-4 py-3 font-medium">
+        <td class="form-control-sm font-medium">
           <div class="flex items-center gap-2">
             <i class="${iconClass} text-muted-foreground" aria-hidden="true"></i>
             <span>${escapeHtml(c.RAZAO_SOCIAL || '')}</span>
             ${badge}
           </div>
         </td>
-        <td class="px-4 py-3 text-muted-foreground">${escapeHtml(docFmt)}</td>
-        <td class="px-4 py-3">${escapeHtml(cidadeUf)}</td>
-        <td class="px-4 py-3">${contatoNome}</td>
-        <td class="px-4 py-3">${escapeHtml(telFmt)}</td>
-        <td class="px-4 py-3">
+        <td class="form-control-sm text-muted-foreground">${escapeHtml(docFmt)}</td>
+        <td class="form-control-sm">${escapeHtml(cidadeUf)}</td>
+        <td class="form-control-sm">${contatoNome}</td>
+        <td class="form-control-sm">${escapeHtml(telFmt)}</td>
+        <td class="form-control-sm">
           <div class="flex justify-end gap-2">
             <button class="btnEditarCliente w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all"
               data-id="${escapeHtml(c.ID)}" title="Editar">
@@ -4542,13 +4568,13 @@ function abrirModalCliente({ modo, cliente }) {
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-1">
-                <label class="text-sm font-medium">CNPJ/CPF *</label>
+                <label class="form-label-sm">CNPJ/CPF *</label>
                 <input id="cliDocumento" required inputmode="numeric"
                   class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
                   value="${escapeHtml(cliente?.DOCUMENTO || '')}" />
               </div>
               <div class="space-y-1">
-                <label class="text-sm font-medium">Razão social *</label>
+                <label class="form-label-sm">Razão social *</label>
                 <input id="cliRazao" required
                   class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
                   value="${escapeHtml(cliente?.RAZAO_SOCIAL || '')}" />
@@ -4556,7 +4582,7 @@ function abrirModalCliente({ modo, cliente }) {
             </div>
 
             <div class="space-y-1">
-              <label class="text-sm font-medium">Grupo econômico</label>
+              <label class="form-label-sm">Grupo econômico</label>
               <input id="cliGrupo"
                 class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
                 value="${escapeHtml(cliente?.GRUPO_ECONOMICO || '')}" />
@@ -4564,7 +4590,7 @@ function abrirModalCliente({ modo, cliente }) {
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-1">
-                <label class="text-sm font-medium">UF *</label>
+                <label class="form-label-sm">UF *</label>
                 <select id="cliUF" required
                   class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30">
                   <option value="" selected disabled>Selecione...</option>
@@ -4572,7 +4598,7 @@ function abrirModalCliente({ modo, cliente }) {
               </div>
 
               <div class="space-y-1">
-                <label class="text-sm font-medium">Cidade *</label>
+                <label class="form-label-sm">Cidade *</label>
                 <select id="cliCidade" required disabled
                   class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30">
                   <option value="" selected disabled>Selecione a UF primeiro...</option>
@@ -4582,13 +4608,13 @@ function abrirModalCliente({ modo, cliente }) {
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-1">
-                <label class="text-sm font-medium">Contato</label>
+                <label class="form-label-sm">Contato</label>
                 <input id="cliContato"
                   class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
                   value="${escapeHtml(cliente?.CONTATO_NOME || '')}" />
               </div>
               <div class="space-y-1">
-                <label class="text-sm font-medium">Telefone</label>
+                <label class="form-label-sm">Telefone</label>
                 <input id="cliTelefone"
                   class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
                   value="${escapeHtml(cliente?.CONTATO_TELEFONE || '')}" />
@@ -4597,13 +4623,13 @@ function abrirModalCliente({ modo, cliente }) {
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-1">
-                <label class="text-sm font-medium">Email</label>
+                <label class="form-label-sm">Email</label>
                 <input id="cliEmail" type="email"
                   class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
                   value="${escapeHtml(cliente?.CONTATO_EMAIL || '')}" />
               </div>
               <div class="space-y-1">
-                <label class="text-sm font-medium">Cultura principal</label>
+                <label class="form-label-sm">Cultura principal</label>
                 <select id="cliCultura"
                   class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30">
                   <option value="" ${!cliente?.CULTURA_PRINCIPAL ? 'selected' : ''}>Selecione...</option>
@@ -4615,14 +4641,14 @@ function abrirModalCliente({ modo, cliente }) {
             </div>
 
             <div class="space-y-1">
-              <label class="text-sm font-medium">Hectares estimados</label>
+              <label class="form-label-sm">Hectares estimados</label>
               <input id="cliHectares" type="number" min="0" step="1"
                 class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
                 value="${escapeHtml((cliente?.HECTARES_ESTIMADOS ?? '') + '')}" />
             </div>
 
             <div class="space-y-1">
-              <label class="text-sm font-medium">Observações</label>
+              <label class="form-label-sm">Observações</label>
               <textarea id="cliObs" rows="2"
                 class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30">${escapeHtml(cliente?.OBSERVACOES || '')}</textarea>
             </div>
@@ -4641,7 +4667,7 @@ function abrirModalCliente({ modo, cliente }) {
                 </button>
               </div>
 
-              <div id="filiaisVazio" class="text-sm text-muted-foreground text-center py-2">Nenhuma filial cadastrada</div>
+              <div id="filiaisVazio" class="form-subtitle-sm text-center py-2">Nenhuma filial cadastrada</div>
               <div id="boxFiliais" class="space-y-3"></div>
             </div>
 
@@ -4833,7 +4859,7 @@ function abrirModalCliente({ modo, cliente }) {
       <div class="w-full max-w-xl glass rounded-2xl shadow-2xl border border-border overflow-hidden">
         <div class="px-5 py-4 border-b border-border">
           <h3 class="text-lg font-semibold">${escapeHtml(titulo || 'Encontramos dados para este CNPJ')}</h3>
-          <p class="text-sm text-muted-foreground">Deseja preencher automaticamente? Você ainda poderá editar depois.</p>
+          <p class="form-subtitle-sm">Deseja preencher automaticamente? Você ainda poderá editar depois.</p>
         </div>
         <div class="px-5 py-4 text-sm space-y-3">
           <div class="rounded-xl border border-border bg-white/50 p-4">
@@ -5001,19 +5027,19 @@ function abrirModalCliente({ modo, cliente }) {
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div class="space-y-1">
-            <label class="text-sm font-medium">Nome *</label>
+            <label class="form-label-sm">Nome *</label>
             <input class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
               data-field="nome" data-idx="${idx}" value="${escapeHtml(f.nome || '')}" required />
           </div>
 
           <div class="space-y-1">
-            <label class="text-sm font-medium">Endereço</label>
+            <label class="form-label-sm">Endereço</label>
             <input class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
               data-field="endereco" data-idx="${idx}" value="${escapeHtml(f.endereco || '')}" />
           </div>
 
           <div class="space-y-1">
-            <label class="text-sm font-medium">UF *</label>
+            <label class="form-label-sm">UF *</label>
             <select id="filialUF_${idx}"
               class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
               data-idx="${idx}" required>
@@ -5022,7 +5048,7 @@ function abrirModalCliente({ modo, cliente }) {
           </div>
 
           <div class="space-y-1">
-            <label class="text-sm font-medium">Cidade *</label>
+            <label class="form-label-sm">Cidade *</label>
             <select id="filialCidade_${idx}"
               class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
               data-idx="${idx}" required disabled>
@@ -5031,13 +5057,13 @@ function abrirModalCliente({ modo, cliente }) {
           </div>
 
           <div class="space-y-1">
-            <label class="text-sm font-medium">Contato</label>
+            <label class="form-label-sm">Contato</label>
             <input class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
               data-field="contato_nome" data-idx="${idx}" value="${escapeHtml(f.contato_nome || '')}" />
           </div>
 
           <div class="space-y-1">
-            <label class="text-sm font-medium">Telefone</label>
+            <label class="form-label-sm">Telefone</label>
             <input class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30"
               data-field="contato_telefone" data-idx="${idx}" value="${escapeHtml(f.contato_telefone || '')}" />
           </div>
@@ -5301,11 +5327,11 @@ function statusBadgeEmails(status) {
 function rowRemetente(rem, idx) {
   return `
     <tr>
-      <td class="px-4 py-3 font-mono text-xs">${idx + 1}</td>
-      <td class="px-4 py-3 font-medium">${escapeHtml(rem.EMAIL)}</td>
-      <td class="px-4 py-3">${escapeHtml(rem.NOME || '')}</td>
-      <td class="px-4 py-3">${statusBadgeEmails(rem.ATIVO ? 'Ativo' : 'Inativo')}</td>
-      <td class="px-4 py-3">
+      <td class="form-control-sm font-mono text-xs">${idx + 1}</td>
+      <td class="form-control-sm font-medium">${escapeHtml(rem.EMAIL)}</td>
+      <td class="form-control-sm">${escapeHtml(rem.NOME || '')}</td>
+      <td class="form-control-sm">${statusBadgeEmails(rem.ATIVO ? 'Ativo' : 'Inativo')}</td>
+      <td class="form-control-sm">
         <div class="flex justify-end gap-2">
           <button class="btnEditRemetente w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all" data-id="${escapeHtml(rem.ID)}" title="Editar">
             <i class="fas fa-pen"></i>
@@ -5321,11 +5347,11 @@ function rowRemetente(rem, idx) {
 function rowDestinatario(dest, idx) {
   return `
     <tr>
-      <td class="px-4 py-3">${escapeHtml(dest.remetenteNome || 'N/D')}</td>
-      <td class="px-4 py-3 font-medium">${escapeHtml(dest.EMAIL_DESTINATARIO)}</td>
-      <td class="px-4 py-3">${escapeHtml(dest.NOME_DESTINATARIO || '')}</td>
-      <td class="px-4 py-3">${statusBadgeEmails(dest.ATIVO ? 'Ativo' : 'Inativo')}</td>
-      <td class="px-4 py-3">
+      <td class="form-control-sm">${escapeHtml(dest.remetenteNome || 'N/D')}</td>
+      <td class="form-control-sm font-medium">${escapeHtml(dest.EMAIL_DESTINATARIO)}</td>
+      <td class="form-control-sm">${escapeHtml(dest.NOME_DESTINATARIO || '')}</td>
+      <td class="form-control-sm">${statusBadgeEmails(dest.ATIVO ? 'Ativo' : 'Inativo')}</td>
+      <td class="form-control-sm">
         <div class="flex justify-end gap-2">
           <button class="btnEditDest w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all" data-id="${escapeHtml(dest.ID)}" title="Editar">
             <i class="fas fa-pen"></i>
@@ -5384,13 +5410,13 @@ function renderEmails() {
 
   if (tbodyRem) {
     tbodyRem.innerHTML = !remetentesFiltrados.length
-      ? '<tr><td colspan="5" class="px-4 py-6 text-sm text-muted-foreground text-center">Nenhum remetente cadastrado</td></tr>'
+      ? '<tr><td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">Nenhum remetente cadastrado</td></tr>'
       : remetentesFiltrados.map((r, i) => rowRemetente(r, i)).join('');
   }
 
   if (tbodyDest) {
     tbodyDest.innerHTML = !destinatariosFiltrados.length
-      ? '<tr><td colspan="5" class="px-4 py-6 text-sm text-muted-foreground text-center">Nenhum destinatário cadastrado</td></tr>'
+      ? '<tr><td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">Nenhum destinatário cadastrado</td></tr>'
       : destinatariosFiltrados.map((d, i) => rowDestinatario(d, i)).join('');
   }
 
@@ -5415,15 +5441,15 @@ function ativarAbaEmails(nomeAba) {
   if (abaRem) {
     abaRem.setAttribute('aria-selected', mostrarDest ? 'false' : 'true');
     abaRem.className = mostrarDest
-      ? 'px-4 py-2 rounded-lg text-sm font-medium transition-all text-muted-foreground hover:text-foreground'
-      : 'px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow text-foreground';
+      ? 'px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground'
+      : 'px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground';
   }
 
   if (abaDest) {
     abaDest.setAttribute('aria-selected', mostrarDest ? 'true' : 'false');
     abaDest.className = mostrarDest
-      ? 'px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow text-foreground'
-      : 'px-4 py-2 rounded-lg text-sm font-medium transition-all text-muted-foreground hover:text-foreground';
+      ? 'px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground'
+      : 'px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground';
   }
 
   if (painelRem) {
@@ -5613,8 +5639,8 @@ function abrirModalRemetente(modo, remetente) {
         <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
           <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
             <div>
-              <h3 class="text-xl font-semibold text-foreground">${isEdit ? 'Editar remetente' : 'Novo remetente'}</h3>
-              <p class="text-sm text-muted-foreground">Preencha os dados abaixo</p>
+              <h3 class="form-title-sm font-semibold text-foreground">${isEdit ? 'Editar remetente' : 'Novo remetente'}</h3>
+              <p class="form-subtitle-sm">Preencha os dados abaixo</p>
             </div>
             <button id="btnFecharRemetente" type="button" class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center" aria-label="Fechar" title="Fechar">
               <i class="fas fa-times"></i>
@@ -5623,26 +5649,26 @@ function abrirModalRemetente(modo, remetente) {
           
           <form id="formRemetente" class="px-6 py-6 space-y-4">
             <div class="space-y-2">
-              <label class="text-sm font-medium">Email <span class="text-destructive">*</span></label>
+              <label class="form-label-sm">Email <span class="text-destructive">*</span></label>
               <input id="remEmail" type="email" required 
-                class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-info/30" 
+                class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30" 
                 value="${escapeHtml(r.EMAIL || '')}" placeholder="exemplo@fornecedor.com">
             </div>
             
             <div class="space-y-2">
-              <label class="text-sm font-medium">Nome (opcional)</label>
+              <label class="form-label-sm">Nome (opcional)</label>
               <input id="remNome" type="text" 
-                class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-info/30" 
+                class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30" 
                 value="${escapeHtml(r.NOME || '')}" placeholder="Nome do remetente">
             </div>
             
             <p id="remErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
             
             <div class="pt-2 flex flex-col sm:flex-row gap-3">
-              <button id="btnSalvarRemetente" type="submit" class="sm:flex-1 rounded-xl bg-info text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+              <button id="btnSalvarRemetente" type="submit" class="sm:flex-1 rounded-xl bg-info text-white form-control-sm font-medium hover:opacity-90 transition-all">
                 Salvar
               </button>
-              <button id="btnCancelarRemetente" type="button" class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
+              <button id="btnCancelarRemetente" type="button" class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all">
                 Cancelar
               </button>
             </div>
@@ -5736,8 +5762,8 @@ function abrirModalDestinatario(modo, destinatario) {
         <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
           <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
             <div>
-              <h3 class="text-xl font-semibold text-foreground">${isEdit ? 'Editar destinatário' : 'Novo destinatário'}</h3>
-              <p class="text-sm text-muted-foreground">Preencha os dados abaixo</p>
+              <h3 class="form-title-sm font-semibold text-foreground">${isEdit ? 'Editar destinatário' : 'Novo destinatário'}</h3>
+              <p class="form-subtitle-sm">Preencha os dados abaixo</p>
             </div>
             <button id="btnFecharDest" type="button" class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center" aria-label="Fechar" title="Fechar">
               <i class="fas fa-times"></i>
@@ -5746,34 +5772,34 @@ function abrirModalDestinatario(modo, destinatario) {
           
           <form id="formDestinatario" class="px-6 py-6 space-y-4">
             <div class="space-y-2">
-              <label class="text-sm font-medium">Remetente <span class="text-destructive">*</span></label>
-              <select id="destRemetenteId" required class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-info/30">
+              <label class="form-label-sm">Remetente <span class="text-destructive">*</span></label>
+              <select id="destRemetenteId" required class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30">
                 <option value="">Selecione...</option>
                 ${remetentesParaSelect.map(r => `<option value="${r.id}" ${r.id == d.ID_REMETENTE ? 'selected' : ''}>${escapeHtml(r.nome)}</option>`).join('')}
               </select>
             </div>
             
             <div class="space-y-2">
-              <label class="text-sm font-medium">Email Destinatário <span class="text-destructive">*</span></label>
+              <label class="form-label-sm">Email Destinatário <span class="text-destructive">*</span></label>
               <input id="destEmail" type="email" required 
-                class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-info/30" 
+                class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30" 
                 value="${escapeHtml(d.EMAIL_DESTINATARIO || '')}">
             </div>
             
             <div class="space-y-2">
-              <label class="text-sm font-medium">Nome Destinatário (opcional)</label>
+              <label class="form-label-sm">Nome Destinatário (opcional)</label>
               <input id="destNome" type="text" 
-                class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-info/30" 
+                class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30" 
                 value="${escapeHtml(d.NOME_DESTINATARIO || '')}">
             </div>
             
             <p id="destErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
             
             <div class="pt-2 flex flex-col sm:flex-row gap-3">
-              <button id="btnSalvarDest" type="submit" class="sm:flex-1 rounded-xl bg-info text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+              <button id="btnSalvarDest" type="submit" class="sm:flex-1 rounded-xl bg-info text-white form-control-sm font-medium hover:opacity-90 transition-all">
                 Salvar
               </button>
-              <button id="btnCancelarDest" type="button" class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
+              <button id="btnCancelarDest" type="button" class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all">
                 Cancelar
               </button>
             </div>
@@ -5909,10 +5935,10 @@ function setAbaEstoque(nome) {
   const fazendaAtiva = nome === 'fazenda';
 
   const classeAtiva =
-    'px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white text-foreground shadow-sm transition-all';
+    'px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all';
 
   const classeInativa =
-    'px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all';
+    'px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all';
 
   // Centro de custo sempre funciona
   if (abaCentroCusto) {
@@ -6029,11 +6055,11 @@ function rowEstoqueEscritorio(item) {
 
   return `
     <tr class="border-b border-border last:border-b-0">
-      <td class="px-4 py-3">${escapeHtml(codigo)}</td>
-      <td class="px-4 py-3">${escapeHtml(descricao)}</td>
-      <td class="px-4 py-3">${escapeHtml(qtdDisponivelTexto)}</td>
-      <td class="px-4 py-3">${escapeHtml(qtdPedidoTexto)}</td>
-      <td class="px-4 py-3">
+      <td class="form-control-sm">${escapeHtml(codigo)}</td>
+      <td class="form-control-sm">${escapeHtml(descricao)}</td>
+      <td class="form-control-sm">${escapeHtml(qtdDisponivelTexto)}</td>
+      <td class="form-control-sm">${escapeHtml(qtdPedidoTexto)}</td>
+      <td class="form-control-sm">
         <div class="flex justify-end gap-2">
           <button
             class="btnEditarEntrada w-10 h-10 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-all"
@@ -6078,7 +6104,7 @@ function renderEstoqueEscritorio(items = []) {
   if (!Array.isArray(items) || !items.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="px-4 py-6 text-sm text-muted-foreground">
+        <td colspan="5" class="px-4 py-6 form-subtitle-sm">
           Nenhum material do escritório encontrado.
         </td>
       </tr>
@@ -6804,7 +6830,7 @@ async function abrirModalImportacaoNfe(dados) {
                 <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
                   <div>
                     <h3 class="text-lg font-semibold text-foreground">Novo produto</h3>
-                    <p class="text-sm text-muted-foreground">Cadastro rápido para vincular o item da nota.</p>
+                    <p class="form-subtitle-sm">Cadastro rápido para vincular o item da nota.</p>
                   </div>
 
                   <button type="button" id="btnFecharProdutoRapido"
@@ -6815,7 +6841,7 @@ async function abrirModalImportacaoNfe(dados) {
 
                 <form id="formProdutoRapido" class="px-6 py-6 space-y-4">
                   <div>
-                    <label class="block text-sm font-medium text-foreground mb-1">Código</label>
+                    <label class="block form-label-sm text-foreground mb-1">Código</label>
                     <input
                       id="produtoRapidoCodigo"
                       type="text"
@@ -6826,7 +6852,7 @@ async function abrirModalImportacaoNfe(dados) {
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-foreground mb-1">Descrição</label>
+                    <label class="block form-label-sm text-foreground mb-1">Descrição</label>
                     <input
                       id="produtoRapidoDescricao"
                       type="text"
@@ -6837,7 +6863,7 @@ async function abrirModalImportacaoNfe(dados) {
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-foreground mb-1">Unidade</label>
+                    <label class="block form-label-sm text-foreground mb-1">Unidade</label>
                     <input
                       id="produtoRapidoUnidade"
                       type="text"
@@ -6852,14 +6878,14 @@ async function abrirModalImportacaoNfe(dados) {
                     <button
                       type="button"
                       id="btnCancelarProdutoRapido"
-                      class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all">
+                      class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
                       Cancelar
                     </button>
 
                     <button
                       type="submit"
                       id="btnSalvarProdutoRapido"
-                      class="rounded-xl bg-primary text-white px-4 py-3 text-sm font-medium hover:opacity-90 transition-all">
+                      class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
                       Salvar produto
                     </button>
                   </div>
@@ -7022,7 +7048,7 @@ async function abrirModalImportacaoNfe(dados) {
     if (!itensExibicao.length) {
       return `
         <tr>
-          <td colspan="9" class="px-4 py-6 text-sm text-muted-foreground text-center">
+          <td colspan="9" class="px-4 py-6 form-subtitle-sm text-center">
             Nenhum item identificado automaticamente no PDF.
           </td>
         </tr>
@@ -7113,18 +7139,18 @@ async function abrirModalImportacaoNfe(dados) {
 
       return `
         <tr class="border-b border-border last:border-b-0 hover:bg-white/30 transition-colors ${isSplit ? 'bg-amber-50/40' : ''}">
-          <td class="px-4 py-3 text-sm">
+          <td class="form-control-sm text-sm">
             ${isSplit ? `<span class="inline-flex rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-medium text-amber-700 mr-2">DESMEMBRADO</span>` : ''}
             ${escapeHtml(item._codigo || '')}
           </td>
-          <td class="px-4 py-3 text-sm">${escapeHtml(item._descricao || '')}</td>
-          <td class="px-4 py-3 text-sm text-center">${escapeHtml(item._unidade || '')}</td>
-          <td class="px-4 py-3 text-sm text-right">${escapeHtml(item._quantidade || '')}</td>
-          <td class="px-4 py-3 text-sm text-right">${escapeHtml(item._valorUnitario || '')}</td>
-          <td class="px-4 py-3 text-sm text-right font-semibold">${escapeHtml(item._valorTotal || '')}</td>
-          <td class="px-4 py-3 text-sm">${badgeVinculo(item)}</td>
-          <td class="px-4 py-3 text-sm min-w-[320px]">${htmlProdutoSistema}</td>
-          <td class="px-4 py-3 text-sm whitespace-nowrap">${htmlAcao}</td>
+          <td class="form-control-sm text-sm">${escapeHtml(item._descricao || '')}</td>
+          <td class="form-control-sm text-sm text-center">${escapeHtml(item._unidade || '')}</td>
+          <td class="form-control-sm text-sm text-right">${escapeHtml(item._quantidade || '')}</td>
+          <td class="form-control-sm text-sm text-right">${escapeHtml(item._valorUnitario || '')}</td>
+          <td class="form-control-sm text-sm text-right font-semibold">${escapeHtml(item._valorTotal || '')}</td>
+          <td class="form-control-sm text-sm">${badgeVinculo(item)}</td>
+          <td class="form-control-sm text-sm min-w-[320px]">${htmlProdutoSistema}</td>
+          <td class="form-control-sm text-sm whitespace-nowrap">${htmlAcao}</td>
         </tr>
       `;
     }).join('');
@@ -7147,8 +7173,8 @@ async function abrirModalImportacaoNfe(dados) {
           <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden bg-background">
             <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
               <div>
-                <h3 class="text-xl font-semibold text-foreground">Importação de nota fiscal PDF</h3>
-                <p class="text-sm text-muted-foreground">Validação e leitura inicial do DANFE/NF-e.</p>
+                <h3 class="form-title-sm font-semibold text-foreground">Importação de nota fiscal PDF</h3>
+                <p class="form-subtitle-sm">Validação e leitura inicial do DANFE/NF-e.</p>
               </div>
 
               <button id="btnFecharModalNfePdf" type="button"
@@ -7159,24 +7185,24 @@ async function abrirModalImportacaoNfe(dados) {
 
             <div class="px-6 py-4 border-b border-border flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
               <div class="flex flex-wrap gap-2">
-                <button id="nfePdfAbaDetalhes" type="button" class="px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white text-foreground shadow-sm transition-all">
+                <button id="nfePdfAbaDetalhes" type="button" class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all">
                   <i class="fas fa-receipt mr-2"></i> Detalhes
                 </button>
 
-                <button id="nfePdfAbaItens" type="button" class="px-4 py-2 rounded-xl text-sm font-medium border border-border bg-white/60 text-muted-foreground hover:bg-white/90 transition-all">
+                <button id="nfePdfAbaItens" type="button" class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/60 text-muted-foreground hover:bg-white/90 transition-all">
                   <i class="fas fa-list mr-2"></i> Itens (${itensTratados.length})
                 </button>
               </div>
 
               <div class="w-full lg:w-auto lg:min-w-[420px]">
-                <label class="block text-sm font-medium text-foreground mb-2">
+                <label class="block form-label-sm text-foreground mb-2">
                   Local de armazenagem
                 </label>
 
                 <div class="flex flex-col sm:flex-row gap-2">
                   <select
                     id="nfePdfLocalArmazenagem"
-                    class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm text-foreground"
+                    class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm text-foreground"
                   >
                     <option value="">Selecione o local...</option>
                   </select>
@@ -7201,27 +7227,27 @@ async function abrirModalImportacaoNfe(dados) {
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div class="rounded-2xl border border-border bg-white/50 p-5 shadow-sm space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div class="md:col-span-2 rounded-xl border border-border bg-white/70 px-4 py-3">
+                      <div class="md:col-span-2 rounded-xl border border-border bg-white/70 form-control-sm">
                         <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Emitente</div>
                         <div class="mt-1 text-sm font-semibold text-foreground break-words">${escapeHtml(dados.emitente || '—')}</div>
                       </div>
 
-                      <div class="rounded-xl border border-border bg-white/70 px-4 py-3">
+                      <div class="rounded-xl border border-border bg-white/70 form-control-sm">
                         <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Data emissão</div>
                         <div class="mt-1 text-sm font-semibold text-foreground">${escapeHtml(dados.dataEmissao || '—')}</div>
                       </div>
 
-                      <div class="rounded-xl border border-border bg-white/70 px-4 py-3">
+                      <div class="rounded-xl border border-border bg-white/70 form-control-sm">
                         <div class="text-[11px] uppercase tracking-wide text-muted-foreground">CNPJ/CPF</div>
                         <div class="mt-1 text-sm font-semibold text-foreground">${escapeHtml(formatarCpfCnpj(dados.emitenteCnpj))}</div>
                       </div>
 
-                      <div class="rounded-xl border border-border bg-white/70 px-4 py-3">
+                      <div class="rounded-xl border border-border bg-white/70 form-control-sm">
                         <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Número da nota</div>
                         <div class="mt-1 text-sm font-semibold text-foreground">${escapeHtml(dados.numeroNota || '—')}</div>
                       </div>
 
-                      <div class="rounded-xl border border-border bg-white/70 px-4 py-3">
+                      <div class="rounded-xl border border-border bg-white/70 form-control-sm">
                         <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Série</div>
                         <div class="mt-1 text-sm font-semibold text-foreground">${escapeHtml(dados.serie || '—')}</div>
                       </div>
@@ -7230,22 +7256,22 @@ async function abrirModalImportacaoNfe(dados) {
 
                   <div class="rounded-2xl border border-border bg-white/50 p-5 shadow-sm space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div class="md:col-span-2 rounded-xl border border-border bg-white/70 px-4 py-3">
+                      <div class="md:col-span-2 rounded-xl border border-border bg-white/70 form-control-sm">
                         <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Destinatário</div>
                         <div class="mt-1 text-sm font-semibold text-foreground break-words">${escapeHtml(dados.destinatario || '—')}</div>
                       </div>
 
-                      <div class="rounded-xl border border-border bg-white/70 px-4 py-3">
+                      <div class="rounded-xl border border-border bg-white/70 form-control-sm">
                         <div class="text-[11px] uppercase tracking-wide text-muted-foreground">CNPJ/CPF</div>
                         <div class="mt-1 text-sm font-semibold text-foreground">${escapeHtml(formatarCpfCnpj(dados.destinatarioCnpj))}</div>
                       </div>
 
-                      <div class="rounded-xl border border-border bg-white/70 px-4 py-3">
+                      <div class="rounded-xl border border-border bg-white/70 form-control-sm">
                         <div class="text-[11px] uppercase tracking-wide text-muted-foreground">UF</div>
                         <div class="mt-1 text-sm font-semibold text-foreground">${escapeHtml(dados.ufDestinatario || '—')}</div>
                       </div>
 
-                      <div class="md:col-span-2 rounded-xl border border-border bg-white/70 px-4 py-3">
+                      <div class="md:col-span-2 rounded-xl border border-border bg-white/70 form-control-sm">
                         <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Fornecedor cadastrado</div>
                         <div class="mt-1 text-sm font-semibold text-foreground break-words">
                           ${fornecedor
@@ -7264,15 +7290,15 @@ async function abrirModalImportacaoNfe(dados) {
                     <table class="min-w-full text-sm">
                       <thead class="bg-white/50 border-b border-border sticky top-0">
                         <tr>
-                          <th class="px-4 py-3 text-left font-semibold text-foreground">Código</th>
-                          <th class="px-4 py-3 text-left font-semibold text-foreground">Descrição</th>
-                          <th class="px-4 py-3 text-center font-semibold text-foreground">UN</th>
-                          <th class="px-4 py-3 text-right font-semibold text-foreground">Qtd</th>
-                          <th class="px-4 py-3 text-right font-semibold text-foreground">Vlr. Unit.</th>
-                          <th class="px-4 py-3 text-right font-semibold text-foreground">Vlr. Total</th>
-                          <th class="px-4 py-3 text-left font-semibold text-foreground">Status</th>
-                          <th class="px-4 py-3 text-left font-semibold text-foreground">Produto sistema</th>
-                          <th class="px-4 py-3 text-left font-semibold text-foreground">Ação</th>
+                          <th class="form-control-sm text-left font-semibold text-foreground">Código</th>
+                          <th class="form-control-sm text-left font-semibold text-foreground">Descrição</th>
+                          <th class="form-control-sm text-center font-semibold text-foreground">UN</th>
+                          <th class="form-control-sm text-right font-semibold text-foreground">Qtd</th>
+                          <th class="form-control-sm text-right font-semibold text-foreground">Vlr. Unit.</th>
+                          <th class="form-control-sm text-right font-semibold text-foreground">Vlr. Total</th>
+                          <th class="form-control-sm text-left font-semibold text-foreground">Status</th>
+                          <th class="form-control-sm text-left font-semibold text-foreground">Produto sistema</th>
+                          <th class="form-control-sm text-left font-semibold text-foreground">Ação</th>
                         </tr>
                       </thead>
                       <tbody id="nfePdfTabelaItensBody">
@@ -7286,12 +7312,12 @@ async function abrirModalImportacaoNfe(dados) {
 
             <div class="px-6 py-4 border-t border-border flex justify-end gap-2">
               <button id="btnImportarNotaFiscalPdf" type="button"
-                class="rounded-xl bg-primary text-white px-4 py-3 text-sm font-medium hover:opacity-90 transition-all">
+                class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
                 Importar
               </button>
 
               <button id="btnFecharRodapeModalNfePdf" type="button"
-                class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all">
+                class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
                 Fechar
               </button>
             </div>
@@ -7665,7 +7691,7 @@ async function abrirModalImportacaoNfe(dados) {
                 <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
                   <div>
                     <h3 class="text-lg font-semibold text-foreground">Editar vínculo</h3>
-                    <p class="text-sm text-muted-foreground">Selecione o novo produto interno para este vínculo.</p>
+                    <p class="form-subtitle-sm">Selecione o novo produto interno para este vínculo.</p>
                   </div>
 
                   <button
@@ -7679,7 +7705,7 @@ async function abrirModalImportacaoNfe(dados) {
 
                 <form id="formEditarVinculo" class="px-6 py-6 space-y-4">
                   <div>
-                    <label class="block text-sm font-medium text-foreground mb-1">Código do item da nota</label>
+                    <label class="block form-label-sm text-foreground mb-1">Código do item da nota</label>
                     <input
                       type="text"
                       class="w-full rounded-xl border border-border bg-white/80 px-3 py-2"
@@ -7689,7 +7715,7 @@ async function abrirModalImportacaoNfe(dados) {
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-foreground mb-1">Descrição do item da nota</label>
+                    <label class="block form-label-sm text-foreground mb-1">Descrição do item da nota</label>
                     <input
                       type="text"
                       class="w-full rounded-xl border border-border bg-white/80 px-3 py-2"
@@ -7700,7 +7726,7 @@ async function abrirModalImportacaoNfe(dados) {
 
                   <div>
                     <div class="flex items-center justify-between gap-2 mb-1">
-                      <label class="block text-sm font-medium text-foreground">Produto do sistema</label>
+                      <label class="block form-label-sm text-foreground">Produto do sistema</label>
 
                       <button
                         type="button"
@@ -7726,7 +7752,7 @@ async function abrirModalImportacaoNfe(dados) {
                     <button
                       type="button"
                       id="btnCancelarEditarVinculo"
-                      class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all"
+                      class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all"
                     >
                       Cancelar
                     </button>
@@ -7734,7 +7760,7 @@ async function abrirModalImportacaoNfe(dados) {
                     <button
                       type="submit"
                       id="btnSalvarEditarVinculo"
-                      class="rounded-xl bg-primary text-white px-4 py-3 text-sm font-medium hover:opacity-90 transition-all"
+                      class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all"
                     >
                       Salvar vínculo
                     </button>
@@ -7865,7 +7891,7 @@ async function abrirModalImportacaoNfe(dados) {
                 <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
                   <div>
                     <h3 class="text-lg font-semibold text-foreground">Confirmar novo vínculo</h3>
-                    <p class="text-sm text-muted-foreground">Selecione o produto interno e confirme a amarração.</p>
+                    <p class="form-subtitle-sm">Selecione o produto interno e confirme a amarração.</p>
                   </div>
 
                   <button
@@ -7881,7 +7907,7 @@ async function abrirModalImportacaoNfe(dados) {
                   <div class="rounded-2xl border border-border bg-white/60 p-4 space-y-3">
                     <div>
                       <div class="text-xs uppercase tracking-wide text-muted-foreground">Fornecedor</div>
-                      <div class="text-sm font-medium text-foreground">
+                      <div class="form-label-sm text-foreground">
                         ${escapeHtml(fornecedor?.razao_social || fornecedor?.RAZAO_SOCIAL || '')}
                       </div>
                     </div>
@@ -7895,7 +7921,7 @@ async function abrirModalImportacaoNfe(dados) {
 
                   <div>
                     <div class="flex items-center justify-between gap-2 mb-2">
-                      <label class="block text-sm font-medium text-foreground">Produto interno</label>
+                      <label class="block form-label-sm text-foreground">Produto interno</label>
 
                       <button
                         type="button"
@@ -7919,14 +7945,14 @@ async function abrirModalImportacaoNfe(dados) {
 
                   <div id="resumoProdutoSelecionado" class="rounded-2xl border border-border bg-white/60 p-4 space-y-2">
                     <div class="text-xs uppercase tracking-wide text-muted-foreground">Produto interno selecionado</div>
-                    <div class="text-sm text-muted-foreground">Nenhum produto selecionado.</div>
+                    <div class="form-subtitle-sm">Nenhum produto selecionado.</div>
                   </div>
 
                   <div class="flex justify-end gap-2 pt-2">
                     <button
                       type="button"
                       id="btnCancelarConfirmacaoVinculo"
-                      class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all"
+                      class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all"
                     >
                       Cancelar
                     </button>
@@ -7934,7 +7960,7 @@ async function abrirModalImportacaoNfe(dados) {
                     <button
                       type="submit"
                       id="btnConfirmarConfirmacaoVinculo"
-                      class="rounded-xl bg-primary text-white px-4 py-3 text-sm font-medium hover:opacity-90 transition-all"
+                      class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all"
                     >
                       Salvar vínculo
                     </button>
@@ -7978,7 +8004,7 @@ async function abrirModalImportacaoNfe(dados) {
           if (!produto) {
             resumo.innerHTML = `
               <div class="text-xs uppercase tracking-wide text-muted-foreground">Produto interno selecionado</div>
-              <div class="text-sm text-muted-foreground">Nenhum produto selecionado.</div>
+              <div class="form-subtitle-sm">Nenhum produto selecionado.</div>
             `;
             return;
           }
@@ -8481,7 +8507,7 @@ function abrirModalDesmembrarItem(itemBase) {
             <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
               <div>
                 <h3 class="text-lg font-semibold text-foreground">Desmembrar item</h3>
-                <p class="text-sm text-muted-foreground">Crie uma nova linha para o mesmo produto da nota.</p>
+                <p class="form-subtitle-sm">Crie uma nova linha para o mesmo produto da nota.</p>
               </div>
 
               <button type="button" id="btnFecharDesmembrar"
@@ -8499,7 +8525,7 @@ function abrirModalDesmembrarItem(itemBase) {
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-foreground mb-1">Nova quantidade</label>
+                <label class="block form-label-sm text-foreground mb-1">Nova quantidade</label>
                 <input
                   id="inputQuantidadeDesmembrar"
                   type="text"
@@ -8511,12 +8537,12 @@ function abrirModalDesmembrarItem(itemBase) {
 
               <div class="flex justify-end gap-2 pt-2">
                 <button type="button" id="btnCancelarDesmembrar"
-                  class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all">
+                  class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
                   Cancelar
                 </button>
 
                 <button type="submit" id="btnSalvarDesmembrar"
-                  class="rounded-xl bg-primary text-white px-4 py-3 text-sm font-medium hover:opacity-90 transition-all">
+                  class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
                   Gerar linha
                 </button>
               </div>
@@ -8710,7 +8736,7 @@ function abrirModalNovoLocalArmazenagem() {
             <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
               <div>
                 <h3 class="text-lg font-semibold text-foreground">Novo local de armazenagem</h3>
-                <p class="text-sm text-muted-foreground">Cadastre um novo local para uso na entrada.</p>
+                <p class="form-subtitle-sm">Cadastre um novo local para uso na entrada.</p>
               </div>
 
               <button id="btnFecharNovoLocalArmazenagem" type="button"
@@ -8721,12 +8747,12 @@ function abrirModalNovoLocalArmazenagem() {
 
             <form id="formNovoLocalArmazenagem" class="px-6 py-6 space-y-4">
               <div>
-                <label class="block text-sm font-medium text-foreground mb-2">Nome do local</label>
+                <label class="block form-label-sm text-foreground mb-2">Nome do local</label>
                 <input
                   id="novoLocalArmazenagemNome"
                   type="text"
                   maxlength="150"
-                  class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm"
+                  class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
                   placeholder="Ex.: PRATELEIRA A1"
                   required
                 />
@@ -8734,12 +8760,12 @@ function abrirModalNovoLocalArmazenagem() {
 
               <div class="flex justify-end gap-2">
                 <button type="button" id="btnCancelarNovoLocalArmazenagem"
-                  class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all">
+                  class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
                   Cancelar
                 </button>
 
                 <button type="submit"
-                  class="rounded-xl bg-primary text-white px-4 py-3 text-sm font-medium hover:opacity-90 transition-all">
+                  class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
                   Salvar
                 </button>
               </div>
@@ -8812,7 +8838,7 @@ function abrirModalNovoCentrodeCusto() {
             <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
               <div>
                 <h3 class="text-lg font-semibold text-foreground">Novo centro de custo</h3>
-                <p class="text-sm text-muted-foreground">Cadastre um novo centro de custo.</p>
+                <p class="form-subtitle-sm">Cadastre um novo centro de custo.</p>
               </div>
 
               <button id="btnFecharNovoLocalArmazenagem" type="button"
@@ -8823,12 +8849,12 @@ function abrirModalNovoCentrodeCusto() {
 
             <form id="formNovoLocalArmazenagem" class="px-6 py-6 space-y-4">
               <div>
-                <label class="block text-sm font-medium text-foreground mb-2">Nome do local</label>
+                <label class="block form-label-sm text-foreground mb-2">Nome do local</label>
                 <input
                   id="novoLocalArmazenagemNome"
                   type="text"
                   maxlength="150"
-                  class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm"
+                  class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
                   placeholder="Ex.: PRATELEIRA A1"
                   required
                 />
@@ -8836,12 +8862,12 @@ function abrirModalNovoCentrodeCusto() {
 
               <div class="flex justify-end gap-2">
                 <button type="button" id="btnCancelarNovoLocalArmazenagem"
-                  class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all">
+                  class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
                   Cancelar
                 </button>
 
                 <button type="submit"
-                  class="rounded-xl bg-primary text-white px-4 py-3 text-sm font-medium hover:opacity-90 transition-all">
+                  class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
                   Salvar
                 </button>
               </div>
@@ -9212,7 +9238,7 @@ function abrirModalEditarEntradas(produtoId) {
         if (!lista.length) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="11" class="px-4 py-6 text-sm text-muted-foreground text-center">
+              <td colspan="11" class="px-4 py-6 form-subtitle-sm text-center">
                 Nenhuma entrada encontrada.
               </td>
             </tr>
@@ -9222,14 +9248,14 @@ function abrirModalEditarEntradas(produtoId) {
 
         tbody.innerHTML = lista.map(item => `
           <tr class="border-b border-border last:border-b-0">
-            <td class="px-4 py-3 text-sm">${escapeHtml(String(item.id))}</td>
-            <td class="px-4 py-3 text-sm">${escapeHtml(item.fornecedor || '')}</td>
-            <td class="px-4 py-3 text-sm">${escapeHtml(item.nota || '')}</td>
-            <td class="px-4 py-3 text-sm">${escapeHtml(item.serie || '')}</td>
-            <td class="px-4 py-3 text-sm">${escapeHtml(item.cod_produto_nf || '')}</td>
-            <td class="px-4 py-3 text-sm">${escapeHtml(item.descricao_produto_nf || '')}</td>
-            <td class="px-4 py-3 text-sm text-center">${escapeHtml(item.unidade_nf || '')}</td>
-            <td class="px-4 py-3 text-sm text-right">
+            <td class="form-control-sm text-sm">${escapeHtml(String(item.id))}</td>
+            <td class="form-control-sm text-sm">${escapeHtml(item.fornecedor || '')}</td>
+            <td class="form-control-sm text-sm">${escapeHtml(item.nota || '')}</td>
+            <td class="form-control-sm text-sm">${escapeHtml(item.serie || '')}</td>
+            <td class="form-control-sm text-sm">${escapeHtml(item.cod_produto_nf || '')}</td>
+            <td class="form-control-sm text-sm">${escapeHtml(item.descricao_produto_nf || '')}</td>
+            <td class="form-control-sm text-sm text-center">${escapeHtml(item.unidade_nf || '')}</td>
+            <td class="form-control-sm text-sm text-right">
               <input
                 type="text"
                 class="inputQtdEntrada w-32 rounded-xl border border-border bg-white/80 px-3 py-2 text-right"
@@ -9237,7 +9263,7 @@ function abrirModalEditarEntradas(produtoId) {
                 value="${escapeHtml(formatarDecimalBr(item.qtd_nf, 2))}"
               />
             </td>
-            <td class="px-4 py-3 text-sm text-right">
+            <td class="form-control-sm text-sm text-right">
               <input
                 type="text"
                 class="inputValorUnitEntrada w-32 rounded-xl border border-border bg-white/80 px-3 py-2 text-right"
@@ -9245,12 +9271,12 @@ function abrirModalEditarEntradas(produtoId) {
                 value="${escapeHtml(formatarMoedaBr(item.valor_unitario_nf))}"
               />
             </td>
-            <td class="px-4 py-3 text-sm text-right font-semibold">
+            <td class="form-control-sm text-sm text-right font-semibold">
               <span class="valorTotalEntrada" data-id="${escapeHtml(String(item.id))}">
                 ${escapeHtml(formatarMoedaBr(item.valor_total_nf))}
               </span>
             </td>
-            <td class="px-4 py-3 text-sm">
+            <td class="form-control-sm text-sm">
               <div class="flex justify-end gap-2">
                 <button
                   type="button"
@@ -9295,7 +9321,7 @@ function abrirModalEditarEntradas(produtoId) {
               <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
                 <div>
                   <h3 class="text-lg font-semibold text-foreground">Editar entradas</h3>
-                  <p class="text-sm text-muted-foreground">Edite, filtre e exclua entradas do produto selecionado.</p>
+                  <p class="form-subtitle-sm">Edite, filtre e exclua entradas do produto selecionado.</p>
                 </div>
 
                 <button
@@ -9312,7 +9338,7 @@ function abrirModalEditarEntradas(produtoId) {
                   id="inputFiltroEntradas"
                   type="text"
                   placeholder="Filtrar em qualquer campo..."
-                  class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm"
+                  class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
                 />
               </div>
 
@@ -9322,17 +9348,17 @@ function abrirModalEditarEntradas(produtoId) {
                     <table class="min-w-full text-sm">
                       <thead class="bg-white/60 border-b border-border sticky top-0">
                         <tr>
-                          <th class="px-4 py-3 text-left">ID</th>
-                          <th class="px-4 py-3 text-left">Fornecedor</th>
-                          <th class="px-4 py-3 text-left">Nota</th>
-                          <th class="px-4 py-3 text-left">Série</th>
-                          <th class="px-4 py-3 text-left">Cód. NF</th>
-                          <th class="px-4 py-3 text-left">Descrição</th>
-                          <th class="px-4 py-3 text-center">UN</th>
-                          <th class="px-4 py-3 text-right">Qtd</th>
-                          <th class="px-4 py-3 text-right">Vlr. Unit.</th>
-                          <th class="px-4 py-3 text-right">Vlr. Total</th>
-                          <th class="px-4 py-3 text-right">Ações</th>
+                          <th class="form-control-sm text-left">ID</th>
+                          <th class="form-control-sm text-left">Fornecedor</th>
+                          <th class="form-control-sm text-left">Nota</th>
+                          <th class="form-control-sm text-left">Série</th>
+                          <th class="form-control-sm text-left">Cód. NF</th>
+                          <th class="form-control-sm text-left">Descrição</th>
+                          <th class="form-control-sm text-center">UN</th>
+                          <th class="form-control-sm text-right">Qtd</th>
+                          <th class="form-control-sm text-right">Vlr. Unit.</th>
+                          <th class="form-control-sm text-right">Vlr. Total</th>
+                          <th class="form-control-sm text-right">Ações</th>
                         </tr>
                       </thead>
                       <tbody id="tbodyEditarEntradas"></tbody>
@@ -9345,7 +9371,7 @@ function abrirModalEditarEntradas(produtoId) {
                 <button
                   type="button"
                   id="btnFecharRodapeEditarEntradas"
-                  class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all"
+                  class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all"
                 >
                   Fechar
                 </button>
@@ -9581,7 +9607,7 @@ function abrirModalHistoricoEntradas(produtoId) {
               <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
                 <div>
                   <h3 class="text-lg font-semibold text-foreground">Histórico de entradas</h3>
-                  <p class="text-sm text-muted-foreground">Alterações registradas para este produto.</p>
+                  <p class="form-subtitle-sm">Alterações registradas para este produto.</p>
                 </div>
 
                 <button
@@ -9599,24 +9625,24 @@ function abrirModalHistoricoEntradas(produtoId) {
                     <table class="min-w-full text-sm">
                       <thead class="bg-white/60 border-b border-border sticky top-0">
                         <tr>
-                          <th class="px-4 py-3 text-left">Data</th>
-                          <th class="px-4 py-3 text-left">Usuário</th>
-                          <th class="px-4 py-3 text-left">Ação</th>
-                          <th class="px-4 py-3 text-left">Entrada</th>
-                          <th class="px-4 py-3 text-left">Nota</th>
-                          <th class="px-4 py-3 text-left">Produto NF</th>
-                          <th class="px-4 py-3 text-right">Qtd antes</th>
-                          <th class="px-4 py-3 text-right">Qtd depois</th>
-                          <th class="px-4 py-3 text-right">Unit. antes (R$)</th>
-                          <th class="px-4 py-3 text-right">Unit. depois (R$)</th>
-                          <th class="px-4 py-3 text-right">Total antes (R$)</th>
-                          <th class="px-4 py-3 text-right">Total depois (R$)</th>
-                          <th class="px-4 py-3 text-left">Obs.</th>
+                          <th class="form-control-sm text-left">Data</th>
+                          <th class="form-control-sm text-left">Usuário</th>
+                          <th class="form-control-sm text-left">Ação</th>
+                          <th class="form-control-sm text-left">Entrada</th>
+                          <th class="form-control-sm text-left">Nota</th>
+                          <th class="form-control-sm text-left">Produto NF</th>
+                          <th class="form-control-sm text-right">Qtd antes</th>
+                          <th class="form-control-sm text-right">Qtd depois</th>
+                          <th class="form-control-sm text-right">Unit. antes (R$)</th>
+                          <th class="form-control-sm text-right">Unit. depois (R$)</th>
+                          <th class="form-control-sm text-right">Total antes (R$)</th>
+                          <th class="form-control-sm text-right">Total depois (R$)</th>
+                          <th class="form-control-sm text-left">Obs.</th>
                         </tr>
                       </thead>
                       <tbody id="tbodyHistoricoEntradas">
                         <tr>
-                          <td colspan="13" class="px-4 py-6 text-sm text-muted-foreground text-center">
+                          <td colspan="13" class="px-4 py-6 form-subtitle-sm text-center">
                             Carregando histórico...
                           </td>
                         </tr>
@@ -9630,7 +9656,7 @@ function abrirModalHistoricoEntradas(produtoId) {
                 <button
                   type="button"
                   id="btnFecharRodapeHistoricoEntradas"
-                  class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all"
+                  class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all"
                 >
                   Fechar
                 </button>
@@ -9654,7 +9680,7 @@ function abrirModalHistoricoEntradas(produtoId) {
       if (!items.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="13" class="px-4 py-6 text-sm text-muted-foreground text-center">
+            <td colspan="13" class="px-4 py-6 form-subtitle-sm text-center">
               Nenhum histórico encontrado para este produto.
             </td>
           </tr>
@@ -9664,9 +9690,9 @@ function abrirModalHistoricoEntradas(produtoId) {
 
       tbody.innerHTML = items.map(item => `
         <tr class="border-b border-border last:border-b-0">
-          <td class="px-4 py-3">${escapeHtml(formatarDataHora(item.DATA_ALTERACAO))}</td>
-          <td class="px-4 py-3">${escapeHtml(item.USUARIO || '')}</td>
-          <td class="px-4 py-3">
+          <td class="form-control-sm">${escapeHtml(formatarDataHora(item.DATA_ALTERACAO))}</td>
+          <td class="form-control-sm">${escapeHtml(item.USUARIO || '')}</td>
+          <td class="form-control-sm">
             <span class="inline-flex rounded-full border px-3 py-1 text-xs font-medium ${
               item.ACAO === 'DELETE'
                 ? 'border-red-300 bg-red-50 text-red-700'
@@ -9677,19 +9703,19 @@ function abrirModalHistoricoEntradas(produtoId) {
               ${escapeHtml(item.ACAO || '')}
             </span>
           </td>
-          <td class="px-4 py-3">${escapeHtml(String(item.ID_ENTRADA || ''))}</td>
-          <td class="px-4 py-3">${escapeHtml(`${item.nota || ''} ${item.serie ? '/ ' + item.serie : ''}`)}</td>
-          <td class="px-4 py-3">
+          <td class="form-control-sm">${escapeHtml(String(item.ID_ENTRADA || ''))}</td>
+          <td class="form-control-sm">${escapeHtml(`${item.nota || ''} ${item.serie ? '/ ' + item.serie : ''}`)}</td>
+          <td class="form-control-sm">
             <div class="font-medium">${escapeHtml(item.cod_produto_nf || '')}</div>
             <div class="text-xs text-muted-foreground">${escapeHtml(item.descricao_produto_nf || '')}</div>
           </td>
-          <td class="px-4 py-3 text-right">${escapeHtml(formatarNumero(item.QTD_NF_ANTES, 2))}</td>
-          <td class="px-4 py-3 text-right">${escapeHtml(formatarNumero(item.QTD_NF_DEPOIS, 2))}</td>
-          <td class="px-4 py-3 text-right">${escapeHtml(formatarNumero(item.VALOR_UNITARIO_NF_ANTES, 2))}</td>
-          <td class="px-4 py-3 text-right">${escapeHtml(formatarNumero(item.VALOR_UNITARIO_NF_DEPOIS, 2))}</td>
-          <td class="px-4 py-3 text-right">${escapeHtml(formatarNumero(item.VALOR_TOTAL_NF_ANTES, 2))}</td>
-          <td class="px-4 py-3 text-right">${escapeHtml(formatarNumero(item.VALOR_TOTAL_NF_DEPOIS, 2))}</td>
-          <td class="px-4 py-3">${escapeHtml(item.OBSERVACAO || '')}</td>
+          <td class="form-control-sm text-right">${escapeHtml(formatarNumero(item.QTD_NF_ANTES, 2))}</td>
+          <td class="form-control-sm text-right">${escapeHtml(formatarNumero(item.QTD_NF_DEPOIS, 2))}</td>
+          <td class="form-control-sm text-right">${escapeHtml(formatarNumero(item.VALOR_UNITARIO_NF_ANTES, 2))}</td>
+          <td class="form-control-sm text-right">${escapeHtml(formatarNumero(item.VALOR_UNITARIO_NF_DEPOIS, 2))}</td>
+          <td class="form-control-sm text-right">${escapeHtml(formatarNumero(item.VALOR_TOTAL_NF_ANTES, 2))}</td>
+          <td class="form-control-sm text-right">${escapeHtml(formatarNumero(item.VALOR_TOTAL_NF_DEPOIS, 2))}</td>
+          <td class="form-control-sm">${escapeHtml(item.OBSERVACAO || '')}</td>
         </tr>
       `).join('');
     } catch (err) {
@@ -9797,7 +9823,7 @@ function renderTabelaTransferencias(items) {
   if (!Array.isArray(items) || !items.length) {
     return `
       <tr>
-        <td colspan="10" class="px-4 py-6 text-sm text-muted-foreground text-center">
+        <td colspan="10" class="px-4 py-6 form-subtitle-sm text-center">
           Nenhuma transferência registrada.
         </td>
       </tr>
@@ -9816,16 +9842,16 @@ function renderTabelaTransferencias(items) {
 
     return `
       <tr class="border-b border-border last:border-b-0 hover:bg-white/30 transition-colors">
-        <td class="px-4 py-3 text-sm">${escapeHtml(item.LOCAL_DESTINO ?? item.LOCALDESTINO ?? '')}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(item.TIPO_TRANSFERENCIA ?? item.TIPOTRANSFERENCIA ?? '')}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(item.RESPONSAVEL_TRANSPORTE ?? item.RESPONSAVELTRANSPORTE ?? '')}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(item.RESPONSAVEL_ENTREGA ?? item.RESPONSAVELENTREGA ?? '')}</td>
-        <td class="px-4 py-3 text-sm text-right">${escapeHtmlString(formatarDecimalBr(item.QUANTIDADE ?? 0, 2))}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(item.UNIDADE ?? '')}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(item.USUARIO_CADASTRO ?? item.USUARIOCADASTRO ?? '')}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(formatarDataHora(item.DATA_CADASTRO ?? item.DATACADASTRO))}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(item.STATUS_TRANSFERENCIA ?? item.STATUSTRANSFERENCIA ?? '')}</td>
-        <td class="px-4 py-3 text-sm">
+        <td class="form-control-sm text-sm">${escapeHtml(item.LOCAL_DESTINO ?? item.LOCALDESTINO ?? '')}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(item.TIPO_TRANSFERENCIA ?? item.TIPOTRANSFERENCIA ?? '')}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(item.RESPONSAVEL_TRANSPORTE ?? item.RESPONSAVELTRANSPORTE ?? '')}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(item.RESPONSAVEL_ENTREGA ?? item.RESPONSAVELENTREGA ?? '')}</td>
+        <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(item.QUANTIDADE ?? 0, 2))}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(item.UNIDADE ?? '')}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(item.USUARIO_CADASTRO ?? item.USUARIOCADASTRO ?? '')}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(formatarDataHora(item.DATA_CADASTRO ?? item.DATACADASTRO))}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(item.STATUS_TRANSFERENCIA ?? item.STATUSTRANSFERENCIA ?? '')}</td>
+        <td class="form-control-sm text-sm">
           <div class="flex justify-end gap-2">
             ${podeEditarExcluir ? `
               <button
@@ -9890,7 +9916,7 @@ async function abrirModalLogsTransferencia(idTransferencia) {
 
     const htmlTabela = !items.length
       ? `
-        <div class="rounded-2xl border border-border bg-white/40 px-4 py-6 text-sm text-muted-foreground text-center">
+        <div class="rounded-2xl border border-border bg-white/40 px-4 py-6 form-subtitle-sm text-center">
           Nenhum log encontrado.
         </div>
       `
@@ -9899,25 +9925,25 @@ async function abrirModalLogsTransferencia(idTransferencia) {
           <table class="min-w-full text-sm">
             <thead class="bg-white/50 border-b border-border sticky top-0">
               <tr>
-                <th class="px-4 py-3 text-left font-semibold">Ação</th>
-                <th class="px-4 py-3 text-right font-semibold">Saldo antes</th>
-                <th class="px-4 py-3 text-right font-semibold">Qtd.</th>
-                <th class="px-4 py-3 text-right font-semibold">Saldo depois</th>
-                <th class="px-4 py-3 text-left font-semibold">Usuário</th>
-                <th class="px-4 py-3 text-left font-semibold">Data/Hora</th>
-                <th class="px-4 py-3 text-left font-semibold">Observação</th>
+                <th class="form-control-sm text-left font-semibold">Ação</th>
+                <th class="form-control-sm text-right font-semibold">Saldo antes</th>
+                <th class="form-control-sm text-right font-semibold">Qtd.</th>
+                <th class="form-control-sm text-right font-semibold">Saldo depois</th>
+                <th class="form-control-sm text-left font-semibold">Usuário</th>
+                <th class="form-control-sm text-left font-semibold">Data/Hora</th>
+                <th class="form-control-sm text-left font-semibold">Observação</th>
               </tr>
             </thead>
             <tbody>
               ${items.map(log => `
                 <tr class="border-b border-border last:border-b-0 hover:bg-white/30 transition-colors">
-                  <td class="px-4 py-3">${escapeHtml(log.ACAO ?? '')}</td>
-                  <td class="px-4 py-3 text-right">${escapeHtmlString(formatarDecimalBr(log.SALDO_ANTES ?? 0, 2))}</td>
-                  <td class="px-4 py-3 text-right">${escapeHtmlString(formatarDecimalBr(log.QUANTIDADE_TRANSFERIDA ?? 0, 2))}</td>
-                  <td class="px-4 py-3 text-right">${escapeHtmlString(formatarDecimalBr(log.SALDO_DEPOIS ?? 0, 2))}</td>
-                  <td class="px-4 py-3">${escapeHtml(log.USUARIO ?? '')}</td>
-                  <td class="px-4 py-3">${escapeHtml(formatarDataHora(log.DATA_HORA ?? ''))}</td>
-                  <td class="px-4 py-3">${escapeHtml(log.OBSERVACAO ?? '')}</td>
+                  <td class="form-control-sm">${escapeHtml(log.ACAO ?? '')}</td>
+                  <td class="form-control-sm text-right">${escapeHtmlString(formatarDecimalBr(log.SALDO_ANTES ?? 0, 2))}</td>
+                  <td class="form-control-sm text-right">${escapeHtmlString(formatarDecimalBr(log.QUANTIDADE_TRANSFERIDA ?? 0, 2))}</td>
+                  <td class="form-control-sm text-right">${escapeHtmlString(formatarDecimalBr(log.SALDO_DEPOIS ?? 0, 2))}</td>
+                  <td class="form-control-sm">${escapeHtml(log.USUARIO ?? '')}</td>
+                  <td class="form-control-sm">${escapeHtml(formatarDataHora(log.DATA_HORA ?? ''))}</td>
+                  <td class="form-control-sm">${escapeHtml(log.OBSERVACAO ?? '')}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -9932,7 +9958,7 @@ async function abrirModalLogsTransferencia(idTransferencia) {
             <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
               <div>
                 <h3 class="text-lg font-semibold text-foreground">Logs da transferência</h3>
-                <p class="text-sm text-muted-foreground">Histórico de alterações da transferência selecionada.</p>
+                <p class="form-subtitle-sm">Histórico de alterações da transferência selecionada.</p>
               </div>
 
               <button
@@ -9952,7 +9978,7 @@ async function abrirModalLogsTransferencia(idTransferencia) {
               <button
                 type="button"
                 id="btnFecharRodapeLogsTransferencia"
-                class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all"
+                class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all"
               >
                 Fechar
               </button>
@@ -10025,7 +10051,7 @@ async function abrirModalTransferenciaEstoque(item) {
           <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
             <div>
               <h3 class="text-lg font-semibold text-foreground">Transferência de material</h3>
-              <p class="text-sm text-muted-foreground">Registre, edite ou exclua transferências deste item.</p>
+              <p class="form-subtitle-sm">Registre, edite ou exclua transferências deste item.</p>
             </div>
             <button type="button" id="btnFecharModalTransferencia" class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center">
               <i class="fas fa-times" aria-hidden="true"></i>
@@ -10066,9 +10092,9 @@ async function abrirModalTransferenciaEstoque(item) {
             <form id="formTransferenciaEstoque" class="rounded-2xl border border-border bg-white/40 p-5 space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-foreground mb-2">Centro de custo</label>
+                  <label class="block form-label-sm text-foreground mb-2">Centro de custo</label>
                   <div class="flex flex-col sm:flex-row gap-2">
-                    <select id="transferenciaLocalDestino" class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm" required>
+                    <select id="transferenciaLocalDestino" class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm" required>
                       <option value="">Selecione o local...</option>
                     </select>
 
@@ -10085,8 +10111,8 @@ async function abrirModalTransferenciaEstoque(item) {
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-foreground mb-2">Tipo da transferência</label>
-                  <select id="transferenciaTipo" class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm" required>
+                  <label class="block form-label-sm text-foreground mb-2">Tipo da transferência</label>
+                  <select id="transferenciaTipo" class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm" required>
                   <option value="Selecione...">Selecione...</option>  
                   <option value="LOCAL">Local</option>
                     <option value="EXTERNA">Externa</option>
@@ -10094,36 +10120,36 @@ async function abrirModalTransferenciaEstoque(item) {
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-foreground mb-2">Quantidade</label>
-                  <input id="transferenciaQuantidade" type="text" class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm" placeholder="Ex. 1,0000" required />
+                  <label class="block form-label-sm text-foreground mb-2">Quantidade</label>
+                  <input id="transferenciaQuantidade" type="text" class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm" placeholder="Ex. 1,0000" required />
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-foreground mb-2">Usuário</label>
-                  <input id="transferenciaUsuario" type="text" class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm" value="${escapeHtml(usuario)}" readonly />
+                  <label class="block form-label-sm text-foreground mb-2">Usuário</label>
+                  <input id="transferenciaUsuario" type="text" class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm" value="${escapeHtml(usuario)}" readonly />
                 </div>
               </div>
 
               <div id="blocoTransferenciaExterna" class="hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-foreground mb-2">Responsável por levar</label>
+                    <label class="block form-label-sm text-foreground mb-2">Responsável por levar</label>
                     <input
                       id="transferenciaResponsavelTransporte"
                       type="text"
                       maxlength="150"
-                      class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm"
+                      class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
                       placeholder="Nome do responsável pelo transporte"
                     />
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-foreground mb-2">Entregar para</label>
+                    <label class="block form-label-sm text-foreground mb-2">Entregar para</label>
                     <input
                       id="transferenciaResponsavelEntrega"
                       type="text"
                       maxlength="150"
-                      class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm"
+                      class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
                       placeholder="Nome de quem receberá a entrega"
                     />
                   </div>
@@ -10131,15 +10157,15 @@ async function abrirModalTransferenciaEstoque(item) {
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-foreground mb-2">Observação</label>
-                <input id="transferenciaObservacao" type="text" maxlength="255" class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm" placeholder="Opcional" />
+                <label class="block form-label-sm text-foreground mb-2">Observação</label>
+                <input id="transferenciaObservacao" type="text" maxlength="255" class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm" placeholder="Opcional" />
               </div>
 
               <div class="flex justify-end gap-2">
-                <button type="button" id="btnCancelarEdicaoTransferencia" class="hidden rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all">
+                <button type="button" id="btnCancelarEdicaoTransferencia" class="hidden rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
                   Cancelar edição
                 </button>
-                <button type="submit" id="btnSalvarTransferencia" class="rounded-xl bg-primary text-white px-4 py-3 text-sm font-medium hover:opacity-90 transition-all">
+                <button type="submit" id="btnSalvarTransferencia" class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
                   Salvar transferência
                 </button>
               </div>
@@ -10157,21 +10183,21 @@ async function abrirModalTransferenciaEstoque(item) {
                 <table class="min-w-full text-sm">
                   <thead class="bg-white/50 border-b border-border">
                     <tr>
-                      <th class="px-4 py-3 text-left font-semibold">Destino</th>
-                      <th class="px-4 py-3 text-left font-semibold">Tipo</th>
-                      <th class="px-4 py-3 text-left font-semibold">Quem leva</th>
-                      <th class="px-4 py-3 text-left font-semibold">Quem recebe</th>
-                      <th class="px-4 py-3 text-right font-semibold">Quantidade</th>
-                      <th class="px-4 py-3 text-left font-semibold">UN</th>
-                      <th class="px-4 py-3 text-left font-semibold">Usuário</th>
-                      <th class="px-4 py-3 text-left font-semibold">Data/Hora</th>
-                      <th class="px-4 py-3 text-left font-semibold">Status</th>
-                      <th class="px-4 py-3 text-right font-semibold">Ações</th>
+                      <th class="form-control-sm text-left font-semibold">Destino</th>
+                      <th class="form-control-sm text-left font-semibold">Tipo</th>
+                      <th class="form-control-sm text-left font-semibold">Quem leva</th>
+                      <th class="form-control-sm text-left font-semibold">Quem recebe</th>
+                      <th class="form-control-sm text-right font-semibold">Quantidade</th>
+                      <th class="form-control-sm text-left font-semibold">UN</th>
+                      <th class="form-control-sm text-left font-semibold">Usuário</th>
+                      <th class="form-control-sm text-left font-semibold">Data/Hora</th>
+                      <th class="form-control-sm text-left font-semibold">Status</th>
+                      <th class="form-control-sm text-right font-semibold">Ações</th>
                     </tr>
                   </thead>
                   <tbody id="tbodyTransferenciasEstoque">
                     <tr>
-                      <td colspan="10" class="px-4 py-6 text-sm text-muted-foreground text-center">Carregando transferências...</td>
+                      <td colspan="10" class="px-4 py-6 form-subtitle-sm text-center">Carregando transferências...</td>
                     </tr>
                   </tbody>
                 </table>
@@ -10640,7 +10666,7 @@ function renderizarEstoqueCentroCusto(items = []) {
   if (!Array.isArray(items) || !items.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" class="px-4 py-6 text-sm text-muted-foreground text-center">
+        <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
           Nenhum material disponível no centro de custo.
         </td>
       </tr>
@@ -10688,12 +10714,12 @@ function renderizarEstoqueCentroCusto(items = []) {
 
     return `
       <tr class="border-b border-border last:border-b-0 hover:bg-white/30 transition-colors">
-        <td class="px-4 py-3 text-sm">${escapeHtml(String(codigo))}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(String(descricao))}</td>
-        <td class="px-4 py-3 text-sm text-right">${escapeHtmlString(formatarDecimalBr(quantidade, 2))}</td>
-        <td class="px-4 py-3 text-sm text-right">${escapeHtmlString(formatarDecimalBr(quantidadeNaoRecebida, 2))}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(String(unidade))}</td>
-        <td class="px-4 py-3 text-sm text-right">
+        <td class="form-control-sm text-sm">${escapeHtml(String(codigo))}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(String(descricao))}</td>
+        <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(quantidade, 2))}</td>
+        <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(quantidadeNaoRecebida, 2))}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(String(unidade))}</td>
+        <td class="form-control-sm text-sm text-right">
           <div class="flex justify-end gap-2">
             <button
               type="button"
@@ -10768,7 +10794,7 @@ function abrirModalPendenciasCentroCusto() {
 
   const htmlLista = !items.length
     ? `
-      <div class="rounded-2xl border border-border bg-white/40 px-4 py-6 text-sm text-muted-foreground text-center">
+      <div class="rounded-2xl border border-border bg-white/40 px-4 py-6 form-subtitle-sm text-center">
         Nenhuma pendência de recebimento.
       </div>
     `
@@ -10792,19 +10818,19 @@ function abrirModalPendenciasCentroCusto() {
                   <div class="text-sm font-semibold text-foreground">
                     ${escapeHtml(String(codigo))} - ${escapeHtml(String(descricao))}
                   </div>
-                  <div class="text-sm text-muted-foreground">
+                  <div class="form-subtitle-sm">
                     Origem: ${escapeHtml(String(origem))}
                   </div>
-                  <div class="text-sm text-muted-foreground">
+                  <div class="form-subtitle-sm">
                     Destino: ${escapeHtml(String(destino))}
                   </div>
-                  <div class="text-sm text-muted-foreground">
+                  <div class="form-subtitle-sm">
                     Quantidade: ${escapeHtmlString(formatarDecimalBr(quantidade, 2))} ${escapeHtml(String(unidade))}
                   </div>
-                  <div class="text-sm text-muted-foreground">
+                  <div class="form-subtitle-sm">
                     Status: ${escapeHtml(String(status))}
                   </div>
-                  <div class="text-sm text-muted-foreground">
+                  <div class="form-subtitle-sm">
                     Data: ${escapeHtml(formatarDataHora(dataCadastro))}
                   </div>
                 </div>
@@ -10812,7 +10838,7 @@ function abrirModalPendenciasCentroCusto() {
                 <div class="flex flex-wrap justify-end gap-2">
                   <button
                     type="button"
-                    class="btnLogsTransferencia rounded-xl border border-amber-200 bg-white/80 px-4 py-2 text-sm font-medium text-amber-700 hover:bg-white transition-all"
+                    class="btnLogsTransferencia rounded-xl border border-amber-200 bg-white/80 px-4 py-2 form-label-sm text-amber-700 hover:bg-white transition-all"
                     data-id="${escapeHtmlString(String(id))}"
                   >
                     <i class="fas fa-clock-rotate-left mr-2"></i>
@@ -10821,7 +10847,7 @@ function abrirModalPendenciasCentroCusto() {
 
                   <button
                     type="button"
-                    class="btnReceberMaterialCentroCusto rounded-xl bg-primary text-white px-4 py-2 text-sm font-medium hover:opacity-90 transition-all"
+                    class="btnReceberMaterialCentroCusto rounded-xl bg-primary text-white px-4 py-2 form-label-sm hover:opacity-90 transition-all"
                     data-id="${escapeHtmlString(String(id))}"
                   >
                     <i class="fas fa-box-open mr-2"></i>
@@ -10830,7 +10856,7 @@ function abrirModalPendenciasCentroCusto() {
 
                   <button
                     type="button"
-                    class="btnRecusarMaterialCentroCusto rounded-xl bg-destructive text-destructive-foreground px-4 py-2 text-sm font-medium hover:bg-destructive/90 transition-all"
+                    class="btnRecusarMaterialCentroCusto rounded-xl bg-destructive text-destructive-foreground px-4 py-2 form-label-sm hover:bg-destructive/90 transition-all"
                     data-id="${escapeHtmlString(String(id))}"
                   >
                     <i class="fas fa-ban mr-2"></i>
@@ -10851,7 +10877,7 @@ function abrirModalPendenciasCentroCusto() {
           <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
             <div>
               <h3 class="text-lg font-semibold text-foreground">Pendências de recebimento</h3>
-              <p class="text-sm text-muted-foreground">
+              <p class="form-subtitle-sm">
                 Transferências que ainda precisam ser recebidas pelo seu centro de custo.
               </p>
             </div>
@@ -10873,7 +10899,7 @@ function abrirModalPendenciasCentroCusto() {
             <button
               type="button"
               id="btnFecharRodapePendenciasCentroCusto"
-              class="rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all"
+              class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all"
             >
               Fechar
             </button>
@@ -11054,7 +11080,7 @@ async function abrirModalTransferenciaCentroCusto(item) {
           <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
             <div>
               <h3 class="text-lg font-semibold text-foreground">Transferência entre centros de custo</h3>
-              <p class="text-sm text-muted-foreground">Registre, edite ou exclua transferências deste item.</p>
+              <p class="form-subtitle-sm">Registre, edite ou exclua transferências deste item.</p>
             </div>
             <button type="button" id="btnFecharModalTransferenciaCentroCusto"
               class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center">
@@ -11100,10 +11126,10 @@ async function abrirModalTransferenciaCentroCusto(item) {
             <form id="formTransferenciaCentroCusto" class="rounded-2xl border border-border bg-white/40 p-5 space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-foreground mb-2">Centro de custo destino</label>
+                  <label class="block form-label-sm text-foreground mb-2">Centro de custo destino</label>
                   <div class="flex flex-col sm:flex-row gap-2">
                     <select id="transferenciaCentroCustoDestino"
-                      class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm" required>
+                      class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm" required>
                       <option value="">Selecione o centro de custo...</option>
                     </select>
 
@@ -11116,35 +11142,35 @@ async function abrirModalTransferenciaCentroCusto(item) {
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-foreground mb-2">Quantidade</label>
+                  <label class="block form-label-sm text-foreground mb-2">Quantidade</label>
                   <input id="transferenciaCentroCustoQuantidade" type="text"
-                    class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm"
+                    class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
                     placeholder="Ex. 1,0000" required>
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-foreground mb-2">Usuário</label>
+                  <label class="block form-label-sm text-foreground mb-2">Usuário</label>
                   <input id="transferenciaCentroCustoUsuario" type="text"
-                    class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm"
+                    class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
                     value="${escapeHtml(String(usuario))}" readonly>
                 </div>
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-foreground mb-2">Observação</label>
+                <label class="block form-label-sm text-foreground mb-2">Observação</label>
                 <input id="transferenciaCentroCustoObservacao" type="text" maxlength="255"
-                  class="w-full rounded-xl border border-border bg-white/80 px-4 py-3 text-sm"
+                  class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
                   placeholder="Opcional">
               </div>
 
               <div class="flex justify-end gap-2">
                 <button type="button" id="btnCancelarEdicaoTransferenciaCentroCusto"
-                  class="hidden rounded-xl border border-border bg-white/60 px-4 py-3 text-sm font-medium hover:bg-white/90 transition-all">
+                  class="hidden rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
                   Cancelar edição
                 </button>
 
                 <button type="submit" id="btnSalvarTransferenciaCentroCusto"
-                  class="rounded-xl bg-primary text-white px-4 py-3 text-sm font-medium hover:opacity-90 transition-all">
+                  class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
                   Salvar transferência
                 </button>
               </div>
@@ -11162,18 +11188,18 @@ async function abrirModalTransferenciaCentroCusto(item) {
                 <table class="min-w-full text-sm">
                   <thead class="bg-white/50 border-b border-border">
                     <tr>
-                      <th class="px-4 py-3 text-left font-semibold">Destino</th>
-                      <th class="px-4 py-3 text-right font-semibold">Quantidade</th>
-                      <th class="px-4 py-3 text-left font-semibold">UN</th>
-                      <th class="px-4 py-3 text-left font-semibold">Usuário</th>
-                      <th class="px-4 py-3 text-left font-semibold">Data/Hora</th>
-                      <th class="px-4 py-3 text-left font-semibold">Status</th>
-                      <th class="px-4 py-3 text-right font-semibold">Ações</th>
+                      <th class="form-control-sm text-left font-semibold">Destino</th>
+                      <th class="form-control-sm text-right font-semibold">Quantidade</th>
+                      <th class="form-control-sm text-left font-semibold">UN</th>
+                      <th class="form-control-sm text-left font-semibold">Usuário</th>
+                      <th class="form-control-sm text-left font-semibold">Data/Hora</th>
+                      <th class="form-control-sm text-left font-semibold">Status</th>
+                      <th class="form-control-sm text-right font-semibold">Ações</th>
                     </tr>
                   </thead>
                   <tbody id="tbodyTransferenciasCentroCusto">
                     <tr>
-                      <td colspan="7" class="px-4 py-6 text-sm text-muted-foreground text-center">Carregando transferências...</td>
+                      <td colspan="7" class="px-4 py-6 form-subtitle-sm text-center">Carregando transferências...</td>
                     </tr>
                   </tbody>
                 </table>
@@ -11444,7 +11470,7 @@ function renderTabelaTransferenciasCentroCusto(items = []) {
   if (!Array.isArray(items) || !items.length) {
     return `
       <tr>
-        <td colspan="7" class="px-4 py-6 text-sm text-muted-foreground text-center">
+        <td colspan="7" class="px-4 py-6 form-subtitle-sm text-center">
           Nenhuma transferência registrada.
         </td>
       </tr>
@@ -11458,13 +11484,13 @@ function renderTabelaTransferenciasCentroCusto(items = []) {
 
     return `
       <tr class="border-b border-border last:border-b-0 hover:bg-white/30 transition-colors">
-        <td class="px-4 py-3 text-sm">${escapeHtml(String(item.LOCAL_DESTINO ?? item.LOCALDESTINO ?? '—'))}</td>
-        <td class="px-4 py-3 text-sm text-right">${escapeHtmlString(formatarDecimalBr(item.QUANTIDADE ?? 0, 2))}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(String(item.UNIDADE ?? 'UN'))}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(String(item.USUARIO_CADASTRO ?? item.USUARIOCADASTRO ?? '—'))}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(formatarDataHora(item.DATA_CADASTRO ?? item.DATACADASTRO ?? ''))}</td>
-        <td class="px-4 py-3 text-sm">${escapeHtml(String(item.STATUS_TRANSFERENCIA ?? item.STATUSTRANSFERENCIA ?? '—'))}</td>
-        <td class="px-4 py-3 text-sm">
+        <td class="form-control-sm text-sm">${escapeHtml(String(item.LOCAL_DESTINO ?? item.LOCALDESTINO ?? '—'))}</td>
+        <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(item.QUANTIDADE ?? 0, 2))}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(String(item.UNIDADE ?? 'UN'))}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(String(item.USUARIO_CADASTRO ?? item.USUARIOCADASTRO ?? '—'))}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(formatarDataHora(item.DATA_CADASTRO ?? item.DATACADASTRO ?? ''))}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(String(item.STATUS_TRANSFERENCIA ?? item.STATUSTRANSFERENCIA ?? '—'))}</td>
+        <td class="form-control-sm text-sm">
           <div class="flex justify-end gap-2">
             ${podeEditarExcluir ? `
               <button
@@ -11549,7 +11575,7 @@ function setPerfisMsg(msg, tipo = '') {
 
   if (!msg) {
     el.textContent = '';
-    el.className = 'text-sm text-muted-foreground hidden';
+    el.className = 'form-subtitle-sm hidden';
     return;
   }
 
@@ -11584,14 +11610,14 @@ function rowPerfil(item) {
 
   return `
     <tr class="hover:bg-white/40 transition-all">
-      <td class="px-4 py-3 font-medium">${escapeHtml(nome)}</td>
-      <td class="px-4 py-3 text-sm text-muted-foreground">${escapeHtml(permissoes)}</td>
-      <td class="px-4 py-3">
+      <td class="form-control-sm font-medium">${escapeHtml(nome)}</td>
+      <td class="form-control-sm form-subtitle-sm">${escapeHtml(permissoes)}</td>
+      <td class="form-control-sm">
         <span class="inline-flex items-center px-2 py-1 rounded-full border bg-primary/10 text-primary border-primary/20 text-xs font-semibold">
           Cadastrado
         </span>
       </td>
-      <td class="px-4 py-3">
+      <td class="form-control-sm">
         <div class="flex justify-end gap-2">
           <button
             class="btnEditPerfil w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all"
@@ -11615,7 +11641,7 @@ async function carregarPerfis() {
     setPerfisMsg('Carregando perfis...');
     tbody.innerHTML = `
       <tr>
-        <td colspan="4" class="px-4 py-6 text-sm text-muted-foreground">
+        <td colspan="4" class="px-4 py-6 form-subtitle-sm">
           Carregando perfis...
         </td>
       </tr>
@@ -11639,7 +11665,7 @@ async function carregarPerfis() {
     if (!perfisCache.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="4" class="px-4 py-6 text-sm text-muted-foreground">
+          <td colspan="4" class="px-4 py-6 form-subtitle-sm">
             Nenhum perfil cadastrado.
           </td>
         </tr>
@@ -11723,8 +11749,8 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
           <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
             <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
               <div>
-                <h3 class="text-xl font-semibold text-foreground">${isEdit ? 'Editar perfil' : 'Novo perfil'}</h3>
-                <p class="text-sm text-muted-foreground">Defina quais permissões este perfil terá acesso</p>
+                <h3 class="form-title-sm font-semibold text-foreground">${isEdit ? 'Editar perfil' : 'Novo perfil'}</h3>
+                <p class="form-subtitle-sm">Defina quais permissões este perfil terá acesso</p>
               </div>
 
               <button id="btnFecharPerfilModal" type="button"
@@ -11738,19 +11764,19 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
               <input type="hidden" id="perfilId" />
 
               <div class="space-y-2">
-                <label class="text-sm font-medium">Nome do perfil</label>
+                <label class="form-label-sm">Nome do perfil</label>
                 <input
                   id="perfilNome"
                   type="text"
                   required
-                  class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                  class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                   placeholder="Ex.: Supervisor Comercial" />
               </div>
 
               <div id="perfilTree" class="space-y-3">
 
                 <div class="rounded-2xl border border-border bg-white/40 overflow-hidden">
-                  <button type="button" class="tree-toggle w-full flex items-center justify-between px-4 py-3 hover:bg-white/40 transition" data-target="grupo-modulos">
+                  <button type="button" class="tree-toggle w-full flex items-center justify-between form-control-sm hover:bg-white/40 transition" data-target="grupo-modulos">
                     <div class="flex items-center gap-3">
                       <span class="tree-icon text-xs transition-transform -rotate-90">▼</span>
                       <span class="font-semibold">Módulos</span>
@@ -11768,7 +11794,7 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
                 </div>
 
                 <div class="rounded-2xl border border-border bg-white/40 overflow-hidden">
-                  <button type="button" class="tree-toggle w-full flex items-center justify-between px-4 py-3 hover:bg-white/40 transition" data-target="grupo-pedidos">
+                  <button type="button" class="tree-toggle w-full flex items-center justify-between form-control-sm hover:bg-white/40 transition" data-target="grupo-pedidos">
                     <div class="flex items-center gap-3">
                       <span class="tree-icon text-xs transition-transform -rotate-90">▼</span>
                       <label class="flex items-center gap-2 font-semibold cursor-pointer">
@@ -11788,7 +11814,7 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
                 </div>
 
                 <div class="rounded-2xl border border-border bg-white/40 overflow-hidden">
-                  <button type="button" class="tree-toggle w-full flex items-center justify-between px-4 py-3 hover:bg-white/40 transition" data-target="grupo-clientes">
+                  <button type="button" class="tree-toggle w-full flex items-center justify-between form-control-sm hover:bg-white/40 transition" data-target="grupo-clientes">
                     <div class="flex items-center gap-3">
                       <span class="tree-icon text-xs transition-transform -rotate-90">▼</span>
                       <label class="flex items-center gap-2 font-semibold cursor-pointer">
@@ -11805,7 +11831,7 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
                 </div>
 
                 <div class="rounded-2xl border border-border bg-white/40 overflow-hidden">
-                  <button type="button" class="tree-toggle w-full flex items-center justify-between px-4 py-3 hover:bg-white/40 transition" data-target="grupo-gestao">
+                  <button type="button" class="tree-toggle w-full flex items-center justify-between form-control-sm hover:bg-white/40 transition" data-target="grupo-gestao">
                     <div class="flex items-center gap-3">
                       <span class="tree-icon text-xs transition-transform -rotate-90">▼</span>
                       <label class="flex items-center gap-2 font-semibold cursor-pointer">
@@ -11823,7 +11849,7 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
                 </div>
 
                 <div class="rounded-2xl border border-border bg-white/40 overflow-hidden">
-                  <button type="button" class="tree-toggle w-full flex items-center justify-between px-4 py-3 hover:bg-white/40 transition" data-target="grupo-estoque">
+                  <button type="button" class="tree-toggle w-full flex items-center justify-between form-control-sm hover:bg-white/40 transition" data-target="grupo-estoque">
                     <div class="flex items-center gap-3">
                       <span class="tree-icon text-xs transition-transform -rotate-90">▼</span>
                       <label class="flex items-center gap-2 font-semibold cursor-pointer">
@@ -11848,12 +11874,12 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
 
               <div class="pt-2 flex flex-col sm:flex-row gap-3">
                 <button id="btnSalvarPerfilModal" type="submit"
-                  class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+                  class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
                   Salvar
                 </button>
 
                 <button id="btnCancelarPerfilModal" type="button"
-                  class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
+                  class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all">
                   Cancelar
                 </button>
               </div>
@@ -12022,7 +12048,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-let weatherCardState = 'weather';
+let weatherCardState = 'blank';
 
 function toggleWeatherCard(direction = 'next') {
   const weatherContent = document.querySelector('.home-weather-content');
