@@ -677,13 +677,43 @@
   }
 
   @media (max-width: 960px) {
-    .page-shell { padding: 16px; }
-    .login-wrapper { flex-direction: column; border-radius: 24px; }
-    .hero-panel { flex: none; min-height: 40%; padding: 28px 22px; }
-    .login-panel { flex: none; padding: 24px 18px 28px; border-left: none; border-top: 1px solid rgba(148, 163, 184, 0.35); }
-    .login-card, .success-screen { max-width: 420px; margin: 0 auto; }
-    body { background-attachment: scroll; }
+    .page-shell {
+      padding: 16px;
+    }
+
+    .login-wrapper {
+      display: block;
+      max-width: 420px;
+      height: auto;
+      border-radius: 24px;
+    }
+
+    .hero-panel {
+      display: none;
+    }
+
+    .login-panel {
+      flex: none;
+      width: 100%;
+      padding: 20px 16px 24px;
+      border-left: none;
+      border-top: none;
+      background: rgba(2, 6, 23, 0.28);
+      border-radius: 24px;
+    }
+
+    .login-card,
+    .success-screen,
+    .birthday-screen {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    body {
+      background-attachment: scroll;
+    }
   }
+
 </style>
 </head>
 <body>
