@@ -4415,19 +4415,13 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   });
 
   btnAddUnidadeTrabalho?.addEventListener('click', async () => {
-    const nome = prompt('Nome da Unidade de Trabalho:');
-    if (!nome) return;
-
     try {
-      await apiSend('/api/gestao-usuarios-locais-trabalho', 'POST', { nome });
-      const unidadesResp = await apiGet('/api/gestao-usuarios-locais-trabalho');
-      cacheLocaisTrabalhoGestaoUnidade = Array.isArray(unidadesResp?.items) ? unidadesResp.items : [];
-      const sel = document.getElementById('guUnidadeTrabalho');
-      if (sel) sel.innerHTML = optionsFromRows(cacheLocaisTrabalhoGestaoUnidade, titleCaseNome(nome), 'Selecione...');
+      await abrirModalUnidadeTrabalho();
     } catch (err) {
-      alert('Erro ao adicionar Unidade de Trabalho: ' + (err?.message || err));
+      alert('Erro ao abrir gerenciamento de Unidade de Trabalho: ' + (err?.message || err));
     }
   });
+
 
   btnTrocarSenha?.addEventListener('click', async () => {
     setSenhaMsg('');
@@ -4594,6 +4588,323 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
       }
     }
   });
+}
+
+function normalizarTelefoneUnidade(valor) {
+  return String(valor || '').trim();
+}
+
+async function recarregarUnidadesTrabalho(selectValue = '') {
+  const unidadesResp = await apiGet('/api/gestao-usuarios-locais-trabalho');
+  cacheLocaisTrabalhoGestaoUnidade = Array.isArray(unidadesResp?.items) ? unidadesResp.items : [];
+
+  const sel = document.getElementById('guUnidadeTrabalho');
+  if (sel) {
+    sel.innerHTML = optionsFromRows(
+      cacheLocaisTrabalhoGestaoUnidade,
+      selectValue || '',
+      'Selecione...'
+    );
+  }
+}
+
+function fecharModalUnidadeTrabalho() {
+  document.getElementById('guUnidadeOverlay')?.remove();
+  document.getElementById('guUnidadeModal')?.remove();
+}
+
+async function abrirModalUnidadeTrabalho() {
+  fecharModalUnidadeTrabalho();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'guUnidadeOverlay';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[160]';
+  document.body.appendChild(overlay);
+
+  const modal = document.createElement('div');
+  modal.id = 'guUnidadeModal';
+  modal.className = 'fixed inset-0 z-[170] flex items-center justify-center p-4';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  modal.innerHTML = `
+    <div class="w-full max-w-5xl glass rounded-2xl border border-border shadow-2xl overflow-hidden">
+      <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+        <div>
+          <h3 class="form-title-sm font-semibold text-foreground">Gerenciar Unidade de Trabalho</h3>
+          <p class="form-subtitle-sm">Cadastre, edite e exclua unidades de trabalho.</p>
+        </div>
+        <button id="btnFecharModalUnidadeTrabalho" type="button"
+          class="w-10 h-10 rounded-xl bg-white60 border border-border hover:bg-white transition-all flex items-center justify-center"
+          aria-label="Fechar" title="Fechar">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="p-6 grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-6">
+        <div class="rounded-2xl border border-border bg-white50 p-4 space-y-4">
+          <div>
+            <h4 id="guUnidadeFormTitulo" class="text-sm font-semibold text-foreground">Nova unidade</h4>
+            <p class="text-xs text-muted-foreground mt-1">Preencha nome, endereço e telefone.</p>
+          </div>
+
+          <input type="hidden" id="guUnidadeId" />
+
+          <div class="space-y-2">
+            <label class="form-label-sm block">Nome</label>
+            <input id="guUnidadeNome" type="text"
+              class="w-full rounded-xl border border-border bg-white70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Nome da unidade" />
+          </div>
+
+          <div class="space-y-2">
+            <label class="form-label-sm block">Endereço</label>
+            <input id="guUnidadeEndereco" type="text"
+              class="w-full rounded-xl border border-border bg-white70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Endereço completo" />
+          </div>
+
+          <div class="space-y-2">
+            <label class="form-label-sm block">Telefone</label>
+            <input id="guUnidadeTelefone" type="text"
+              class="w-full rounded-xl border border-border bg-white70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="(77) 99999-9999" />
+          </div>
+
+          <p id="guUnidadeMsg"
+             class="hidden text-sm rounded-xl px-3 py-2 border whitespace-pre-line"></p>
+
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="btnSalvarUnidadeTrabalho" type="button"
+              class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
+              Salvar
+            </button>
+
+            <button id="btnNovaUnidadeTrabalho" type="button"
+              class="sm:flex-1 rounded-xl border border-border bg-white60 form-control-sm font-medium hover:bg-white transition-all">
+              Novo
+            </button>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-border bg-white50 p-4 space-y-4 min-w-0">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h4 class="text-sm font-semibold text-foreground">Unidades cadastradas</h4>
+              <p class="text-xs text-muted-foreground">Clique em editar para carregar no formulário.</p>
+            </div>
+
+            <button id="btnAtualizarListaUnidadeTrabalho" type="button"
+              class="w-10 h-10 rounded-xl border border-border bg-white60 hover:bg-white transition-all flex items-center justify-center"
+              title="Atualizar lista" aria-label="Atualizar lista">
+              <i class="fas fa-rotate-right" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="overflow-auto rounded-2xl border border-border bg-white40">
+            <table class="min-w-full text-sm">
+              <thead class="bg-muted/40 text-muted-foreground">
+                <tr>
+                  <th class="text-left font-semibold form-control-sm">Nome</th>
+                  <th class="text-left font-semibold form-control-sm">Endereço</th>
+                  <th class="text-left font-semibold form-control-sm">Telefone</th>
+                  <th class="text-right font-semibold form-control-sm">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyUnidadesTrabalho"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const elId = modal.querySelector('#guUnidadeId');
+  const elNome = modal.querySelector('#guUnidadeNome');
+  const elEndereco = modal.querySelector('#guUnidadeEndereco');
+  const elTelefone = modal.querySelector('#guUnidadeTelefone');
+  const elMsg = modal.querySelector('#guUnidadeMsg');
+  const tbody = modal.querySelector('#tbodyUnidadesTrabalho');
+
+  function setMsg(msg = '', tipo = '') {
+    if (!elMsg) return;
+    if (!msg) {
+      elMsg.textContent = '';
+      elMsg.className = 'hidden text-sm rounded-xl px-3 py-2 border whitespace-pre-line';
+      return;
+    }
+
+    elMsg.textContent = msg;
+    elMsg.className = `text-sm rounded-xl px-3 py-2 border whitespace-pre-line ${
+      tipo === 'erro'
+        ? 'bg-red-50 text-red-700 border-red-200'
+        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    }`;
+  }
+
+  function limparFormulario() {
+    elId.value = '';
+    elNome.value = '';
+    elEndereco.value = '';
+    elTelefone.value = '';
+    modal.querySelector('#guUnidadeFormTitulo').textContent = 'Nova unidade';
+    setMsg('', '');
+    elNome.focus();
+  }
+
+  function renderTabela() {
+    const items = Array.isArray(cacheLocaisTrabalhoGestaoUnidade)
+      ? cacheLocaisTrabalhoGestaoUnidade
+      : [];
+
+    if (!items.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="px-4 py-6 form-subtitle-sm text-center">
+            Nenhuma unidade cadastrada.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = items.map(item => {
+      const id = item.ID ?? item.id ?? '';
+      const nome = escapeHtml(item.NOME ?? item.nome ?? '');
+      const endereco = escapeHtml(item.ENDERECO ?? item.endereco ?? '');
+      const telefone = escapeHtml(item.TELEFONE ?? item.telefone ?? '');
+
+      return `
+        <tr class="border-t border-border/70">
+          <td class="px-4 py-3 font-medium">${nome}</td>
+          <td class="px-4 py-3">${endereco || '-'}</td>
+          <td class="px-4 py-3">${telefone || '-'}</td>
+          <td class="px-4 py-3">
+            <div class="flex justify-end gap-2">
+              <button class="btnEditarUnidadeTrabalho w-10 h-10 rounded-xl border border-border bg-white60 hover:bg-white transition-all"
+                data-id="${escapeHtml(String(id))}" title="Editar" aria-label="Editar">
+                <i class="fas fa-pen" aria-hidden="true"></i>
+              </button>
+
+              <button class="btnExcluirUnidadeTrabalho w-10 h-10 rounded-xl border border-border bg-white60 hover:bg-red-500 hover:text-white transition-all"
+                data-id="${escapeHtml(String(id))}" title="Excluir" aria-label="Excluir">
+                <i class="fas fa-trash" aria-hidden="true"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function carregarLista() {
+    try {
+      const unidadesResp = await apiGet('/api/gestao-usuarios-locais-trabalho');
+      cacheLocaisTrabalhoGestaoUnidade = Array.isArray(unidadesResp?.items) ? unidadesResp.items : [];
+      renderTabela();
+    } catch (err) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="px-4 py-6 text-sm text-destructive text-center">
+            Erro ao carregar unidades de trabalho.
+          </td>
+        </tr>
+      `;
+      setMsg(err?.message || 'Erro ao carregar unidades.', 'erro');
+    }
+  }
+
+  overlay.addEventListener('click', fecharModalUnidadeTrabalho);
+  modal.querySelector('#btnFecharModalUnidadeTrabalho')?.addEventListener('click', fecharModalUnidadeTrabalho);
+  modal.querySelector('#btnNovaUnidadeTrabalho')?.addEventListener('click', limparFormulario);
+  modal.querySelector('#btnAtualizarListaUnidadeTrabalho')?.addEventListener('click', carregarLista);
+
+  elTelefone?.addEventListener('input', () => {
+    elTelefone.value = formatarCelularBR(elTelefone.value);
+  });
+
+  modal.querySelector('#btnSalvarUnidadeTrabalho')?.addEventListener('click', async () => {
+    const id = String(elId.value || '').trim();
+    const nome = titleCaseNome(elNome.value || '');
+    const endereco = String(elEndereco.value || '').trim();
+    const telefone = normalizarTelefoneUnidade(elTelefone.value || '');
+
+    if (!nome) {
+      setMsg('Informe o nome da unidade de trabalho.', 'erro');
+      elNome.focus();
+      return;
+    }
+
+    try {
+      setMsg('', '');
+
+      if (id) {
+        await apiSend(`/api/gestao-usuarios-locais-trabalho/${encodeURIComponent(id)}`, 'PUT', {
+          nome,
+          endereco,
+          telefone
+        });
+        setMsg('Unidade de trabalho atualizada com sucesso.', 'ok');
+      } else {
+        await apiSend('/api/gestao-usuarios-locais-trabalho', 'POST', {
+          nome,
+          endereco,
+          telefone
+        });
+        setMsg('Unidade de trabalho cadastrada com sucesso.', 'ok');
+      }
+
+      await carregarLista();
+      await recarregarUnidadesTrabalho(nome);
+      limparFormulario();
+      const sel = document.getElementById('guUnidadeTrabalho');
+      if (sel) sel.value = nome;
+    } catch (err) {
+      setMsg(err?.message || 'Erro ao salvar unidade de trabalho.', 'erro');
+    }
+  });
+
+  tbody.addEventListener('click', async (e) => {
+    const btnEdit = e.target.closest('.btnEditarUnidadeTrabalho');
+    const btnDel = e.target.closest('.btnExcluirUnidadeTrabalho');
+
+    if (btnEdit) {
+      const id = String(btnEdit.dataset.id || '');
+      const item = (cacheLocaisTrabalhoGestaoUnidade || []).find(x => String(x.ID ?? x.id) === id);
+      if (!item) return;
+
+      elId.value = String(item.ID ?? item.id ?? '');
+      elNome.value = String(item.NOME ?? item.nome ?? '');
+      elEndereco.value = String(item.ENDERECO ?? item.endereco ?? '');
+      elTelefone.value = String(item.TELEFONE ?? item.telefone ?? '');
+      modal.querySelector('#guUnidadeFormTitulo').textContent = 'Editar unidade';
+      setMsg('', '');
+      elNome.focus();
+      return;
+    }
+
+    if (btnDel) {
+      const id = String(btnDel.dataset.id || '');
+      const item = (cacheLocaisTrabalhoGestaoUnidade || []).find(x => String(x.ID ?? x.id) === id);
+      const nome = String(item?.NOME ?? item?.nome ?? '');
+
+      if (!confirm(`Deseja excluir a unidade de trabalho "${nome}"?`)) return;
+
+      try {
+        await apiSend(`/api/gestao-usuarios-locais-trabalho/${encodeURIComponent(id)}`, 'DELETE');
+        setMsg('Unidade de trabalho excluída com sucesso.', 'ok');
+        await carregarLista();
+        await recarregarUnidadesTrabalho('');
+      } catch (err) {
+        setMsg(err?.message || 'Erro ao excluir unidade de trabalho.', 'erro');
+      }
+    }
+  });
+
+  await carregarLista();
+  limparFormulario();
 }
 
 function gerarTemplateExcelUsuarios() {
