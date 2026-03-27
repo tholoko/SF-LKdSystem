@@ -251,8 +251,78 @@ async function carregarClimaHome() {
   }
 }
 
+function resetHomePanelsDesktop() {
+  const painel = document.getElementById('homePainelPanel');
+  const calendario = document.getElementById('homeCalendarioPanel');
+  const botoes = document.querySelectorAll('.home-mobile-tab-btn');
+  const isDesktop = window.innerWidth >= 1024;
+
+  if (isDesktop) {
+    painel?.classList.add('active');
+    calendario?.classList.add('active');
+    botoes.forEach(btn => btn.classList.remove('active'));
+    return;
+  }
+
+  if (!painel?.classList.contains('active') && !calendario?.classList.contains('active')) {
+    painel?.classList.add('active');
+  }
+
+  botoes.forEach(btn => {
+    const tab = btn.dataset.homeTab;
+    const ativo =
+      (tab === 'painel' && painel?.classList.contains('active')) ||
+      (tab === 'calendario' && calendario?.classList.contains('active'));
+
+    btn.classList.toggle('active', !!ativo);
+  });
+}
+
+function agendarProximoSlideMarketingPainel(delayMs = marketingLoopIntervalMs) {
+  limparTimerMarketing();
+  pararAnimacaoBarraMarketing();
+  pararAnimacaoProgressoMarketing();
+
+  if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
+
+  marketingLoopIntervalMs = Math.max(1000, Number(delayMs) || 20000);
+  marketingLoopRemainingMs = marketingLoopIntervalMs;
+  marketingLoopStartAt = Date.now();
+
+  resetarBarraMarketing();
+  iniciarAnimacaoBarraMarketing();
+
+  marketingLoopTimer = setTimeout(() => {
+    if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
+    proximoSlideMarketingPainel();
+  }, marketingLoopIntervalMs);
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
   resetHomePanelsDesktop();
+
+  document.querySelectorAll('.home-mobile-tab-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      ativarHomeMobileTab(this.dataset.homeTab);
+    });
+  });
+
+  document.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('click', function () {
+      const page = this.dataset.page;
+
+      if (page === 'home') {
+        window.location.reload();
+        return;
+      }
+
+      DefinirPaginaAtiva(page, this);
+
+      if (page === 'secao-clientes') carregarClientes();
+    });
+  });
+
   carregarClimaHome();
   iniciarLoopMarketingPainel({
     imgId: 'painelMarketingImg',
@@ -1138,12 +1208,14 @@ function AbrirModalAgendamentoSala() {
       item.addEventListener('click', function () {
         const page = this.dataset.page;
 
+        if (page === 'home') {
+          window.location.reload();
+          return;
+        }
+
         DefinirPaginaAtiva(page, this);
 
-        // Se abriu a seção de clientes, carrega automaticamente
-        if (page === 'secao-clientes') {
-          carregarClientes();
-        }
+        if (page === 'secao-clientes') carregarClientes();
       });
     });
 
@@ -1160,9 +1232,8 @@ function AbrirModalAgendamentoSala() {
     });
 
     document.getElementById('AgendarCarro')?.addEventListener('click', () => {
-      alert('A função de agendamento de carro está sendo implantada.');
+      AbrirModalReservaCarro();
     });
-
 
     document.getElementById('AgendarSalaReuniao')?.addEventListener('click', async () => {
       try {
@@ -1714,6 +1785,9 @@ function showPage(pageId) {
 let cachePerfisGestao = [];
 let cacheSetoresGestao = [];
 let cacheLocaisTrabalhoGestao = [];
+let cacheFuncoesGestao = [];
+let cacheLocaisTrabalhoGestaoUnidade = [];
+
 
 async function carregarGestaoUsuarios() {
   try {
@@ -1725,22 +1799,34 @@ async function carregarGestaoUsuarios() {
       tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 form-subtitle-sm">Carregando usuários...</td></tr>`;
     }
 
-    const [usuariosResp, perfisResp, setoresResp, locaisResp] = await Promise.all([
+    const [
+      usuariosResp,
+      perfisResp,
+      setoresResp,
+      locaisResp,
+      funcoesResp,
+      unidadesResp
+    ] = await Promise.all([
       apiGet('/api/gestao-usuarios'),
       apiGet('/api/gestao-usuarios-perfis'),
       apiGet('/api/gestao-usuarios-setores'),
-      apiGet('/api/gestao-usuarios-locais-trabalho'),
+      apiGet('/api/gestao-usuarios-centro-custo'),
+      apiGet('/api/gestao-usuarios-funcoes'),
+      apiGet('/api/gestao-usuarios-locais-trabalho')
     ]);
 
     const usuarios = Array.isArray(usuariosResp?.items) ? usuariosResp.items : [];
     const perfis = Array.isArray(perfisResp?.items) ? perfisResp.items : [];
     const setores = Array.isArray(setoresResp?.items) ? setoresResp.items : [];
     const locais = Array.isArray(locaisResp?.items) ? locaisResp.items : [];
-
+    const funcoes = Array.isArray(funcoesResp?.items) ? funcoesResp.items : [];
+    const unidades = Array.isArray(unidadesResp?.items) ? unidadesResp.items : [];
 
     cachePerfisGestao = perfis;
     cacheSetoresGestao = setores;
     cacheLocaisTrabalhoGestao = locais;
+    cacheFuncoesGestao = funcoes;
+    cacheLocaisTrabalhoGestaoUnidade = unidades;
 
     if (!tbody) return;
 
@@ -1752,12 +1838,14 @@ async function carregarGestaoUsuarios() {
     tbody.innerHTML = usuarios.map(rowUsuario).join('');
   } catch (err) {
     setGestaoUsuariosErro(err?.message || 'Erro ao carregar usuários.');
+
     const tbody = document.getElementById('tbodyGestaoUsuarios');
     if (tbody) {
       tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-sm text-destructive">Falha ao carregar usuários.</td></tr>`;
     }
   }
 }
+
 
 function removerModalGestaoUsuario() {
   document.getElementById('gestaoUsuarioOverlay')?.remove();
@@ -1784,41 +1872,1424 @@ function inputValue(id) {
 function setAbaGestaoUsuario(nome) {
   const abaCorp = document.getElementById('guAbaCorporativo');
   const abaPess = document.getElementById('guAbaPessoal');
+  const abaAdic = document.getElementById('guAbaDadosAdicionais');
+
   const painelCorp = document.getElementById('guPainelCorporativo');
   const painelPess = document.getElementById('guPainelPessoal');
-  const pessoalAtiva = nome === 'pessoal';
+  const painelAdic = document.getElementById('guPainelDadosAdicionais');
 
-  if (!painelCorp || !painelPess) {
-    console.error('Abas de gestão não encontradas.', {
-      painelCorp,
-      painelPess,
-      abaCorp,
-      abaPess
-    });
+  if (!painelCorp || !painelPess || !painelAdic) {
+    console.error('Abas de gestão não encontradas.');
     return;
   }
 
+  const ativa = String(nome || 'corporativo').trim().toLowerCase();
+
+  const estiloAtivo = 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all';
+  const estiloInativo = 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all';
+
   if (abaCorp) {
-    abaCorp.setAttribute('aria-selected', pessoalAtiva ? 'false' : 'true');
-    abaCorp.className = pessoalAtiva
-      ? 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all'
-      : 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all';
+    abaCorp.setAttribute('aria-selected', ativa === 'corporativo' ? 'true' : 'false');
+    abaCorp.className = ativa === 'corporativo' ? estiloAtivo : estiloInativo;
   }
 
   if (abaPess) {
-    abaPess.setAttribute('aria-selected', pessoalAtiva ? 'true' : 'false');
-    abaPess.className = pessoalAtiva
-      ? 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all'
-      : 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all';
+    abaPess.setAttribute('aria-selected', ativa === 'pessoal' ? 'true' : 'false');
+    abaPess.className = ativa === 'pessoal' ? estiloAtivo : estiloInativo;
   }
 
-  painelCorp.hidden = pessoalAtiva;
-  painelPess.hidden = !pessoalAtiva;
+  if (abaAdic) {
+    abaAdic.setAttribute('aria-selected', ativa === 'dados-adicionais' ? 'true' : 'false');
+    abaAdic.className = ativa === 'dados-adicionais' ? estiloAtivo : estiloInativo;
+  }
 
-  painelCorp.classList.toggle('hidden', pessoalAtiva);
-  painelPess.classList.toggle('hidden', !pessoalAtiva);
+  painelCorp.hidden = ativa !== 'corporativo';
+  painelPess.hidden = ativa !== 'pessoal';
+  painelAdic.hidden = ativa !== 'dados-adicionais';
+
+  painelCorp.classList.toggle('hidden', ativa !== 'corporativo');
+  painelPess.classList.toggle('hidden', ativa !== 'pessoal');
+  painelAdic.classList.toggle('hidden', ativa !== 'dados-adicionais');
 }
 
+let LOGO_FRANCIOSI_URL = 'imagens/Logo Sementes.png';
+let LOGO_SF_URL = 'imagens/Logo Sociedade.png';
+
+const ICONE_TELEFONE = '<i class="fas fa-phone-alt"></i>';
+const ICONE_EMAIL = '<i class="fas fa-envelope"></i>';
+const ICONE_LOCAL = '<i class="fas fa-map-marker-alt"></i>';
+
+async function abrirModalAssinatura(usuario = {}) {
+  const u = usuario || {};
+
+  const fotoAtualRel = u.FOTO ?? u.foto ?? '';
+  let fotoAtualAbs = '';
+
+  try {
+    fotoAtualAbs = fotoAtualRel ? absUrlFromApiGestaoUsuarios(fotoAtualRel) : '';
+  } catch (err) {
+    console.error('Erro ao resolver foto da assinatura:', err);
+    fotoAtualAbs = '';
+  }
+
+  const nome = String(u.NOME ?? u.nome ?? '').trim();
+  const funcao = String(u.FUNCAO ?? u.funcao ?? '').trim();
+  const setor = String(u.SETOR ?? u.setor ?? '').trim();
+  const email = String(u.EMAIL ?? u.email ?? '').trim();
+  const telefone = String(u.TELEFONE ?? u.telefone ?? '').trim();
+
+  const unidadeTrabalhoValor = String(
+    u.UNIDADETRABALHO ??
+    u.unidadetrabalho ??
+    ''
+  ).trim();
+
+  let enderecoLocal = '';
+  let nomeLocal = unidadeTrabalhoValor;
+  let telefoneLocal = '';
+
+  try {
+    const listaUnidades = Array.isArray(cacheLocaisTrabalhoGestaoUnidade)
+      ? cacheLocaisTrabalhoGestaoUnidade
+      : [];
+
+    const unidadeEncontrada = listaUnidades.find((item) => {
+      const idItem = String(item.ID ?? item.id ?? '').trim();
+      const codigoItem = String(item.CODIGO ?? item.codigo ?? '').trim();
+      const nomeItem = String(item.NOME ?? item.nome ?? '').trim();
+
+      return (
+        idItem === unidadeTrabalhoValor ||
+        codigoItem === unidadeTrabalhoValor ||
+        nomeItem.toLowerCase() === unidadeTrabalhoValor.toLowerCase()
+      );
+    });
+
+    if (unidadeEncontrada) {
+      nomeLocal = String(
+        unidadeEncontrada.NOME ??
+        unidadeEncontrada.nome ??
+        unidadeTrabalhoValor
+      ).trim();
+
+      enderecoLocal = String(
+        unidadeEncontrada.ENDERECO ??
+        unidadeEncontrada.endereco ??
+        ''
+      ).trim();
+
+      telefoneLocal = String(
+        unidadeEncontrada.TELEFONE ??
+        unidadeEncontrada.telefone ??
+        ''
+      ).trim();
+    }
+  } catch (err) {
+    console.error('Erro ao localizar unidade/endereço/telefone em cacheLocaisTrabalhoGestaoUnidade:', err);
+  }
+
+  const overlayExistente = document.getElementById('assinaturaEmailOverlay');
+  const modalExistente = document.getElementById('assinaturaEmailModal');
+  if (overlayExistente) overlayExistente.remove();
+  if (modalExistente) modalExistente.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'assinaturaEmailOverlay';
+  overlay.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-[120]';
+  document.body.appendChild(overlay);
+
+  const modal = document.createElement('div');
+  modal.id = 'assinaturaEmailModal';
+  modal.className = 'fixed inset-0 z-[130] flex items-center justify-center p-4';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  function escaparHtml(valor) {
+    return String(valor ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatarTelefoneAssinatura(valor) {
+    const numeros = String(valor ?? '').replace(/\D/g, '');
+    if (!numeros) return '';
+    if (typeof formatarCelularBR === 'function') return formatarCelularBR(numeros);
+    return valor;
+  }
+
+  function somenteNumeros(valor) {
+    return String(valor ?? '').replace(/\D/g, '');
+  }
+
+  function gerarLinkMaps(local, endereco) {
+    const texto = [local, endereco].filter(Boolean).join(', ');
+    if (!texto) return '';
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(texto)}`;
+  }
+
+  function perguntarPercentualReducao() {
+    const resposta = window.prompt(
+      'Quantos % menor você quer a imagem PNG?\n\nExemplo: 50 para reduzir 50%\n0 = tamanho original',
+      '50'
+    );
+
+    if (resposta === null) return null;
+
+    const percentual = Number(String(resposta).replace(',', '.').trim());
+
+    if (!Number.isFinite(percentual) || percentual < 0 || percentual >= 100) {
+      alert('Informe um percentual válido entre 0 e 99.');
+      return null;
+    }
+
+    return percentual;
+  }
+
+  async function imageUrlToDataUrl(url) {
+    const resp = await fetch(url, { mode: 'cors' });
+    if (!resp.ok) throw new Error(`Falha ao carregar imagem: ${resp.status}`);
+    const blob = await resp.blob();
+
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function esperarImagens(container) {
+    const imagens = Array.from(container.querySelectorAll('img'));
+    await Promise.all(
+      imagens.map((img) => new Promise((resolve) => {
+        if (img.complete && img.naturalWidth > 0) return resolve();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+      }))
+    );
+  }
+
+  const LARGURA_ASSINATURA = 750;
+  const SCALE_EXPORT = Math.max(2, Math.min(4, window.devicePixelRatio || 2));
+
+  let logoSfRender = typeof LOGO_SF_URL !== 'undefined' ? LOGO_SF_URL : '';
+  let logoFranciosiRender = typeof LOGO_FRANCIOSI_URL !== 'undefined' ? LOGO_FRANCIOSI_URL : '';
+
+  try {
+    if (logoSfRender) logoSfRender = await imageUrlToDataUrl(logoSfRender);
+  } catch (err) {
+    console.warn('Não foi possível converter a logo Sociedade Franciosi para data URL:', err);
+  }
+
+  try {
+    if (logoFranciosiRender) logoFranciosiRender = await imageUrlToDataUrl(logoFranciosiRender);
+  } catch (err) {
+    console.warn('Não foi possível converter a logo Franciosi Sementes para data URL:', err);
+  }
+
+  function gerarHtmlAssinatura(opcoes = {}) {
+    const { modo = 'preview' } = opcoes;
+    const isPng = modo === 'png';
+
+    const nomeEsc = escaparHtml(nome || 'Nome do usuário');
+    const funcaoEsc = escaparHtml(funcao);
+    const emailEsc = escaparHtml(email);
+
+    const telefoneFmt = escaparHtml(formatarTelefoneAssinatura(telefone));
+    const telefoneNum = somenteNumeros(telefone);
+
+    const telefoneLocalFmt = escaparHtml(formatarTelefoneAssinatura(telefoneLocal));
+    const telefoneLocalNum = somenteNumeros(telefoneLocal);
+
+    const enderecoEsc = escaparHtml(enderecoLocal);
+    const nomeLocalEsc = escaparHtml(nomeLocal);
+    const mapsUrl = gerarLinkMaps(nomeLocal, enderecoLocal);
+
+    const siteEmpresa = 'franciosisementes.com.br';
+    const siteEmpresaEsc = escaparHtml(siteEmpresa);
+
+    const linhaTelefonesHref = `
+      ${telefoneLocalFmt ? `<a href="tel:${escaparHtml(telefoneLocalNum)}" style="color:#25348D; text-decoration:none; font-weight:700;">${telefoneLocalFmt}</a>` : ''}
+      ${telefoneLocalFmt && telefoneFmt ? `<span style="color:#25348D; font-weight:700;"> | </span>` : ''}
+      ${telefoneFmt ? `<a href="tel:${escaparHtml(telefoneNum)}" style="color:#25348D; text-decoration:none;">${telefoneFmt}</a>` : ''}
+    `;
+
+    const paddingCargoBottom = isPng ? '0 0 6px 0' : '0 0 2px 0';
+    const marginBlocoFuncao = isPng ? '0 0 12px 0' : '0 0 10px 0';
+    const lineHeightCargo = isPng ? '1.10' : '1.15';
+    const unidadeMarginTop = isPng ? '6px' : '0';
+
+    const unidadeLineHeight = isPng ? '1' : '1.15';
+
+    // CONTROLE DO TEXTO DENTRO DO QUADRO AZUL NO PNG:
+    // para subir o texto -> diminua o padding-top e/ou aumente o padding-bottom
+    // para descer o texto -> aumente o padding-top e/ou diminua o padding-bottom
+    const unidadePadding = isPng ? '0px 10px 13px 10px' : '4px 10px';
+
+    const unidadeVerticalAlign = isPng ? 'middle' : 'baseline';
+
+    const blocoFuncaoEUnidade = (funcaoEsc || nomeLocalEsc) ? `
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:${marginBlocoFuncao}; border-collapse:collapse; border-spacing:0;">
+        ${funcaoEsc ? `
+          <tr>
+            <td style="padding:${paddingCargoBottom};">
+              <div
+                style="
+                  font-size:14px;
+                  line-height:${lineHeightCargo};
+                  font-weight:600;
+                  color:#9AC43C;
+                  margin:0;
+                  display:block;
+                "
+              >
+                ${funcaoEsc}
+              </div>
+            </td>
+          </tr>
+        ` : ''}
+        ${nomeLocalEsc ? `
+          <tr>
+            <td style="padding:0;">
+              ${mapsUrl ? `
+                <a
+                  href="${escaparHtml(mapsUrl)}"
+                  target="_blank"
+                  style="
+                    display:inline-block;
+                    background:#25348D;
+                    color:#ffffff;
+                    font-size:14px;
+                    line-height:${unidadeLineHeight};
+                    font-weight:600;
+                    margin:${unidadeMarginTop} 0 0 0;
+                    padding:${unidadePadding};
+                    border-radius:999px;
+                    text-decoration:none;
+                    white-space:nowrap;
+                    vertical-align:${unidadeVerticalAlign};
+                  "
+                >
+                  ${nomeLocalEsc}
+                </a>
+              ` : `
+                <span
+                  style="
+                    display:inline-block;
+                    background:#25348D;
+                    color:#ffffff;
+                    font-size:14px;
+                    line-height:${unidadeLineHeight};
+                    font-weight:600;
+                    margin:${unidadeMarginTop} 0 0 0;
+                    padding:${unidadePadding};
+                    border-radius:999px;
+                    text-decoration:none;
+                    white-space:nowrap;
+                    vertical-align:${unidadeVerticalAlign};
+                  "
+                >
+                  ${nomeLocalEsc}
+                </span>
+              `}
+            </td>
+          </tr>
+        ` : ''}
+      </table>
+    ` : '';
+
+    return `
+<table cellpadding="0" cellspacing="0" border="0"
+  style="
+    width:${LARGURA_ASSINATURA}px;
+    max-width:${LARGURA_ASSINATURA}px;
+    font-family:'Barlow', Arial, sans-serif;
+    border-collapse:collapse;
+    border-spacing:0;
+    background:#ffffff;
+  ">
+  <tr>
+    <td style="padding:18px 20px; background:#ffffff;">
+      <table cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; border-spacing:0;">
+        <tr>
+          <td width="210" style="width:210px; vertical-align:middle; padding-right:16px;">
+            <table cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; border-spacing:0;">
+              <tr>
+                <td style="padding:0 0 18px 0; text-align:center;">
+                  <img
+                    src="${escaparHtml(logoSfRender || LOGO_SF_URL)}"
+                    crossorigin="anonymous"
+                    alt="Sociedade Franciosi"
+                    style="max-width:190px; width:100%; height:auto; display:block; margin:0 auto;"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td style="text-align:center;">
+                  <img
+                    src="${escaparHtml(logoFranciosiRender || LOGO_FRANCIOSI_URL)}"
+                    crossorigin="anonymous"
+                    alt="Franciosi Sementes"
+                    style="max-width:165px; width:100%; height:auto; display:block; margin:0 auto;"
+                  />
+                </td>
+              </tr>
+            </table>
+          </td>
+
+          <td width="12" style="width:12px; vertical-align:top; padding-right:14px;">
+            <div
+              style="
+                width:4px;
+                height:210px;
+                margin:0 auto;
+                border-radius:999px;
+                background:#79A81E;
+                background:linear-gradient(to bottom, #79A81E 0%, #25348D 100%);
+              "
+            ></div>
+          </td>
+
+          <td style="vertical-align:top;">
+            <div
+              style="
+                font-size:20px;
+                line-height:1.08;
+                font-family:'Barlow', Arial, sans-serif;
+                font-weight:700;
+                color:#25348D;
+                margin:0 0 2px 0;
+              "
+            >
+              ${nomeEsc}
+            </div>
+
+            ${blocoFuncaoEUnidade}
+
+            ${linhaTelefonesHref.trim() ? `
+              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 6px 0; border-collapse:collapse; border-spacing:0;">
+                <tr>
+                  <td style="padding:0 8px 0 0; vertical-align:top; color:#25348D; font-size:16px; line-height:1;">
+                    ${ICONE_TELEFONE}
+                  </td>
+                  <td style="padding:0; font-size:13px; line-height:1.35; color:#25348D;">
+                    ${linhaTelefonesHref}
+                  </td>
+                </tr>
+              </table>
+            ` : ''}
+
+            ${emailEsc ? `
+              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 6px 0; border-collapse:collapse; border-spacing:0;">
+                <tr>
+                  <td style="padding:0 8px 0 0; vertical-align:top; color:#25348D; font-size:15px; line-height:1;">
+                    ${ICONE_EMAIL}
+                  </td>
+                  <td style="padding:0; font-size:13px; line-height:1.35;">
+                    <a href="mailto:${emailEsc}" style="color:#25348D; text-decoration:none;">
+                      ${emailEsc}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            ` : ''}
+
+            ${(enderecoEsc || nomeLocalEsc) ? `
+              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 6px 0; border-collapse:collapse; border-spacing:0;">
+                <tr>
+                  <td style="padding:0 8px 0 0; vertical-align:top; color:#25348D; font-size:16px; line-height:1;">
+                    ${ICONE_LOCAL}
+                  </td>
+                  <td style="padding:0; font-size:13px; line-height:1.4; color:#25348D;">
+                    ${mapsUrl ? `<a href="${escaparHtml(mapsUrl)}" target="_blank" style="color:#25348D; text-decoration:none;">` : ''}
+                      ${enderecoEsc || nomeLocalEsc}
+                    ${mapsUrl ? `</a>` : ''}
+                  </td>
+                </tr>
+              </table>
+            ` : ''}
+
+            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; border-spacing:0;">
+              <tr>
+                <td style="padding:0 8px 0 0; vertical-align:top; color:#25348D; font-size:16px; line-height:1;">
+                  <i class="fas fa-globe"></i>
+                </td>
+                <td style="padding:0; font-size:13px; line-height:1.35;">
+                  <a href="https://${siteEmpresaEsc}" target="_blank" style="color:#25348D; text-decoration:none;">
+                    ${siteEmpresaEsc}
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+    `.trim();
+  }
+
+  function gerarDocumentoHtmlAssinatura() {
+    const assinatura = gerarHtmlAssinatura({ modo: 'preview' });
+    return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Assinatura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body, table, td, div, span, a, p {
+      font-family: 'Barlow', Arial, sans-serif !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
+    }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  ${assinatura}
+</body>
+</html>
+    `.trim();
+  }
+
+  function atualizarPreview() {
+    const preview = modal.querySelector('#assinaturaPreview');
+    if (!preview) return;
+    preview.innerHTML = gerarHtmlAssinatura({ modo: 'preview' });
+  }
+
+  function fecharModalAssinatura() {
+    overlay.remove();
+    modal.remove();
+  }
+
+  modal.innerHTML = `
+    <div class="w-full max-w-5xl glass rounded-2xl shadow-2xl border border-border overflow-hidden">
+      <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+        <div>
+          <h3 class="form-title-sm font-semibold text-foreground">Gerar assinatura de e-mail</h3>
+          <p class="form-subtitle-sm">Baixe a assinatura em HTML ou PNG.</p>
+        </div>
+
+        <button id="btnFecharAssinaturaEmail" type="button"
+          class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+          aria-label="Fechar" title="Fechar">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 border-b border-border space-y-3">
+        <label class="form-label-sm block">Pré-visualização</label>
+
+        <div class="rounded-2xl border border-border bg-[#f7f7f7] p-5 overflow-auto flex justify-center">
+          <div
+            id="assinaturaCaptureWrap"
+            style="
+              width:${LARGURA_ASSINATURA}px;
+              min-width:${LARGURA_ASSINATURA}px;
+              max-width:${LARGURA_ASSINATURA}px;
+              overflow:hidden;
+              display:inline-block;
+              background:#ffffff;
+            "
+          >
+            <div id="assinaturaPreview"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-5 flex flex-col sm:flex-row gap-3">
+        <button id="btnBaixarHtmlAssinatura" type="button"
+          class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
+          Baixar .htm
+        </button>
+
+        <button id="btnBaixarPngAssinatura" type="button"
+          class="sm:flex-1 rounded-xl border border-border bg-white/70 form-control-sm font-medium hover:bg-white transition-all">
+          Baixar PNG
+        </button>
+
+        <button id="btnFecharAssinaturaEmailRodape" type="button"
+          class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all">
+          Fechar
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  function renderizarTudo() {
+    atualizarPreview();
+  }
+
+  overlay.addEventListener('click', fecharModalAssinatura);
+  modal.querySelector('#btnFecharAssinaturaEmail')?.addEventListener('click', fecharModalAssinatura);
+  modal.querySelector('#btnFecharAssinaturaEmailRodape')?.addEventListener('click', fecharModalAssinatura);
+
+  modal.querySelector('#btnBaixarHtmlAssinatura')?.addEventListener('click', () => {
+    try {
+      const html = gerarDocumentoHtmlAssinatura();
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `assinatura-${(nome || 'usuario').toLowerCase().replace(/\s+/g, '-')}.htm`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Erro ao baixar HTML da assinatura:', err);
+      alert('Não foi possível baixar o arquivo .htm');
+    }
+  });
+
+  modal.querySelector('#btnBaixarPngAssinatura')?.addEventListener('click', async () => {
+    let tempWrap = null;
+
+    try {
+      if (typeof html2canvas !== 'function') {
+        alert('Para baixar PNG, carregue a biblioteca html2canvas no projeto.');
+        return;
+      }
+
+      const percentualReducao = perguntarPercentualReducao();
+      if (percentualReducao === null) return;
+
+      const fatorReducao = Math.max(0.01, (100 - percentualReducao) / 100);
+
+      tempWrap = document.createElement('div');
+      tempWrap.style.position = 'fixed';
+      tempWrap.style.left = '-100000px';
+      tempWrap.style.top = '0';
+      tempWrap.style.width = `${LARGURA_ASSINATURA}px`;
+      tempWrap.style.minWidth = `${LARGURA_ASSINATURA}px`;
+      tempWrap.style.maxWidth = `${LARGURA_ASSINATURA}px`;
+      tempWrap.style.background = '#ffffff';
+      tempWrap.style.padding = '0';
+      tempWrap.style.margin = '0';
+      tempWrap.style.boxSizing = 'border-box';
+      tempWrap.style.zIndex = '-1';
+      tempWrap.innerHTML = gerarHtmlAssinatura({ modo: 'png' });
+
+      document.body.appendChild(tempWrap);
+
+      if (document.fonts?.ready) {
+        await document.fonts.ready;
+      }
+
+      await esperarImagens(tempWrap);
+
+      const canvas = await html2canvas(tempWrap, {
+        backgroundColor: '#ffffff',
+        scale: SCALE_EXPORT,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        width: LARGURA_ASSINATURA,
+        windowWidth: LARGURA_ASSINATURA
+      });
+
+      const canvasReduzido = document.createElement('canvas');
+      canvasReduzido.width = Math.max(1, Math.round(canvas.width * fatorReducao));
+      canvasReduzido.height = Math.max(1, Math.round(canvas.height * fatorReducao));
+
+      const ctx = canvasReduzido.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(
+        canvas,
+        0, 0, canvas.width, canvas.height,
+        0, 0, canvasReduzido.width, canvasReduzido.height
+      );
+
+      canvasReduzido.toBlob((blob) => {
+        if (!blob) {
+          alert('Não foi possível gerar o PNG.');
+          return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `assinatura-${(nome || 'usuario').toLowerCase().replace(/\s+/g, '-')}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } catch (err) {
+      console.error('Erro ao gerar PNG da assinatura:', err);
+      alert('Não foi possível gerar o PNG da assinatura.');
+    } finally {
+      if (tempWrap) tempWrap.remove();
+    }
+  });
+
+  renderizarTudo();
+}
+
+async function abrirModalCrachaRetrato(usuario = {}) {
+  const u = usuario || {};
+
+  const nomeCompleto = String(u.NOME ?? u.nome ?? '').trim();
+  const setor = String(u.SETOR ?? u.setor ?? '').trim();
+
+  const partesNome = nomeCompleto.split(/\s+/).filter(Boolean);
+  const nomeCracha = (() => {
+    if (!partesNome.length) return '';
+    if (partesNome.length === 1) return partesNome[0];
+    return `${partesNome[0]} ${partesNome[partesNome.length - 1]}`;
+  })();
+
+  const fotoAtualRel = u.FOTO ?? u.foto ?? '';
+  let fotoAtualAbs = '';
+
+  try {
+    fotoAtualAbs = fotoAtualRel ? absUrlFromApiGestaoUsuarios(fotoAtualRel) : '';
+  } catch (err) {
+    console.error('Erro ao resolver foto do crachá:', err);
+    fotoAtualAbs = '';
+  }
+
+  function escaparHtml(valor) {
+    return String(valor ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  async function imageUrlToDataUrl(url) {
+    if (!url) return '';
+    const resp = await fetch(url, { mode: 'cors' });
+    if (!resp.ok) throw new Error(`Falha ao carregar imagem: ${resp.status}`);
+    const blob = await resp.blob();
+
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  let logoPrincipal = typeof LOGO_FRANCIOSI_URL !== 'undefined'
+    ? LOGO_FRANCIOSI_URL
+    : (typeof LOGOFRANCIOSIURL !== 'undefined' ? LOGOFRANCIOSIURL : '');
+
+  let logoSecundaria = typeof LOGO_SF_URL !== 'undefined'
+    ? LOGO_SF_URL
+    : (typeof LOGOSFURL !== 'undefined' ? LOGOSFURL : '');
+
+  let fundoCracha = typeof FUNDO_CRACHA_URL !== 'undefined'
+    ? FUNDO_CRACHA_URL
+    : 'imagens/fundo-cracha.png';
+
+  try {
+    if (logoPrincipal) logoPrincipal = await imageUrlToDataUrl(logoPrincipal);
+  } catch (err) {
+    console.warn('Não foi possível carregar a logo principal:', err);
+  }
+
+  try {
+    if (logoSecundaria) logoSecundaria = await imageUrlToDataUrl(logoSecundaria);
+  } catch (err) {
+    console.warn('Não foi possível carregar a logo secundária:', err);
+  }
+
+  try {
+    if (fundoCracha) fundoCracha = await imageUrlToDataUrl(fundoCracha);
+  } catch (err) {
+    console.warn('Não foi possível carregar a imagem de fundo do crachá:', err);
+    fundoCracha = '';
+  }
+
+  const iniciais = (() => {
+    if (!partesNome.length) return 'US';
+    if (partesNome.length === 1) return partesNome[0].slice(0, 2).toUpperCase();
+    return `${partesNome[0][0] || ''}${partesNome[partesNome.length - 1][0] || ''}`.toUpperCase();
+  })();
+
+  const overlayExistente = document.getElementById('crachaPreviewOverlay');
+  const modalExistente = document.getElementById('crachaPreviewModal');
+  if (overlayExistente) overlayExistente.remove();
+  if (modalExistente) modalExistente.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'crachaPreviewOverlay';
+  overlay.className = 'fixed inset-0 bg-black/55 backdrop-blur-sm z-[140]';
+  document.body.appendChild(overlay);
+
+  const modal = document.createElement('div');
+  modal.id = 'crachaPreviewModal';
+  modal.className = 'fixed inset-0 z-[150] flex items-center justify-center p-4';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  function gerarHtmlCrachaRetrato() {
+    return `
+      <div class="cracha-sheet">
+        <div class="cracha-card cracha-frente">
+          <div class="cracha-frente-fundo"></div>
+
+          <div class="cracha-front-logos-wrap">
+            <div class="cracha-front-logos">
+              ${logoSecundaria ? `<img src="${escaparHtml(logoSecundaria)}" alt="Logo Sociedade Franciosi" class="cracha-logo-top">` : ''}
+              ${logoPrincipal ? `<img src="${escaparHtml(logoPrincipal)}" alt="Logo Franciosi" class="cracha-logo-main">` : ''}
+            </div>
+          </div>
+
+          <div class="cracha-front-panel">
+            <div class="cracha-photo-wrap">
+              ${
+                fotoAtualAbs
+                  ? `<img src="${escaparHtml(fotoAtualAbs)}" alt="${escaparHtml(nomeCracha)}" class="cracha-photo">`
+                  : `<div class="cracha-photo-placeholder">${escaparHtml(iniciais)}</div>`
+              }
+            </div>
+
+            <div class="cracha-front-content">
+              <div class="cracha-nome">${escaparHtml(nomeCracha || 'Nome do colaborador')}</div>
+              <div class="cracha-setor">${escaparHtml(setor || 'Setor')}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cracha-card cracha-verso">
+          <div class="cracha-verso-faixa-topo"></div>
+
+          <div class="cracha-verso-header">
+            <div class="cracha-front-logos cracha-front-logos-verso">
+              ${logoSecundaria ? `<img src="${escaparHtml(logoSecundaria)}" alt="Logo Sociedade Franciosi" class="cracha-logo-top">` : ''}
+              ${logoPrincipal ? `<img src="${escaparHtml(logoPrincipal)}" alt="Logo Franciosi" class="cracha-logo-main">` : ''}
+            </div>
+          </div>
+
+          <div class="cracha-verso-footer">Uso corporativo interno</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function gerarDocumentoImpressaoCracha() {
+    const htmlCracha = gerarHtmlCrachaRetrato();
+
+    return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Crachá Retrato - ${escaparHtml(nomeCracha || 'Colaborador')}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: 54mm 85.6mm;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Barlow', Arial, sans-serif;
+      background: #eef2f7;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8mm;
+      padding: 8mm;
+    }
+
+    .cracha-sheet {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8mm;
+      justify-content: center;
+    }
+
+    .cracha-card {
+      position: relative;
+      width: 54mm;
+      height: 85.6mm;
+      border-radius: 4mm;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: none;
+      border: 0.35mm solid rgba(37, 52, 141, 0.10);
+    }
+
+    .cracha-frente,
+    .cracha-verso {
+      background: #ffffff;
+    }
+
+    .cracha-frente-fundo {
+      position: absolute;
+      inset: 0;
+      background-color: #ffffff;
+      background-image: ${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      z-index: 1;
+    }
+
+    .cracha-front-logos-wrap {
+      position: absolute;
+      left: 4mm;
+      right: 4mm;
+      bottom: 6mm;
+      z-index: 3;
+      display: flex;
+      justify-content: center;
+    }
+
+    .cracha-front-logos {
+      min-width: 42mm;
+      max-width: 47mm;
+      min-height: 10.5mm;
+      padding: 1.8mm 2.2mm;
+      border-radius: 3.4mm;
+      background: #ffffff;
+      box-shadow: none;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 3mm;
+    }
+
+    .cracha-front-logos-verso {
+      margin-bottom: 1.5mm;
+    }
+
+    .cracha-logo-top {
+      width: 23mm;
+      max-width: 23mm;
+      max-height: 10mm;
+      object-fit: contain;
+      display: block;
+    }
+
+    .cracha-logo-main {
+      width: 21mm;
+      max-width: 21mm;
+      max-height: 9mm;
+      object-fit: contain;
+      display: block;
+    }
+
+    .cracha-front-panel {
+      position: absolute;
+      left: 4mm;
+      right: 4mm;
+      top: 5mm;
+      bottom: 25mm;
+      z-index: 3;
+      background: #ffffff;
+      border-radius: 4mm;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 4.4mm 3mm 3.2mm 3mm;
+    }
+
+    .cracha-photo-wrap {
+      position: relative;
+      width: 34mm;
+      height: 34mm;
+      border-radius: 50%;
+      overflow: hidden;
+      padding: 1.2mm;
+      background: #ffffff;
+      box-shadow: none;
+      margin-bottom: 3.8mm;
+      flex: 0 0 auto;
+      border: 0 !important;
+      outline: none !important;
+    }
+
+    .cracha-photo,
+    .cracha-photo-placeholder {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      background: #e8edf8;
+      border: 0 !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    .cracha-photo-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #25348D;
+      font-size: 8.2mm;
+      font-weight: 800;
+    }
+
+    .cracha-front-content {
+      width: 100%;
+      text-align: center;
+    }
+
+    .cracha-nome {
+      color: #123b9c;
+      font-size: 4.2mm;
+      line-height: 1.04;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 2mm;
+      word-break: break-word;
+    }
+
+    .cracha-setor {
+      display: inline-block;
+      max-width: 100%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #79A81E;
+      font-size: 3.3mm;
+      line-height: 1.05;
+      font-weight: 900;
+      text-transform: uppercase;
+      word-break: break-word;
+    }
+
+    .cracha-verso-faixa-topo {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 22mm;
+      background-color: #ffffff;
+      background-image: ${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      z-index: 1;
+    }
+
+    .cracha-verso-header {
+      position: relative;
+      z-index: 2;
+      padding: 5mm 3.5mm 2.5mm 3.5mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5mm;
+      text-align: center;
+    }
+
+    .cracha-verso-footer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 8mm;
+      background-color: #ffffff;
+      background-image: ${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7mm;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 0 2mm;
+      text-align: center;
+      z-index: 2;
+    }
+
+    @media print {
+      html, body {
+        background: #fff;
+      }
+
+      body {
+        padding: 0;
+        gap: 4mm;
+      }
+
+      .cracha-sheet {
+        gap: 4mm;
+      }
+
+      .cracha-card,
+      .cracha-front-logos,
+      .cracha-front-panel,
+      .cracha-photo-wrap {
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  ${htmlCracha}
+  <script>
+    window.onload = () => {
+      setTimeout(() => window.print(), 400);
+    };
+  </script>
+</body>
+</html>
+    `.trim();
+  }
+
+  function abrirImpressao() {
+    const html = gerarDocumentoImpressaoCracha();
+    const win = window.open('', '_blank', 'width=1200,height=900');
+
+    if (!win) {
+      alert('Não foi possível abrir a janela de impressão. Verifique se o navegador bloqueou o pop-up.');
+      return;
+    }
+
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  }
+
+  function fecharModalCracha() {
+    overlay.remove();
+    modal.remove();
+  }
+
+  modal.innerHTML = `
+    <div class="w-full max-w-6xl glass rounded-2xl border border-border overflow-hidden">
+      <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+        <div>
+          <h3 class="form-title-sm font-semibold text-foreground">Gerar crachá retrato</h3>
+          <p class="form-subtitle-sm">Pré-visualização vertical frente e verso.</p>
+        </div>
+
+        <button id="btnFecharCracha" type="button"
+          class="w-10 h-10 rounded-xl bg-white border border-border hover:bg-white transition-all flex items-center justify-center"
+          aria-label="Fechar" title="Fechar">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="px-6 py-6 bg-[#f6f7fb]">
+        <div id="previewCrachaArea" class="flex flex-wrap gap-6 justify-center"></div>
+      </div>
+
+      <div class="px-6 py-5 flex flex-col sm:flex-row gap-3 border-t border-border">
+        <button id="btnImprimirCracha" type="button"
+          class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
+          Imprimir crachá
+        </button>
+
+        <button id="btnFecharCrachaRodape" type="button"
+          class="sm:flex-1 rounded-xl border border-border bg-white form-control-sm font-medium hover:bg-white transition-all">
+          Fechar
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const previewArea = modal.querySelector('#previewCrachaArea');
+  if (previewArea) {
+    previewArea.innerHTML = `
+      <style>
+        .mini-cracha-sheet {
+          display:flex;
+          flex-wrap:wrap;
+          gap:24px;
+          justify-content:center;
+        }
+
+        .mini-cracha {
+          width:204px;
+          height:323px;
+          border-radius:16px;
+          overflow:hidden;
+          box-shadow:none;
+          border:1px solid rgba(37,52,141,.08);
+          background:#fff;
+          position:relative;
+          font-family:'Barlow', Arial, sans-serif;
+        }
+
+        .mini-frente,
+        .mini-verso {
+          background:#fff;
+        }
+
+        .mini-frente-fundo {
+          position:absolute;
+          inset:0;
+          background-color:#ffffff;
+          background-image:${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
+          background-repeat:no-repeat;
+          background-position:center;
+          background-size:cover;
+          z-index:1;
+        }
+
+        .mini-front-logos-wrap {
+          position:absolute;
+          left:14px;
+          right:14px;
+          bottom:16px;
+          z-index:3;
+          display:flex;
+          justify-content:center;
+        }
+
+        .mini-front-logos {
+          min-width:162px;
+          max-width:186px;
+          min-height:40px;
+          padding:6px 10px;
+          border-radius:14px;
+          background:#ffffff;
+          box-shadow:none;
+          display:flex;
+          flex-direction:row;
+          align-items:center;
+          justify-content:center;
+          gap:12px;
+        }
+
+        .mini-front-logos-verso {
+          margin-bottom:6px;
+        }
+
+        .mini-logo-top {
+          width:90px;
+          max-width:90px;
+          max-height:34px;
+          object-fit:contain;
+        }
+
+        .mini-logo-main {
+          width:82px;
+          max-width:82px;
+          max-height:30px;
+          object-fit:contain;
+        }
+
+        .mini-front-panel {
+          position:absolute;
+          left:16px;
+          right:16px;
+          top:14px;
+          bottom:86px;
+          z-index:3;
+          background:#ffffff;
+          border-radius:18px;
+          box-shadow:none;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:flex-start;
+          padding:16px 12px 12px 12px;
+        }
+
+        .mini-photo-wrap {
+          position: relative;
+          width: 124px;
+          height: 124px;
+          border-radius: 50%;
+          overflow: hidden;
+          padding: 4px;
+          background: #ffffff;
+          box-shadow: none;
+          margin-bottom: 14px;
+          flex: 0 0 auto;
+          border: 0 !important;
+          outline: none !important;
+        }
+
+        .mini-photo,
+        .mini-photo-placeholder {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+          background: #e8edf8;
+          border: 0 !important;
+          outline: none !important;
+          box-shadow: none !important;
+          display: block;
+        }
+
+        .mini-photo-placeholder {
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          color:#25348D;
+          font-size:32px;
+          font-weight:800;
+        }
+
+        .mini-front-content {
+          width:100%;
+          text-align:center;
+        }
+
+        .mini-nome {
+          color:#123b9c;
+          font-size:16px;
+          line-height:1.04;
+          font-weight:900;
+          text-transform:uppercase;
+          margin-bottom:8px;
+          word-break:break-word;
+        }
+
+        .mini-setor {
+          display:inline-block;
+          padding:0;
+          border:0;
+          background:transparent;
+          color:#79A81E;
+          font-size:12px;
+          line-height:1.05;
+          font-weight:900;
+          text-transform:uppercase;
+          word-break:break-word;
+        }
+
+        .mini-verso-faixa-topo {
+          position:absolute;
+          top:0;
+          left:0;
+          right:0;
+          height:75px;
+          background-color:#ffffff;
+          background-image:${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
+          background-repeat:no-repeat;
+          background-position:center;
+          background-size:cover;
+          z-index:1;
+        }
+
+        .mini-verso-header {
+          position:relative;
+          z-index:2;
+          padding:14px 12px 8px 12px;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          gap:5px;
+          text-align:center;
+        }
+
+        .mini-verso-footer {
+          position:absolute;
+          left:0;
+          right:0;
+          bottom:0;
+          height:24px;
+          background-color:#ffffff;
+          background-image:${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
+          background-repeat:no-repeat;
+          background-position:center;
+          background-size:cover;
+          color:#fff;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:7px;
+          font-weight:700;
+          letter-spacing:.06em;
+          text-transform:uppercase;
+          padding:0 6px;
+          text-align:center;
+          z-index:2;
+        }
+      </style>
+
+      <div class="mini-cracha-sheet">
+        <div class="mini-cracha mini-frente">
+          <div class="mini-frente-fundo"></div>
+
+          <div class="mini-front-logos-wrap">
+            <div class="mini-front-logos">
+              ${logoSecundaria ? `<img src="${escaparHtml(logoSecundaria)}" class="mini-logo-top" alt="Logo">` : ''}
+              ${logoPrincipal ? `<img src="${escaparHtml(logoPrincipal)}" class="mini-logo-main" alt="Logo">` : ''}
+            </div>
+          </div>
+
+          <div class="mini-front-panel">
+            <div class="mini-photo-wrap">
+              ${
+                fotoAtualAbs
+                  ? `<img src="${escaparHtml(fotoAtualAbs)}" class="mini-photo" alt="${escaparHtml(nomeCracha)}">`
+                  : `<div class="mini-photo-placeholder">${escaparHtml(iniciais)}</div>`
+              }
+            </div>
+
+            <div class="mini-front-content">
+              <div class="mini-nome">${escaparHtml(nomeCracha || 'Nome do colaborador')}</div>
+              <div class="mini-setor">${escaparHtml(setor || 'Setor')}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mini-cracha mini-verso">
+          <div class="mini-verso-faixa-topo"></div>
+
+          <div class="mini-verso-header">
+            <div class="mini-front-logos mini-front-logos-verso">
+              ${logoSecundaria ? `<img src="${escaparHtml(logoSecundaria)}" class="mini-logo-top" alt="Logo">` : ''}
+              ${logoPrincipal ? `<img src="${escaparHtml(logoPrincipal)}" class="mini-logo-main" alt="Logo">` : ''}
+            </div>
+          </div>
+
+          <div class="mini-verso-footer">Uso corporativo interno</div>
+        </div>
+      </div>
+    `;
+  }
+
+  overlay.addEventListener('click', fecharModalCracha);
+  modal.querySelector('#btnFecharCracha')?.addEventListener('click', fecharModalCracha);
+  modal.querySelector('#btnFecharCrachaRodape')?.addEventListener('click', fecharModalCracha);
+  modal.querySelector('#btnImprimirCracha')?.addEventListener('click', abrirImpressao);
+}
 
 function abrirModalGestaoUsuario({ modo, usuario }) {
   removerModalGestaoUsuario();
@@ -1856,10 +3327,10 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   let perfilOptions = '';
   let setorOptions = '';
   let localTrabalhoOptions = '';
+  let funcaoOptions = '';
+  let unidadeTrabalhoOptions = '';
 
   const perfilLogado = (sessionStorage.getItem('perfilacesso') || '').trim().toLowerCase();
-
-  console.log(perfilLogado);
 
   const perfisPermitidos = Array.isArray(cachePerfisGestao)
     ? cachePerfisGestao.filter((p) => {
@@ -1891,8 +3362,34 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     );
   } catch (err) {
     console.error('Erro ao gerar options de Centro de Custo:', err);
-    localTrabalhoOptions = `<option value="" selected>Erro ao carregar locais</option>`;
+    localTrabalhoOptions = `<option value="" selected>Erro ao carregar centros de custo</option>`;
   }
+
+  try {
+    funcaoOptions = optionsFromRows(
+      cacheFuncoesGestao || [],
+      u.FUNCAO ?? u.funcao ?? '',
+      'Selecione...'
+    );
+  } catch (err) {
+    console.error('Erro ao gerar options de função:', err);
+    funcaoOptions = `<option value="" selected>Erro ao carregar funções</option>`;
+  }
+
+  try {
+    unidadeTrabalhoOptions = optionsFromRows(
+      cacheLocaisTrabalhoGestaoUnidade || [],
+      u.UNIDADE_TRABALHO ?? u.unidade_trabalho ?? u.UNIDADETRABALHO ?? u.unidadetrabalho ?? '',
+      'Selecione...'
+    );
+  } catch (err) {
+    console.error('Erro ao gerar options de unidade de trabalho:', err);
+    unidadeTrabalhoOptions = `<option value="" selected>Erro ao carregar unidades</option>`;
+  }
+
+  const dataAdmissaoAtual = String(
+    u.DATA_ADMISSAO ?? u.data_admissao ?? u.DATAADMISSAO ?? u.dataadmissao ?? ''
+  ).slice(0, 10);
 
   const emailCorporativo = u.EMAIL ?? u.email ?? '';
   const telefoneCorporativo = formatarCelularBR(u.TELEFONE ?? u.telefone ?? '');
@@ -1902,9 +3399,13 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   const rgAtual = u.RG ?? u.rg ?? '';
   const cnhAtual = u.CNH ?? u.cnh ?? '';
   const cnhCategoriaAtual = u.CNH_CATEGORIA ?? u.cnh_categoria ?? u.CNHCATEGORIA ?? u.cnhcategoria ?? '';
-  const dataNascimentoAtual = String(u.DATA_NASCIMENTO ?? u.data_nascimento ?? u.DATANASCIMENTO ?? u.datanascimento ?? '').slice(0, 10);
+  const dataNascimentoAtual = String(
+    u.DATA_NASCIMENTO ?? u.data_nascimento ?? u.DATANASCIMENTO ?? u.datanascimento ?? ''
+  ).slice(0, 10);
   const estadoCivilAtual = u.ESTADO_CIVIL ?? u.estado_civil ?? u.ESTADOCIVIL ?? u.estadocivil ?? '';
-  const telefonePessoalAtual = formatarCelularBR(u.TELEFONE_PESSOAL ?? u.telefone_pessoal ?? u.TELEFONEPESSOAL ?? u.telefonepessoal ?? '');
+  const telefonePessoalAtual = formatarCelularBR(
+    u.TELEFONE_PESSOAL ?? u.telefone_pessoal ?? u.TELEFONEPESSOAL ?? u.telefonepessoal ?? ''
+  );
   const emailPessoalAtual = u.EMAIL_PESSOAL ?? u.email_pessoal ?? u.EMAILPESSOAL ?? u.emailpessoal ?? '';
   const cnhValidadeAtual = String(
     u.CNH_VALIDADE ??
@@ -1913,6 +3414,18 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     u.cnhvalidade ??
     ''
   ).slice(0, 10);
+
+  const apelidoAtual = u.APELIDO ?? u.apelido ?? '';
+  const numeroCalcadoAtual = u.NUMERO_CALCADO ?? u.numero_calcado ?? u.NUMEROCALCADO ?? u.numerocalcado ?? '';
+  const tamanhoCamisaAtual = String(
+    u.TAMANHO_CAMISA ?? u.tamanho_camisa ?? u.TAMANHOCAMISA ?? u.tamanhocamisa ?? ''
+  ).trim().toUpperCase();
+  const tamanhoCalcaAtual = u.TAMANHO_CALCA ?? u.tamanho_calca ?? u.TAMANHOCALCA ?? u.tamanhocalca ?? '';
+  const sexoAtual = String(u.SEXO ?? u.sexo ?? '').trim().toUpperCase();
+  const temFilhosAtual = String(u.TEM_FILHOS ?? u.tem_filhos ?? u.TEMFILHOS ?? u.temfilhos ?? 'NÃO').trim().toUpperCase();
+  const quantidadeFilhosAtual = String(
+    u.QUANTIDADE_FILHOS ?? u.quantidade_filhos ?? u.QUANTIDADEFILHOS ?? u.quantidadefilhos ?? ''
+  ).trim();
 
   const cnhArquivoAtualRel =
     u.CNH_ARQUIVO ??
@@ -1932,7 +3445,6 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     cnhArquivoAtualAbs = '';
   }
 
-
   modal.innerHTML = `
     <div class="w-full h-full overflow-auto">
       <div class="min-h-full flex items-start justify-center p-4 md:p-8">
@@ -1944,7 +3456,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                   ${isView ? 'Visualizar usuário' : isEdit ? 'Editar usuário' : 'Novo usuário'}
                 </h3>
                 <p class="form-subtitle-sm">
-                  ${isView ? 'Consulta de dados do usuário' : 'Dados corporativos, pessoais e segurança'}
+                  ${isView ? 'Consulta de dados do usuário' : 'Dados corporativos, pessoais e adcionais (*Abas obrigatórias | **Campos Obrigatórios)'}
                 </p>
               </div>
 
@@ -2042,7 +3554,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                   ${isNew ? `
                   <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-2">
                     <label class="form-label-sm">Senha inicial</label>
-                    <input id="guSenha" type="password" minlength="6" required
+                    <input id="guSenha" type="password" minlength="6"
                       class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                       placeholder="Mínimo 6 caracteres"
                       autocomplete="new-password"
@@ -2056,12 +3568,17 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                   <div class="flex flex-wrap gap-2">
                     <button id="guAbaCorporativo" type="button" aria-selected="true"
                       class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all">
-                      Corporativo
+                      Corporativo*
                     </button>
 
                     <button id="guAbaPessoal" type="button" aria-selected="false"
                       class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">
-                      Pessoal
+                      Pessoal*
+                    </button>
+
+                    <button id="guAbaDadosAdicionais" type="button" aria-selected="false"
+                      class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">
+                      Dados adicionais
                     </button>
                   </div>
 
@@ -2069,36 +3586,28 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                     <div class="rounded-2xl border border-border bg-white/40 p-4">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2 md:col-span-2">
-                          <label class="form-label-sm">Nome</label>
+                          <label class="form-label-sm">Nome **</label>
                           <input id="guNome" type="text" required ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(u.NOME ?? u.nome ?? '')}"
-                            autocomplete="off" />
+                            value="${escapeHtml(u.NOME ?? u.nome ?? '')}" autocomplete="off">
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">E-mail corporativo</label>
-                          <input id="guEmailCorporativo" type="email" required ${inputReadonlyAttr}
+                          <input id="guEmailCorporativo" type="email" ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(emailCorporativo)}"
-                            autocomplete="off"
-                            autocapitalize="off"
-                            autocorrect="off"
-                            spellcheck="false"
-                            data-lpignore="true" />
+                            value="${escapeHtml(emailCorporativo)}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">Telefone corporativo</label>
                           <input id="guTelefoneCorporativo" type="text" ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(telefoneCorporativo)}"
-                            placeholder="(77) 9XXXX-XXXX"
-                            autocomplete="off" />
+                            value="${escapeHtml(telefoneCorporativo)}" placeholder="77 9XXXX-XXXX" autocomplete="off">
                         </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Perfil</label>
+                          <label class="form-label-sm">Perfil **</label>
                           <select id="guPerfil" required ${formDisabledAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
                             ${perfilOptions}
@@ -2106,50 +3615,111 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                         </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Setor</label>
-                          <div class="flex gap-2">
-                            <select id="guSetor" required ${formDisabledAttr}
-                              class="flex-1 rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30 uppercase">
-                              ${setorOptions}
-                            </select>
-
-                            ${isView ? '' : `
-                            <button id="btnAddSetor" type="button"
-                              class="w-12 h-12 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
-                              aria-label="Adicionar setor" title="Adicionar setor">
-                              <i class="fas fa-plus" aria-hidden="true"></i>
-                            </button>
-                            `}
-                          </div>
+                          <label class="form-label-sm">Data admissão **</label>
+                          <input id="guDataAdmissao" type="date" required ${formDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            value="${escapeHtml(dataAdmissaoAtual)}">
                         </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Centro de Custo</label>
-                          <div class="flex gap-2">
-                            <select id="guLocalTrabalho" ${formDisabledAttr}
-                              class="flex-1 rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
+                          <label class="form-label-sm">Função **</label>
+                          <div class="flex items-stretch gap-2">
+                            <select id="guFuncao" required ${formDisabledAttr}
+                              class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
+                              ${funcaoOptions}
+                            </select>
+
+                            ${isView ? '' : `
+                              <button id="btnAddFuncao" type="button"
+                                class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+                                aria-label="Adicionar função" title="Adicionar função">
+                                <i class="fas fa-plus" aria-hidden="true"></i>
+                              </button>
+                            `}
+                          </div>
+
+                          </div>
+                            <div class="space-y-2">
+                            <label class="form-label-sm">Setor **</label>
+                            <div class="flex items-stretch gap-2">
+                              <select id="guSetor" required ${formDisabledAttr}
+                                class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
+                                ${setorOptions}
+                              </select>
+
+                              ${isView ? '' : `
+                                <button id="btnAddSetor" type="button"
+                                  class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+                                  aria-label="Adicionar setor" title="Adicionar setor">
+                                  <i class="fas fa-plus" aria-hidden="true"></i>
+                                </button>
+                              `}
+                            </div>
+                          </div>
+
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Centro de Custo **</label>
+                          <div class="flex items-stretch gap-2">
+                            <select id="guLocalTrabalho" required ${formDisabledAttr}
+                              class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
                               ${localTrabalhoOptions}
                             </select>
 
                             ${isView ? '' : `
-                            <button id="btnAddLocalTrabalho" type="button"
-                              class="w-12 h-12 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
-                              aria-label="Adicionar Centro de Custo" title="Adicionar Centro de Custo">
-                              <i class="fas fa-plus" aria-hidden="true"></i>
-                            </button>
+                              <button id="btnAddLocalTrabalho" type="button"
+                                class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+                                aria-label="Adicionar Centro de Custo" title="Adicionar Centro de Custo">
+                                <i class="fas fa-plus" aria-hidden="true"></i>
+                              </button>
                             `}
                           </div>
                         </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Status</label>
-                          <select id="guStatus" required ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
-                            ${['Ativo', 'Desativado'].map(s => {
-                              const selected = statusAtual === s ? 'selected' : '';
-                              return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(s)}</option>`;
-                            }).join('')}
-                          </select>
+                          <label class="form-label-sm">Unidade de trabalho **</label>
+                          <div class="flex items-stretch gap-2">
+                            <select id="guUnidadeTrabalho" required ${formDisabledAttr}
+                              class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
+                              ${unidadeTrabalhoOptions}
+                            </select>
+
+                            ${isView ? '' : `
+                              <button id="btnAddUnidadeTrabalho" type="button"
+                                class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+                                aria-label="Adicionar Unidade de Trabalho" title="Adicionar Unidade de Trabalho">
+                                <i class="fas fa-plus" aria-hidden="true"></i>
+                              </button>
+                            `}
+                          </div>
+                        </div>
+
+                        <!-- Status + Botão Assinatura -->
+                        <div class="space-y-2 md:col-span-2">
+                          <label class="form-label-sm block">Status</label>
+
+                          <div class="grid grid-cols-1 lg:grid-cols-[minmax(220px,1fr)_auto_auto] gap-2">
+                            <select id="guStatus" required ${formDisabledAttr}
+                              class="w-full min-w-[220px] h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
+                              ${['Ativo', 'Desativado'].map((s) => {
+                                const selected = statusAtual === s ? 'selected' : '';
+                                return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(s)}</option>`;
+                              }).join('')}
+                            </select>
+
+                            <button id="btnGerarAssinatura" type="button"
+                              class="h-12 px-4 rounded-xl border border-border bg-white/60 hover:bg-white transition-all flex items-center justify-center gap-2 text-sm font-medium whitespace-nowrap"
+                              title="Gerar assinatura de e-mail">
+                              <i class="fas fa-signature" aria-hidden="true"></i>
+                              <span class="hidden sm:inline">Assinatura de e-mail</span>
+                            </button>
+
+                            <button id="btnGerarCrachar" type="button"
+                              class="h-12 px-4 rounded-xl border border-border bg-white/60 hover:bg-white transition-all flex items-center justify-center gap-2 text-sm font-medium whitespace-nowrap"
+                              title="Gerar crachá">
+                              <i class="fas fa-id-card" aria-hidden="true"></i>
+                              <span class="hidden sm:inline">Gerar crachá</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -2164,7 +3734,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
-                          <label class="form-label-sm">CPF</label>
+                          <label class="form-label-sm">CPF **</label>
                           <input id="guCpf" type="text" ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(cpfAtual)}"
@@ -2181,8 +3751,8 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                         </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Data de nascimento</label>
-                          <input id="guDataNascimento" type="date" ${formDisabledAttr}
+                          <label class="form-label-sm">Data de nascimento **</label>
+                          <input id="guDataNascimento" type="date" required  ${formDisabledAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(dataNascimentoAtual)}" />
                         </div>
@@ -2299,8 +3869,101 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                                   Aceita PDF, JPG, PNG, JPEG ou WEBP.
                                 </p>
                               </div>
-
                             `}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="guPainelDadosAdicionais" class="space-y-4 hidden">
+                    <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-4">
+                      <div>
+                        <h4 class="text-sm font-semibold text-foreground">Dados adicionais</h4>
+                        <p class="text-xs text-muted-foreground">Informações complementares do usuário.</p>
+                      </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Apelido</label>
+                          <input id="guApelido" type="text" ${inputReadonlyAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            value="${escapeHtml(apelidoAtual)}" autocomplete="off">
+                        </div>
+
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Sexo</label>
+                          <select id="guSexo" ${formDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
+                            ${['', 'MASCULINO', 'FEMININO', 'OUTRO', 'PREFIRO NÃO INFORMAR'].map(s => {
+                              const selected = sexoAtual === s ? 'selected' : '';
+                              const label = s || 'Selecione...';
+                              return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(label)}</option>`;
+                            }).join('')}
+                          </select>
+                        </div>
+
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Número do calçado</label>
+                          <input id="guNumeroCalcado" type="number" min="0" ${inputReadonlyAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            value="${escapeHtml(numeroCalcadoAtual)}">
+                        </div>
+
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Tamanho camisa</label>
+                          <select id="guTamanhoCamisa" ${formDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
+                            ${['', 'PP', 'P', 'M', 'G', 'GG', 'XG', 'XXG'].map(s => {
+                              const selected = tamanhoCamisaAtual === s ? 'selected' : '';
+                              const label = s || 'Selecione...';
+                              return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(label)}</option>`;
+                            }).join('')}
+                          </select>
+                        </div>
+
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Tamanho calça</label>
+                          <input id="guTamanhoCalca" type="text" ${inputReadonlyAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            value="${escapeHtml(tamanhoCalcaAtual)}">
+                        </div>
+
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Tem filhos?</label>
+                          <select id="guTemFilhos" ${formDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
+                            ${['NÃO', 'SIM'].map(s => {
+                              const selected = temFilhosAtual === s ? 'selected' : '';
+                              return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(s)}</option>`;
+                            }).join('')}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div id="guBlocoQtdFilhos" class="space-y-2 ${temFilhosAtual === 'SIM' ? '' : 'hidden'}">
+                        <label class="form-label-sm">Quantidade de filhos</label>
+                        <input id="guQuantidadeFilhos" type="number" min="1" step="1" ${inputReadonlyAttr}
+                          class="w-full md:w-14 rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(quantidadeFilhosAtual)}">
+                      </div>
+
+                      <div id="guBlocoTabelaFilhos" class="space-y-3 hidden">
+                        <div>
+                          <h5 class="text-sm font-semibold text-foreground">Filhos</h5>
+                          <p class="text-xs text-muted-foreground">Informe nome completo e data de nascimento.</p>
+                        </div>
+
+                        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+                          <table class="min-w-full text-sm">
+                            <thead class="bg-muted/40 text-muted-foreground">
+                              <tr>
+                                <th class="text-left font-semibold form-control-sm">#</th>
+                                <th class="text-left font-semibold form-control-sm">Nome completo</th>
+                                <th class="text-left font-semibold form-control-sm">Data de nascimento</th>
+                              </tr>
+                            </thead>
+                            <tbody id="guTabelaFilhosBody"></tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
@@ -2335,8 +3998,15 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     </div>
   `;
 
-
   document.body.appendChild(modal);
+
+  document.getElementById('btnGerarAssinatura')?.addEventListener('click', () => {
+    abrirModalAssinatura(u); 
+  });
+
+  document.getElementById('btnGerarCrachar')?.addEventListener('click', () => {
+    abrirModalCrachaRetrato(u); 
+  });
 
   let guFotoImage = null;
   let guFotoScale = 1;
@@ -2357,6 +4027,8 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   const btnCancelar = document.getElementById('btnCancelarGU');
   const btnAddSetor = document.getElementById('btnAddSetor');
   const btnAddLocalTrabalho = document.getElementById('btnAddLocalTrabalho');
+  const btnAddFuncao = document.getElementById('btnAddFuncao');
+  const btnAddUnidadeTrabalho = document.getElementById('btnAddUnidadeTrabalho');
   const btnMostrarAlteracaoSenha = document.getElementById('btnMostrarAlteracaoSenhaGU');
   const blocoAlteracaoSenha = document.getElementById('guBlocoAlteracaoSenha');
 
@@ -2365,17 +4037,126 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   const inpCpf = document.getElementById('guCpf');
   const btnAbaCorp = document.getElementById('guAbaCorporativo');
   const btnAbaPess = document.getElementById('guAbaPessoal');
+  const btnAbaAdic = document.getElementById('guAbaDadosAdicionais');
   const btnTrocarSenha = document.getElementById('btnTrocarSenhaGU');
   const ctx = canvas?.getContext('2d');
 
   const cnhArquivoInput = document.getElementById('guCnhArquivoInput');
   const btnRemoverCnhArquivo = document.getElementById('btnRemoverCnhArquivoGU');
   const cnhArquivoAtualWrap = document.getElementById('guCnhArquivoAtualWrap');
-  const cnhArquivoAtualLink = document.getElementById('guCnhArquivoAtualLink');
   const cnhArquivoNovoWrap = document.getElementById('guCnhArquivoNovoWrap');
 
   let guCnhArquivoFile = null;
   let guCnhArquivoRemovido = false;
+
+  const inpTemFilhos = document.getElementById('guTemFilhos');
+  const inpQuantidadeFilhos = document.getElementById('guQuantidadeFilhos');
+  const blocoQtdFilhos = document.getElementById('guBlocoQtdFilhos');
+  const blocoTabelaFilhos = document.getElementById('guBlocoTabelaFilhos');
+  const tabelaFilhosBody = document.getElementById('guTabelaFilhosBody');
+
+  let filhosAtuais = [];
+  try {
+    const bruto = u.FILHOS ?? u.filhos ?? '[]';
+    filhosAtuais = Array.isArray(bruto) ? bruto : JSON.parse(bruto || '[]');
+    if (!Array.isArray(filhosAtuais)) filhosAtuais = [];
+  } catch (_) {
+    filhosAtuais = [];
+  }
+
+  function setAbaLocal(nome) {
+    const abaCorp = document.getElementById('guAbaCorporativo');
+    const abaPess = document.getElementById('guAbaPessoal');
+    const abaAdic = document.getElementById('guAbaDadosAdicionais');
+    const painelCorp = document.getElementById('guPainelCorporativo');
+    const painelPess = document.getElementById('guPainelPessoal');
+    const painelAdic = document.getElementById('guPainelDadosAdicionais');
+
+    const ativa = String(nome || 'corporativo').trim().toLowerCase();
+    const estiloAtivo = 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all';
+    const estiloInativo = 'px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all';
+
+    if (abaCorp) {
+      abaCorp.setAttribute('aria-selected', ativa === 'corporativo' ? 'true' : 'false');
+      abaCorp.className = ativa === 'corporativo' ? estiloAtivo : estiloInativo;
+    }
+
+    if (abaPess) {
+      abaPess.setAttribute('aria-selected', ativa === 'pessoal' ? 'true' : 'false');
+      abaPess.className = ativa === 'pessoal' ? estiloAtivo : estiloInativo;
+    }
+
+    if (abaAdic) {
+      abaAdic.setAttribute('aria-selected', ativa === 'dados-adicionais' ? 'true' : 'false');
+      abaAdic.className = ativa === 'dados-adicionais' ? estiloAtivo : estiloInativo;
+    }
+
+    if (painelCorp) {
+      painelCorp.hidden = ativa !== 'corporativo';
+      painelCorp.classList.toggle('hidden', ativa !== 'corporativo');
+    }
+
+    if (painelPess) {
+      painelPess.hidden = ativa !== 'pessoal';
+      painelPess.classList.toggle('hidden', ativa !== 'pessoal');
+    }
+
+    if (painelAdic) {
+      painelAdic.hidden = ativa !== 'dados-adicionais';
+      painelAdic.classList.toggle('hidden', ativa !== 'dados-adicionais');
+    }
+  }
+
+  function montarLinhasFilhos(qtd) {
+    if (!tabelaFilhosBody) return;
+
+    const quantidade = Math.max(0, Number(qtd) || 0);
+
+    tabelaFilhosBody.innerHTML = Array.from({ length: quantidade }).map((_, idx) => {
+      const filho = filhosAtuais[idx] || {};
+      const nome = filho.nome ?? filho.NOME ?? '';
+      const dataNascimento = String(
+        filho.dataNascimento ?? filho.DATA_NASCIMENTO ?? filho.data_nascimento ?? ''
+      ).slice(0, 10);
+
+      return `
+        <tr class="border-t border-border/70">
+          <td class="px-4 py-3 font-semibold">${idx + 1}</td>
+          <td class="px-4 py-3">
+            <input
+              type="text"
+              class="gu-filho-nome w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+              data-index="${idx}"
+              value="${escapeHtml(nome)}"
+              ${inputReadonlyAttr}
+              placeholder="Nome completo">
+          </td>
+          <td class="px-4 py-3">
+            <input
+              type="date"
+              class="gu-filho-data w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+              data-index="${idx}"
+              value="${escapeHtml(dataNascimento)}"
+              ${formDisabledAttr}>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function atualizarBlocoFilhos() {
+    const temFilhos = String(inpTemFilhos?.value || 'NÃO').toUpperCase() === 'SIM';
+    const qtd = Math.max(0, Number(inpQuantidadeFilhos?.value) || 0);
+
+    blocoQtdFilhos?.classList.toggle('hidden', !temFilhos);
+    blocoTabelaFilhos?.classList.toggle('hidden', !temFilhos || qtd <= 0);
+
+    if (temFilhos && qtd > 0) {
+      montarLinhasFilhos(qtd);
+    } else if (tabelaFilhosBody) {
+      tabelaFilhosBody.innerHTML = '';
+    }
+  }
 
   cnhArquivoInput?.addEventListener('change', e => {
     const file = e.target.files?.[0] || null;
@@ -2409,8 +4190,6 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     }
   });
 
-
-
   function setErr(msg) {
     const el = document.getElementById('guErro');
     if (!el) return;
@@ -2443,9 +4222,16 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   btnFechar?.addEventListener('click', fechar);
   btnCancelar?.addEventListener('click', fechar);
 
-  btnAbaCorp?.addEventListener('click', () => setAbaGestaoUsuario('corporativo'));
-  btnAbaPess?.addEventListener('click', () => setAbaGestaoUsuario('pessoal'));
-  setAbaGestaoUsuario('corporativo');
+  btnAbaCorp?.addEventListener('click', () => setAbaLocal('corporativo'));
+  btnAbaPess?.addEventListener('click', () => setAbaLocal('pessoal'));
+  btnAbaAdic?.addEventListener('click', () => setAbaLocal('dados-adicionais'));
+
+  inpTemFilhos?.addEventListener('change', atualizarBlocoFilhos);
+  inpQuantidadeFilhos?.addEventListener('input', atualizarBlocoFilhos);
+  inpQuantidadeFilhos?.addEventListener('change', atualizarBlocoFilhos);
+
+  setAbaLocal('corporativo');
+  atualizarBlocoFilhos();
 
   if (isView) return;
 
@@ -2598,18 +4384,48 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     }
   });
 
+  btnAddFuncao?.addEventListener('click', async () => {
+    const nome = prompt('Nome da função:');
+    if (!nome) return;
+
+    try {
+      await apiSend('/api/gestao-usuarios-funcoes', 'POST', { nome });
+      const funcoesResp = await apiGet('/api/gestao-usuarios-funcoes');
+      cacheFuncoesGestao = Array.isArray(funcoesResp?.items) ? funcoesResp.items : [];
+      const sel = document.getElementById('guFuncao');
+      if (sel) sel.innerHTML = optionsFromRows(cacheFuncoesGestao, titleCaseNome(nome), 'Selecione...');
+    } catch (err) {
+      alert('Erro ao adicionar função: ' + (err?.message || err));
+    }
+  });
+
   btnAddLocalTrabalho?.addEventListener('click', async () => {
     const nome = prompt('Nome do Centro de Custo:');
     if (!nome) return;
 
     try {
-      await apiSend('/api/gestao-usuarios-locais-trabalho', 'POST', { nome });
-      const locaisResp = await apiGet('/api/gestao-usuarios-locais-trabalho');
+      await apiSend('/api/gestao-usuarios-centro-custo', 'POST', { nome });
+      const locaisResp = await apiGet('/api/gestao-usuarios-centro-custo');
       cacheLocaisTrabalhoGestao = Array.isArray(locaisResp?.items) ? locaisResp.items : [];
       const sel = document.getElementById('guLocalTrabalho');
-      if (sel) sel.innerHTML = optionsFromRows(cacheLocaisTrabalhoGestao, titleCaseNome(nome));
+      if (sel) sel.innerHTML = optionsFromRows(cacheLocaisTrabalhoGestao, titleCaseNome(nome), 'Selecione...');
     } catch (err) {
       alert('Erro ao adicionar Centro de Custo: ' + (err?.message || err));
+    }
+  });
+
+  btnAddUnidadeTrabalho?.addEventListener('click', async () => {
+    const nome = prompt('Nome da Unidade de Trabalho:');
+    if (!nome) return;
+
+    try {
+      await apiSend('/api/gestao-usuarios-locais-trabalho', 'POST', { nome });
+      const unidadesResp = await apiGet('/api/gestao-usuarios-locais-trabalho');
+      cacheLocaisTrabalhoGestaoUnidade = Array.isArray(unidadesResp?.items) ? unidadesResp.items : [];
+      const sel = document.getElementById('guUnidadeTrabalho');
+      if (sel) sel.innerHTML = optionsFromRows(cacheLocaisTrabalhoGestaoUnidade, titleCaseNome(nome), 'Selecione...');
+    } catch (err) {
+      alert('Erro ao adicionar Unidade de Trabalho: ' + (err?.message || err));
     }
   });
 
@@ -2654,7 +4470,10 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     const telefone = somenteNumeros(inputValue('guTelefoneCorporativo'));
     const perfil = inputValue('guPerfil').trim();
     const setor = inputValue('guSetor').trim();
+    const funcao = inputValue('guFuncao').trim();
+    const data_admissao = inputValue('guDataAdmissao').trim();
     const local_trabalho = inputValue('guLocalTrabalho').trim();
+    const unidade_trabalho = inputValue('guUnidadeTrabalho').trim();
     const status = inputValue('guStatus').trim();
 
     const cpf = somenteNumeros(inputValue('guCpf'));
@@ -2668,12 +4487,29 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     const emailPessoalBruto = inputValue('guEmailPessoal').trim();
     const email_pessoal = emailPessoalBruto ? normalizarEmail(emailPessoalBruto) : '';
 
-    if (!nome || !email || !perfil || !setor || !status) {
-      setErr('Preencha todos os campos obrigatórios da aba corporativa.');
+    const apelido = inputValue('guApelido').trim();
+    const numero_calcado = inputValue('guNumeroCalcado').trim();
+    const tamanho_camisa = inputValue('guTamanhoCamisa').trim();
+    const tamanho_calca = inputValue('guTamanhoCalca').trim();
+    const sexo = inputValue('guSexo').trim();
+    const tem_filhos = inputValue('guTemFilhos').trim().toUpperCase();
+    const quantidade_filhos = inputValue('guQuantidadeFilhos').trim();
+
+    const filhos = Array.from(document.querySelectorAll('#guTabelaFilhosBody tr')).map(tr => {
+      const nome = tr.querySelector('.gu-filho-nome')?.value?.trim() || '';
+      const data_nascimento = tr.querySelector('.gu-filho-data')?.value?.trim() || '';
+      return { nome, data_nascimento };
+    }).filter(f => f.nome || f.data_nascimento);
+
+    if (!nome || !perfil || !setor || !status || !data_admissao) {
+      setErr('Preencha os campos obrigatórios da aba Corporativa: nome, perfil, setor, status e data admmissão.');
       return;
     }
 
-    
+    if (!data_nascimento || !cpf) {
+      setErr('Preencha os campos obrigatórios da aba Pessoal: data de nascimento e CPF.');
+      return;
+    }
 
     const btn = document.getElementById('btnSalvarGU');
 
@@ -2708,8 +4544,12 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
         telefone,
         perfil,
         setor,
+        funcao: funcao || '',
+        data_admissao: data_admissao || '',
         local_trabalho: local_trabalho || '',
+        unidade_trabalho: unidade_trabalho || '',
         status,
+
         cpf: cpf || '',
         rg: rg || '',
         cnh: cnh || '',
@@ -2719,6 +4559,15 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
         estado_civil: estado_civil || '',
         telefone_pessoal: telefone_pessoal || '',
         email_pessoal: email_pessoal || '',
+
+        apelido: apelido || '',
+        numero_calcado: numero_calcado || '',
+        tamanho_camisa: tamanho_camisa || '',
+        tamanho_calca: tamanho_calca || '',
+        sexo: sexo || '',
+        tem_filhos: tem_filhos || 'NÃO',
+        quantidade_filhos: tem_filhos === 'SIM' ? (quantidade_filhos || '') : '',
+        filhos: tem_filhos === 'SIM' ? filhos : []
       };
 
       if (fotoPayload !== undefined) payload.foto = fotoPayload;
@@ -2726,11 +4575,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
       if (isNew) {
         const senha = inputValue('guSenha').toString();
-        if (!senha || senha.length < 6) {
-          setErr('Senha inválida (mínimo 6).');
-          return;
-        }
-        payload.senha = senha;
+        payload.senha = '123456';
         await apiSend('/api/gestao-usuarios-adicionar', 'POST', payload);
       } else if (isEdit) {
         const userId = u.ID ?? u.id;
@@ -2750,6 +4595,173 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     }
   });
 }
+
+function gerarTemplateExcelUsuarios() {
+  try {
+    // Definir os dados do template com as novas colunas
+    const templateData = [
+      [
+        'NOME',
+        'CPF',
+        'DATA NASCIMENTO',
+        'DATA ADMISSÃO',
+        'FUNÇÃO',
+        'SETOR',
+        'PERFIL',
+        'STATUS',
+        'CENTRO CUSTO',
+        'UNIDADE TRABALHO'
+      ],
+      [
+        'João Silva',
+        '123.456.789-00',
+        '01/01/1990',
+        '15/01/2024',
+        'Analista de TI',
+        'Administrativo',
+        'Usuário',
+        'Ativo',
+        'Almoxarifado',
+        'Fazenda Santa Lucia'
+      ],
+      ['', '', '', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', '', '', '']
+    ];
+
+    // Criar workbook
+    const ws = XLSX.utils.aoa_to_sheet(templateData);
+
+    // Definir largura das colunas
+    ws['!cols'] = [
+      { wch: 25 }, // NOME
+      { wch: 18 }, // CPF
+      { wch: 18 }, // DATA NASCIMENTO
+      { wch: 18 }, // DATA ADMISSÃO
+      { wch: 20 }, // FUNÇÃO
+      { wch: 20 }, // SETOR
+      { wch: 18 }, // PERFIL
+      { wch: 15 }, // STATUS
+      { wch: 20 }, // CENTRO CUSTO
+      { wch: 25 }  // UNIDADE TRABALHO
+    ];
+
+    // Estilo do header
+    const headerStyle = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, size: 12 },
+      fill: { fgColor: { rgb: '25348D' } },
+      alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+      border: {
+        top: { style: 'thin', color: { rgb: '000000' } },
+        bottom: { style: 'thin', color: { rgb: '000000' } },
+        left: { style: 'thin', color: { rgb: '000000' } },
+        right: { style: 'thin', color: { rgb: '000000' } }
+      }
+    };
+
+    // Estilo do exemplo
+    const exemploStyle = {
+      font: { color: { rgb: '000000' }, italic: false },
+      fill: { fgColor: { rgb: 'E8F0FF' } },
+      alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
+      border: {
+        top: { style: 'thin', color: { rgb: 'CCCCCC' } },
+        bottom: { style: 'thin', color: { rgb: 'CCCCCC' } },
+        left: { style: 'thin', color: { rgb: 'CCCCCC' } },
+        right: { style: 'thin', color: { rgb: 'CCCCCC' } }
+      }
+    };
+
+    // Estilo das linhas vazias
+    const linhaVaziaStyle = {
+      border: {
+        top: { style: 'thin', color: { rgb: 'CCCCCC' } },
+        bottom: { style: 'thin', color: { rgb: 'CCCCCC' } },
+        left: { style: 'thin', color: { rgb: 'CCCCCC' } },
+        right: { style: 'thin', color: { rgb: 'CCCCCC' } }
+      },
+      alignment: { horizontal: 'left', vertical: 'center', wrapText: true }
+    };
+
+    // Aplicar estilos às células
+    const numColunas = 10; // 10 colunas agora
+
+    for (let col = 0; col < numColunas; col++) {
+      // Header (linha 1)
+      const cellHeader = XLSX.utils.encode_col(col) + '1';
+      if (ws[cellHeader]) {
+        ws[cellHeader].s = headerStyle;
+      }
+
+      // Exemplo (linha 2)
+      const cellExemplo = XLSX.utils.encode_col(col) + '2';
+      if (ws[cellExemplo]) {
+        ws[cellExemplo].s = exemploStyle;
+      }
+
+      // Linhas vazias (3 a 6)
+      for (let row = 3; row <= 6; row++) {
+        const cellVazia = XLSX.utils.encode_col(col) + row;
+        if (!ws[cellVazia]) {
+          ws[cellVazia] = { v: '', s: linhaVaziaStyle };
+        } else {
+          ws[cellVazia].s = linhaVaziaStyle;
+        }
+      }
+    }
+
+    // Congelar a linha do header
+    ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+    // Criar workbook e adicionar sheet
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Usuários');
+
+    // Adicionar instrução em outra aba
+    const wsInstrucoes = XLSX.utils.aoa_to_sheet([
+      ['INSTRUÇÕES PARA PREENCHIMENTO DO TEMPLATE'],
+      [''],
+      ['Campos obrigatórios (marcados com *):'],
+      ['- NOME: Nome completo do usuário'],
+      ['- DATA NASCIMENTO: Data no formato DD/MM/YYYY'],
+      ['- SETOR: Nome do setor (deve existir no sistema)'],
+      ['- PERFIL: Perfil de acesso (Admin, Usuário, etc)'],
+      ['- STATUS: Ativo ou Inativo'],
+      [''],
+      ['Campos opcionais:'],
+      ['- CPF: Número do CPF (com ou sem máscara)'],
+      ['- DATA ADMISSÃO: Data de admissão (DD/MM/YYYY)'],
+      ['- FUNÇÃO: Cargo/Função do usuário'],
+      ['- CENTRO CUSTO: Centro de custo (almoxarifado, etc)'],
+      ['- UNIDADE TRABALHO: Localidade de trabalho'],
+      [''],
+      ['Observações:'],
+      ['- A senha inicial será 123456 para todos os novos usuários'],
+      ['- Cada linha será um novo usuário no sistema'],
+      ['- Verifique se todos os setores e perfis existem antes de importar']
+    ]);
+
+    XLSX.utils.book_append_sheet(wb, wsInstrucoes, 'Instruções');
+
+    // Baixar arquivo
+    XLSX.writeFile(wb, `template-usuarios-${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    console.log('Template de usuários gerado com sucesso');
+  } catch (err) {
+    console.error('Erro ao gerar template de usuários:', err);
+    alert('Não foi possível gerar o template. Verifique a biblioteca SheetJS.');
+  }
+}
+
+// Vincular o botão
+document.addEventListener('DOMContentLoaded', () => {
+  const btnBaixar = document.getElementById('btnBaixarTemplateUsuario');
+  if (btnBaixar) {
+    btnBaixar.addEventListener('click', gerarTemplateExcelUsuarios);
+  }
+});
+
 
 async function apiUploadCnhUsuarioArquivo(file) {
   const base = getApiBaseGestaoUsuarios();
@@ -3162,282 +5174,333 @@ document.addEventListener('click', async (e) => {
   }
 });
 
+// =========================
+// MARKETING
+// =========================
 
+let marketingCardsCache = [];
+let marketingEditandoId = null;
+let marketingImagemAtual = '';
 
-// ===== Gestão de Pedido =====//
+function absUrlFromApiMarketing(relOrAbs, apiBase = getApiBase()) {
+  const s = String(relOrAbs || '').trim();
+  if (!s) return '';
+  if (/^https?:\/\//i.test(s)) return s;
 
-function ativarAbaPedidos(nomeAba) {
-  const abaDash = document.getElementById('abaPedidosDashboard');
-  const abaTab = document.getElementById('abaPedidosTabela');
-  const painelDash = document.getElementById('painelPedidosDashboard');
-  const painelTab = document.getElementById('painelPedidosTabela');
-  const btnNovo = document.getElementById('btnNovoPedido');
-
-  const isTabela = nomeAba === 'tabela';
-
-  // aria-selected
-  abaDash?.setAttribute('aria-selected', isTabela ? 'false' : 'true');
-  abaTab?.setAttribute('aria-selected', isTabela ? 'true' : 'false');
-
-  // classes (estilo ativo/inativo)
-  if (abaDash && abaTab) {
-    if (!isTabela) {
-      abaDash.className = "px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground";
-      abaTab.className  = "px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground";
-    } else {
-      abaTab.className  = "px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground";
-      abaDash.className = "px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground";
-    }
+  try {
+    const base = String(apiBase || '').replace(/\/$/, '');
+    return new URL(s.replace(/^\/+/, ''), `${base}/`).href;
+  } catch {
+    return s;
   }
-
-  // painéis
-  if (painelDash) painelDash.hidden = isTabela;
-  if (painelTab)  painelTab.hidden  = !isTabela;
-
-  // botão novo pedido (só na tabela)
-  if (btnNovo) btnNovo.classList.toggle('hidden', !isTabela);
 }
 
-document.getElementById('abaPedidosDashboard')?.addEventListener('click', () => ativarAbaPedidos('dashboard'));
-document.getElementById('abaPedidosTabela')?.addEventListener('click', () => ativarAbaPedidos('tabela'));
-
-// estado inicial
-ativarAbaPedidos('dashboard');
+function obterFallbackMarketing() {
+  return absUrlFromApiMarketing('anexos/marketing/imagensPaginaPrincipal.jpg', getApiBase());
+}
 
 function mostrarMsgMarketing(msg) {
   const el = document.getElementById('marketingMsg');
   if (!el) return;
-  if (!msg) { el.classList.add('hidden'); el.textContent = ''; return; }
-  el.textContent = msg;
-  el.classList.remove('hidden');
+  el.textContent = msg || '';
+  el.classList.toggle('hidden', !msg);
 }
 
-function escapeHtml(s) {
-  return String(s ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+function abrirModalMarketing() {
+  document.getElementById('modalMarketingOverlay')?.classList.remove('hidden');
+  document.getElementById('modalMarketing')?.classList.remove('hidden');
 }
 
-// Marketing
-
-function absUrlFromApiMarketing(relOrAbs, apiBase) {
-  const s = String(relOrAbs || '').trim();
-  if (!s) return '';
-
-  // Se já for absoluta (http/https), mantém
-  if (/^https?:\/\//i.test(s)) return s;
-
-  // Resolve relativo usando URL API (padrão correto)
-  return new URL(s, apiBase + '/').href;
+function fecharModalMarketing() {
+  document.getElementById('modalMarketingOverlay')?.classList.add('hidden');
+  document.getElementById('modalMarketing')?.classList.add('hidden');
 }
 
-async function listarImagensMarketing() {
-  try {
-    const APIBASE = getApiBase();
+function limparFormularioMarketing() {
+  marketingEditandoId = null;
+  marketingImagemAtual = '';
 
-    const grid = document.getElementById('gridMarketing');
-    const vazio = document.getElementById('marketingVazio');
+  document.getElementById('modalMarketingTitulo').textContent = 'Novo card de marketing';
+  document.getElementById('mkTitulo').value = '';
+  document.getElementById('mkDescricao').value = '';
+  document.getElementById('mkCard').value = 'principal';
+  document.getElementById('mkDataInicio').value = '';
+  document.getElementById('mkDataFim').value = '';
+  document.getElementById('mkOrdem').value = '0';
+  document.getElementById('mkRecorrencia').value = 'once';
+  document.getElementById('mkAtivo').value = '1';
+  document.getElementById('mkExibirPainel').checked = true;
+  document.getElementById('mkApenasUmaVez').checked = false;
+  document.getElementById('mkArquivo').value = '';
 
-    if (!grid || !vazio) return;
+  const preview = document.getElementById('mkPreview');
+  const vazio = document.getElementById('mkPreviewVazio');
 
-    mostrarMsgMarketing('Carregando imagens...');
+  if (preview) {
+    preview.src = '';
+    preview.classList.add('hidden');
+  }
+  if (vazio) vazio.classList.remove('hidden');
+}
 
-    const r = await fetch(`${APIBASE}/api/marketing/imagens`, { method: 'GET' });
-    const data = await r.json().catch(() => ({}));
+function abrirModalMarketingParaNovo() {
+  limparFormularioMarketing();
+  abrirModalMarketing();
+}
 
-    if (!r.ok) {
-      throw new Error(data?.message || 'Erro ao listar imagens.');
-    }
+async function salvarCardMarketing() {
+  const APIBASE = getApiBase();
+  const formData = new FormData();
 
-    const itens = Array.isArray(data.items)
-      ? data.items
-      : Array.isArray(data)
-        ? data
-        : [];
+  formData.append('titulo', document.getElementById('mkTitulo').value.trim());
+  formData.append('descricao', document.getElementById('mkDescricao').value.trim());
+  formData.append('card', document.getElementById('mkCard').value);
+  formData.append('dataInicio', document.getElementById('mkDataInicio').value);
+  formData.append('dataFim', document.getElementById('mkDataFim').value);
+  formData.append('ordem', document.getElementById('mkOrdem').value || 0);
+  formData.append('recorrencia', document.getElementById('mkRecorrencia').value);
+  formData.append('ativo', document.getElementById('mkAtivo').value);
+  formData.append('exibirNoPainel', document.getElementById('mkExibirPainel').checked ? 1 : 0);
+  formData.append('apenasUmaVez', document.getElementById('mkApenasUmaVez').checked ? 1 : 0);
 
-    grid.innerHTML = '';
+  const arquivo = document.getElementById('mkArquivo')?.files?.[0];
+  if (!marketingEditandoId && !arquivo) {
+    alert('Selecione uma imagem.');
+    return;
+  }
 
-    if (!itens.length) {
-      vazio.classList.remove('hidden');
-      mostrarMsgMarketing('');
-      return;
-    }
+  if (arquivo) formData.append('file', arquivo);
 
+  const url = marketingEditandoId
+    ? `${APIBASE}/api/marketing/cards/${marketingEditandoId}`
+    : `${APIBASE}/api/marketing/cards`;
+
+  const method = marketingEditandoId ? 'PUT' : 'POST';
+
+  const resp = await fetch(url, { method, body: formData });
+  const data = await resp.json().catch(() => ({}));
+
+  if (!resp.ok || !data?.success) {
+    throw new Error(data?.message || 'Erro ao salvar card.');
+  }
+
+  fecharModalMarketing();
+  limparFormularioMarketing();
+  await listarCardsMarketing();
+  mostrarMsgMarketing('Card salvo com sucesso.');
+}
+
+async function listarCardsMarketing() {
+  const APIBASE = getApiBase();
+  const resp = await fetch(`${APIBASE}/api/marketing/cards`);
+  const data = await resp.json().catch(() => ({}));
+
+  if (!resp.ok || !data?.success) {
+    throw new Error(data?.message || 'Erro ao listar cards.');
+  }
+
+  marketingCardsCache = Array.isArray(data.items) ? data.items : [];
+  renderizarCardsMarketing();
+}
+
+function obterCardsMarketingFiltrados() {
+  const busca = (document.getElementById('inputBuscaMarketing')?.value || '').trim().toLowerCase();
+  const status = document.getElementById('filtroStatusMarketing')?.value || '';
+  const recorrencia = document.getElementById('filtroRecorrenciaMarketing')?.value || '';
+
+  return marketingCardsCache.filter(item => {
+    const titulo = String(item.TITULO || item.titulo || '').toLowerCase();
+    const card = String(item.CARD || item.card || '').toLowerCase();
+    const rec = String(item.RECORRENCIA || item.recorrencia || '').toLowerCase();
+    const ativo = String(item.ATIVO ?? item.ativo ?? '');
+
+    const passouBusca = !busca || titulo.includes(busca) || card.includes(busca) || rec.includes(busca);
+    const passouStatus = !status || ativo === status;
+    const passouRecorrencia = !recorrencia || rec === recorrencia;
+
+    return passouBusca && passouStatus && passouRecorrencia;
+  });
+}
+
+function atualizarPaineisMarketing(lista = marketingCardsCache) {
+  const total = lista.length;
+  const ativosPainel = lista.filter(x =>
+    Number(x.ATIVO ?? x.ativo ?? 0) === 1 &&
+    Number(x.EXIBIRNOPAINEL ?? x.exibirNoPainel ?? 0) === 1
+  ).length;
+  const agendados = lista.filter(x => (x.DATAINICIO || x.dataInicio || x.DATAFIM || x.dataFim)).length;
+  const recorrentes = lista.filter(x => {
+    const r = String(x.RECORRENCIA || x.recorrencia || '').toLowerCase();
+    return r && r !== 'once';
+  }).length;
+
+  const elTotal = document.getElementById('marketingTotalCards');
+  const elAtivos = document.getElementById('marketingTotalAtivos');
+  const elAgendados = document.getElementById('marketingTotalAgendados');
+  const elRecorrentes = document.getElementById('marketingTotalRecorrentes');
+
+  if (elTotal) elTotal.textContent = total;
+  if (elAtivos) elAtivos.textContent = ativosPainel;
+  if (elAgendados) elAgendados.textContent = agendados;
+  if (elRecorrentes) elRecorrentes.textContent = recorrentes;
+}
+
+function criarCardMarketing(item) {
+  const el = document.createElement('div');
+  const id = item.ID || item.id;
+  const titulo = item.TITULO || item.titulo || 'Sem título';
+  const descricao = item.DESCRICAO || item.descricao || '';
+  const APIBASE = getApiBase();
+  const url = absUrlFromApiMarketing(item.URL || item.url || '', APIBASE);
+  const card = item.CARD || item.card || '-';
+  const recorrencia = item.RECORRENCIA || item.recorrencia || '-';
+  const ativo = Number(item.ATIVO ?? item.ativo ?? 1);
+
+  el.className = 'rounded-xl border border-border bg-white/70 p-3 shadow-sm';
+  el.innerHTML = `
+    <div class="rounded-lg overflow-hidden border border-border bg-muted/30 mb-2">
+      <img src="${escapeHtml(url)}" alt="${escapeHtml(titulo)}" class="w-full h-28 object-cover">
+    </div>
+
+    <div class="space-y-1">
+      <div class="text-sm font-semibold text-foreground truncate">${escapeHtml(titulo)}</div>
+      <div class="text-xs text-muted-foreground min-h-[32px]">${escapeHtml(descricao || 'Sem descrição')}</div>
+
+      <div class="flex flex-wrap gap-1 pt-1">
+        <span class="text-[11px] px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">${escapeHtml(card)}</span>
+        <span class="text-[11px] px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">${escapeHtml(recorrencia)}</span>
+        <span class="text-[11px] px-2 py-1 rounded-full ${ativo ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}">
+          ${ativo ? 'Ativo' : 'Inativo'}
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <button type="button" class="btn-editar-marketing flex-1 rounded-lg border border-border bg-white hover:bg-white/90 px-3 py-2 text-xs font-medium transition-all" data-id="${id}">
+          <i class="fas fa-pen mr-1"></i> Editar
+        </button>
+      </div>
+    </div>
+  `;
+  return el;
+}
+
+function renderizarCardsMarketing() {
+  const grid = document.getElementById('gridMarketing');
+  const vazio = document.getElementById('marketingVazio');
+  if (!grid || !vazio) return;
+
+  const filtrados = obterCardsMarketingFiltrados();
+  grid.innerHTML = '';
+
+  atualizarPaineisMarketing(marketingCardsCache);
+
+  if (!filtrados.length) {
+    vazio.classList.remove('hidden');
+    return;
+  }
+
+  vazio.classList.add('hidden');
+  filtrados.forEach(item => grid.appendChild(criarCardMarketing(item)));
+  vincularEventosCardsMarketing(filtrados);
+}
+
+function abrirModalMarketingParaEditar(item) {
+  marketingEditandoId = item.ID || item.id || null;
+  marketingImagemAtual = absUrlFromApiMarketing(item.URL || item.url || '', getApiBase()) || '';
+
+  document.getElementById('modalMarketingTitulo').textContent = 'Editar card de marketing';
+  document.getElementById('mkTitulo').value = item.TITULO || item.titulo || '';
+  document.getElementById('mkDescricao').value = item.DESCRICAO || item.descricao || '';
+  document.getElementById('mkCard').value = item.CARD || item.card || 'principal';
+  document.getElementById('mkDataInicio').value = String(item.DATAINICIO || item.dataInicio || '').slice(0, 10);
+  document.getElementById('mkDataFim').value = String(item.DATAFIM || item.dataFim || '').slice(0, 10);
+  document.getElementById('mkOrdem').value = item.ORDEM ?? item.ordem ?? 0;
+  document.getElementById('mkRecorrencia').value = item.RECORRENCIA || item.recorrencia || 'once';
+  document.getElementById('mkAtivo').value = String(item.ATIVO ?? item.ativo ?? 1);
+  document.getElementById('mkExibirPainel').checked = Number(item.EXIBIRNOPAINEL ?? item.exibirNoPainel ?? 1) === 1;
+  document.getElementById('mkApenasUmaVez').checked = Number(item.APENASUMAVEZ ?? item.apenasUmaVez ?? 0) === 1;
+
+  const preview = document.getElementById('mkPreview');
+  const vazio = document.getElementById('mkPreviewVazio');
+
+  if (marketingImagemAtual) {
+    preview.src = marketingImagemAtual;
+    preview.classList.remove('hidden');
     vazio.classList.add('hidden');
-
-    grid.innerHTML = itens.map((it) => {
-      const nome = it?.name || it?.nome || '';
-      const urlRel = it?.url || it?.path || '';
-      const urlAbs = absUrlFromApiMarketing(urlRel, APIBASE);
-
-      return `
-        <div class="rounded-2xl border border-border bg-white/60 overflow-hidden shadow-sm">
-          <button
-            type="button"
-            class="w-full aspect-[4/3] bg-muted/30 overflow-hidden"
-            title="Visualizar"
-            onclick="abrirImagemMarketing('${escapeHtml(urlAbs)}')">
-            <img
-              src="${escapeHtml(urlAbs)}"
-              alt="${escapeHtml(nome)}"
-              class="w-full h-full object-cover" />
-          </button>
-
-          <div class="p-3 flex items-center justify-between gap-2">
-            <div class="min-w-0">
-              <div class="text-sm font-semibold truncate">${escapeHtml(nome)}</div>
-            </div>
-
-            <button
-              type="button"
-              class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-destructive hover:text-white transition-all flex items-center justify-center shrink-0"
-              title="Remover"
-              onclick="removerImagemMarketing('${escapeHtml(nome)}')">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    mostrarMsgMarketing('');
-  } catch (e) {
-    console.error('Erro em listarImagensMarketing:', e);
-    mostrarMsgMarketing(e?.message || 'Erro ao carregar imagens.');
+  } else {
+    preview.src = '';
+    preview.classList.add('hidden');
+    vazio.classList.remove('hidden');
   }
+
+  abrirModalMarketing();
 }
 
-function abrirImagemMarketing(urlAbs) {
-  if (!urlAbs) return;
-  window.open(urlAbs, '_blank', 'noopener,noreferrer');
+function vincularEventosCardsMarketing(lista) {
+  document.querySelectorAll('.btn-editar-marketing').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = String(btn.dataset.id);
+      const item = lista.find(x => String(x.ID || x.id) === id);
+      if (item) abrirModalMarketingParaEditar(item);
+    });
+  });
 }
 
-async function enviarImagensMarketing(files) {
-  const APIBASE = getApiBase();
+function inicializarMarketingCards() {
+  document.getElementById('btnNovoCardMarketing')?.addEventListener('click', abrirModalMarketingParaNovo);
+  document.getElementById('btnNovoCardMarketingVazio')?.addEventListener('click', abrirModalMarketingParaNovo);
+  document.getElementById('btnCancelarModalMarketing')?.addEventListener('click', fecharModalMarketing);
+  document.getElementById('btnFecharModalMarketing')?.addEventListener('click', fecharModalMarketing);
+  document.getElementById('btnSalvarModalMarketing')?.addEventListener('click', salvarCardMarketing);
 
-  if (!files || !files.length) {
-    console.warn('Nenhum arquivo recebido para upload.');
-    return;
-  }
-
-  const fd = new FormData();
-
-  for (const f of files) {
-
-    fd.append('files', f);
-  }
-
-  for (const [key, value] of fd.entries()) {
-    if (value instanceof File) {
-    } else {
-    }
-  }
-
-  mostrarMsgMarketing('Enviando...');
-
-
-  const r = await fetch(`${APIBASE}/api/marketing/imagens`, {
-    method: 'POST',
-    body: fd
+  document.getElementById('btnAtualizarMarketing')?.addEventListener('click', () => {
+    listarCardsMarketing().catch(err => {
+      console.error(err);
+      mostrarMsgMarketing(err?.message || 'Erro ao listar cards.');
+    });
   });
 
+  document.getElementById('inputBuscaMarketing')?.addEventListener('input', renderizarCardsMarketing);
+  document.getElementById('filtroStatusMarketing')?.addEventListener('change', renderizarCardsMarketing);
+  document.getElementById('filtroRecorrenciaMarketing')?.addEventListener('change', renderizarCardsMarketing);
 
-  const data = await r.json().catch((err) => {
-    console.error('Erro ao converter resposta para JSON:', err);
-    return {};
+  document.getElementById('mkArquivo')?.addEventListener('change', function () {
+    const file = this.files?.[0];
+    const preview = document.getElementById('mkPreview');
+    const vazio = document.getElementById('mkPreviewVazio');
+    if (!file || !preview || !vazio) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.classList.remove('hidden');
+      vazio.classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
   });
 
+  document.addEventListener('click', e => {
+    const item = e.target.closest('.menu-item[data-page]');
+    if (!item) return;
 
-  if (!r.ok) {
-    console.error('Erro no upload:', data);
-    throw new Error(data?.message || 'Erro ao enviar imagens.');
-  }
-
-  mostrarMsgMarketing('Enviado com sucesso.');
-  await listarImagensMarketing();
-}
-
-
-async function removerImagemMarketing(nomeArquivo) {
-  const APIBASE = getApiBase();
-  if (!nomeArquivo) return;
-
-  if (!confirm(`Remover a imagem "${nomeArquivo}"?`)) return;
-
-  mostrarMsgMarketing('Removendo...');
-
-  const r = await fetch(`${APIBASE}/api/marketing/imagens/${encodeURIComponent(nomeArquivo)}`, {
-    method: 'DELETE'
-  });
-
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data?.message || 'Erro ao remover imagem.');
-
-  await listarImagensMarketing();
-  mostrarMsgMarketing('');
-}
-
-document.getElementById('btnAtualizarMarketing')?.addEventListener('click', () => {
-  listarImagensMarketing().catch(e => {
-    console.error(e);
-    alert(e.message || e);
-  });
-});
-
-function inicializarUploadMarketing() {
-  const btn = document.getElementById('btnAdicionarMarketing');
-  const input = document.getElementById('inputImagensMarketing');
-
-  if (!btn || !input) {
-    console.warn('Botão ou input de marketing não encontrado.');
-    return;
-  }
-
-  btn.addEventListener('click', () => {
-    input.value = '';
-    input.click();
-  });
-
-  input.addEventListener('change', async (e) => {
-    const files = e.target.files;
-
-
-    if (files?.length) {
-      Array.from(files).forEach((f, i) => {
+    if (item.dataset.page === 'secao-marketing') {
+      listarCardsMarketing().catch(err => {
+        console.error(err);
+        mostrarMsgMarketing(err?.message || 'Erro ao listar cards.');
       });
     }
-
-    try {
-      await enviarImagensMarketing(files);
-    } catch (err) {
-      console.error('Erro no evento de upload:', err);
-      alert(err.message || err);
-    } finally {
-      input.value = '';
-    }
   });
 }
 
-document.addEventListener('DOMContentLoaded', inicializarUploadMarketing);
+document.addEventListener('DOMContentLoaded', inicializarMarketingCards);
 
-document.addEventListener('click', (e) => {
-  const item = e.target.closest('.menu-item[data-page]');
-  if (!item) return;
-
-  if (item.dataset.page === 'secao-marketing') {
-    listarImagensMarketing().catch(err => {
-      console.error(err);
-      mostrarMsgMarketing(err.message || 'Erro ao carregar imagens.');
-    });
-  }
-});
+// =========================
+// MARKETING - PAINEL HOME
+// =========================
 
 let marketingProgressTimer = null;
 let marketingLoopIndex = 0;
-let marketingLoopUrls = [];
+let marketingLoopCards = [];
 let marketingBirthdayItems = [];
 let marketingLoopLastFetchMs = 0;
 let marketingIntervalMsAtual = 20000;
@@ -3453,26 +5516,14 @@ let marketingLoopPaused = false;
 let marketingProgressFrame = null;
 
 function aplicarCorBarraMarketingPorApiBase() {
-  const apiBase = String(sessionStorage.getItem('api_base') || '').toLowerCase();
   const barra = document.getElementById('painelMarketingProgress');
   if (!barra) return;
 
-  barra.style.backgroundColor = apiBase.includes('copy') ? '#dc2626' : '';
+  barra.style.backgroundColor = isHomologacaoAmbiente() ? '#dc2626' : '';
 }
 
 function obterBarraProgressoMarketing() {
-  const barra = document.getElementById('painelMarketingProgress');
-  if (!barra) return null;
-
-  const apiBase = String(sessionStorage.getItem('api_base') || '').toLowerCase();
-
-  if (apiBase.includes('copy')) {
-    barra.style.backgroundColor = '#ff0000';
-  } else {
-    barra.style.backgroundColor = '';
-  }
-
-  return barra;
+  return document.getElementById('painelMarketingProgress');
 }
 
 function pararAnimacaoBarraMarketing() {
@@ -3493,13 +5544,11 @@ function atualizarBarraMarketingManual() {
 
 function iniciarAnimacaoBarraMarketing() {
   pararAnimacaoBarraMarketing();
-
   const barra = obterBarraProgressoMarketing();
   if (!barra) return;
 
   function frame() {
     if (marketingLoopPaused || marketingBirthdayExpandedItem) return;
-
     atualizarBarraMarketingManual();
     marketingProgressFrame = requestAnimationFrame(frame);
   }
@@ -3513,77 +5562,6 @@ function resetarBarraMarketing() {
   barra.style.width = '0%';
 }
 
-function pausarLoopMarketingPainel() {
-  if (marketingLoopPaused) return;
-
-  marketingLoopPaused = true;
-
-  const agora = Date.now();
-  const decorrido = marketingLoopStartAt ? agora - marketingLoopStartAt : 0;
-  marketingLoopRemainingMs = Math.max(0, marketingLoopRemainingMs - decorrido);
-
-  limparTimerMarketing();
-  pararAnimacaoBarraMarketing();
-  pararAnimacaoProgressoMarketing(); // importante
-  atualizarBarraMarketingManual();
-}
-
-function retomarLoopMarketingPainel() {
-  marketingLoopPaused = false;
-
-  const tempoRestante = marketingLoopRemainingMs > 0
-    ? marketingLoopRemainingMs
-    : marketingLoopIntervalMs;
-
-  limparTimerMarketing();
-  pararAnimacaoBarraMarketing();
-
-  marketingLoopStartAt = Date.now() - (marketingLoopIntervalMs - tempoRestante);
-
-  const barra = obterBarraProgressoMarketing();
-  if (barra) {
-    const percentualInicial = ((marketingLoopIntervalMs - tempoRestante) / marketingLoopIntervalMs) * 100;
-    barra.style.width = `${Math.max(0, Math.min(100, percentualInicial))}%`;
-  }
-
-  iniciarAnimacaoBarraMarketing();
-
-  marketingLoopTimer = setTimeout(() => {
-    if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
-    proximoSlideMarketingPainel();
-  }, tempoRestante);
-}
-
-function abrirBirthdayDetalhe(item) {
-  if (!item) return;
-
-  marketingBirthdayExpandedItem = item;
-  pausarLoopMarketingPainel();
-
-  renderBirthdayCardMarketing([item], {
-    pagina: 1,
-    totalPaginas: 1,
-    expandido: true
-  });
-}
-
-function fecharBirthdayDetalhe() {
-  marketingBirthdayExpandedItem = null;
-
-  pararAnimacaoProgressoMarketing();
-
-  const infoAtual = obterSlidePorIndice(marketingLoopIndex);
-  if (infoAtual?.slide?.tipo === 'birthday') {
-    renderBirthdayCardMarketing(infoAtual.slide.items, {
-      pagina: infoAtual.slide.pagina,
-      totalPaginas: infoAtual.slide.totalPaginas,
-      expandido: false
-    });
-  }
-
-  retomarLoopMarketingPainel();
-}
-
 function limparTimerMarketing() {
   if (marketingLoopTimer) {
     clearTimeout(marketingLoopTimer);
@@ -3591,71 +5569,20 @@ function limparTimerMarketing() {
   }
 }
 
-function agendarProximoSlideMarketingPainel(tempoMs = marketingLoopIntervalMs) {
-  limparTimerMarketing();
-  pararAnimacaoBarraMarketing();
-
-  if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
-
-  marketingLoopRemainingMs = tempoMs;
-  marketingLoopStartAt = Date.now();
-
-  resetarBarraMarketing();
-  iniciarAnimacaoBarraMarketing();
-
-  marketingLoopTimer = setTimeout(() => {
-    if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
-    proximoSlideMarketingPainel();
-  }, tempoMs);
-}
-
-
-function preloadImage(url) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(url);
-    img.onerror = reject;
-    img.src = url;
-  });
-}
-
-async function proximoSlideMarketingPainel() {
-  if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
-
-  try {
-    await ensureListFresh();
-
-    if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
-
-    limparTimerMarketing();
-    pararAnimacaoBarraMarketing();
-    resetarBarraMarketing();
-
-    marketingLoopRemainingMs = marketingLoopIntervalMs;
-
-    exibirSlideMarketing(marketingLoopIndex + 1, false);
-    agendarProximoSlideMarketingPainel(marketingLoopIntervalMs);
-  } catch (err) {
-    console.error('Erro ao avançar slide do marketing:', err);
-
-    marketingLoopRemainingMs = marketingLoopIntervalMs;
-    agendarProximoSlideMarketingPainel(marketingLoopIntervalMs);
-  }
-}
-
-
 function atualizarBarraProgressoMarketing(percentual) {
   const bar = document.getElementById('painelMarketingProgress');
   if (!bar) return;
   bar.style.width = `${Math.max(0, Math.min(100, percentual))}%`;
 }
 
-function obterTotalSlidesMarketing() {
-  return marketingLoopUrls.length + (marketingBirthdayItems.length ? 1 : 0);
+function pararAnimacaoProgressoMarketing() {
+  if (marketingProgressTimer) clearInterval(marketingProgressTimer);
+  marketingProgressTimer = null;
 }
 
-function slideAtualEhBirthdayCard() {
-  return marketingBirthdayItems.length > 0 && marketingLoopIndex === 0;
+function obterTotalSlidesMarketing() {
+  const gruposAniversariantes = agruparAniversariantesPorPagina(marketingBirthdayItems);
+  return gruposAniversariantes.length + marketingLoopCards.length || 1;
 }
 
 function atualizarContadorMarketingPainel() {
@@ -3667,32 +5594,59 @@ function atualizarContadorMarketingPainel() {
   contador.textContent = `${atual} / ${total}`;
 }
 
-function pararAnimacaoProgressoMarketing() {
-  if (marketingProgressTimer) clearInterval(marketingProgressTimer);
-  marketingProgressTimer = null;
+function preloadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(url);
+    img.onerror = reject;
+    img.src = url;
+  });
 }
 
-function iniciarAnimacaoProgressoMarketing(onComplete) {
-  pararAnimacaoProgressoMarketing();
+async function fetchMarketingPainelCards() {
+  const APIBASE = getApiBase();
+  const r = await fetch(`${APIBASE}/api/marketing/painel`, { method: 'GET' });
+  const data = await r.json().catch(() => null);
 
-  marketingTickStartedAt = Date.now();
-  atualizarBarraProgressoMarketing(0);
+  if (!r.ok || !data?.success) {
+    throw new Error(data?.message || 'Erro ao listar cards do painel.');
+  }
 
-  marketingProgressTimer = setInterval(() => {
-    const decorrido = Date.now() - marketingTickStartedAt;
-    const percentual = (decorrido / marketingIntervalMsAtual) * 100;
+  const itens = Array.isArray(data.items) ? data.items : [];
 
-    atualizarBarraProgressoMarketing(percentual);
+  return itens.map(item => ({
+    id: item.id,
+    titulo: item.titulo || '',
+    descricao: item.descricao || '',
+    card: item.card || 'principal',
+    url: absUrlFromApiMarketing(item.url, APIBASE),
+    recorrencia: item.recorrencia || 'once',
+    apenasUmaVez: Number(item.apenasUmaVez || 0)
+  }));
+}
 
-    if (percentual >= 100) {
-      pararAnimacaoProgressoMarketing();
-      atualizarBarraProgressoMarketing(100);
+async function marcarCardMarketingComoExibido(id) {
+  const APIBASE = getApiBase();
+  await fetch(`${APIBASE}/api/marketing/cards/${id}/exibido`, { method: 'PATCH' });
+}
 
-      if (typeof onComplete === 'function') {
-        onComplete();
-      }
-    }
-  }, 100);
+async function fetchAniversariantesMes() {
+  const APIBASE = getApiBase();
+  const r = await fetch(`${APIBASE}/api/aniversariantes/mes`, { method: 'GET' });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data?.message || 'Erro ao listar aniversariantes do mês.');
+
+  const itens = Array.isArray(data.items) ? data.items : [];
+
+  return itens.map(item => ({
+    id: item.id,
+    nome: item.nome || '',
+    setor: item.setor || '',
+    localTrabalho: item.localTrabalho || '',
+    foto: normalizarFotoAniversariante(item.foto, APIBASE),
+    dataNascimento: item.dataNascimento || null,
+    aniversarioHoje: Boolean(item.aniversarioHoje) || isAniversarioHoje(item.dataNascimento)
+  }));
 }
 
 function obterPrimeiroEUltimoNome(nomeCompleto) {
@@ -3715,20 +5669,12 @@ function parseDataNascimentoSeguro(valor) {
   if (typeof valor === 'string') {
     const mysql = valor.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (mysql) {
-      return {
-        ano: Number(mysql[1]),
-        mes: Number(mysql[2]),
-        dia: Number(mysql[3])
-      };
+      return { ano: Number(mysql[1]), mes: Number(mysql[2]), dia: Number(mysql[3]) };
     }
 
     const br = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (br) {
-      return {
-        ano: Number(br[3]),
-        mes: Number(br[2]),
-        dia: Number(br[1])
-      };
+      return { ano: Number(br[3]), mes: Number(br[2]), dia: Number(br[1]) };
     }
   }
 
@@ -3766,6 +5712,28 @@ function normalizarFotoAniversariante(foto, apiBase) {
   return `${apiBase}/${valor.replace(/^\/+/, '')}`;
 }
 
+function obterQuantidadeAniversariantesPorPagina() {
+  const largura = window.innerWidth;
+  const altura = window.innerHeight;
+
+  if (largura <= 640) return 4;
+
+  const desktopCompacto = altura <= 820 || window.devicePixelRatio >= 1.25;
+  return desktopCompacto ? 6 : 8;
+}
+
+function agruparAniversariantesPorPagina(items) {
+  const lista = Array.isArray(items) ? items : [];
+  const tamanhoPagina = obterQuantidadeAniversariantesPorPagina();
+  const grupos = [];
+
+  for (let i = 0; i < lista.length; i += tamanhoPagina) {
+    grupos.push(lista.slice(i, i + tamanhoPagina));
+  }
+
+  return grupos;
+}
+
 function esconderBirthdayCardMarketing() {
   const birthdayEl = document.getElementById('painelBirthdayCard');
   if (!birthdayEl) return;
@@ -3782,18 +5750,6 @@ function mostrarImagemMarketingArea() {
 
   imgEl.style.display = 'block';
   imgEl.style.pointerEvents = 'auto';
-}
-
-function esconderImagemMarketingArea() {
-  const imgEl = document.getElementById('painelMarketingImg');
-  if (!imgEl) return;
-
-  imgEl.style.opacity = '0';
-  imgEl.style.pointerEvents = 'none';
-
-  setTimeout(() => {
-    imgEl.style.display = 'none';
-  }, 180);
 }
 
 function renderBirthdayCardMarketing(items, { pagina = 1, totalPaginas = 1, expandido = false } = {}) {
@@ -3813,7 +5769,6 @@ function renderBirthdayCardMarketing(items, { pagina = 1, totalPaginas = 1, expa
   const classeModoGrid = expandido ? 'modo-detalhe' : `modo-${quantidadePorPagina}`;
 
   marketingMostrandoBirthdayCard = true;
-
   imgEl.style.opacity = '0';
   imgEl.style.pointerEvents = 'none';
 
@@ -3951,77 +5906,83 @@ function renderBirthdayCardMarketing(items, { pagina = 1, totalPaginas = 1, expa
   }, 180);
 }
 
-async function fetchMarketingUrls() {
-  const APIBASE = getApiBase();
-  const r = await fetch(`${APIBASE}/api/marketing/imagens`, { method: 'GET' });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data?.message || 'Erro ao listar imagens.');
+function pausarLoopMarketingPainel() {
+  if (marketingLoopPaused) return;
 
-  const itens = Array.isArray(data.items) ? data.items : [];
-  return itens
-    .map(it => absUrlFromApiMarketing(it.url, APIBASE))
-    .filter(Boolean);
+  marketingLoopPaused = true;
+
+  const agora = Date.now();
+  const decorrido = marketingLoopStartAt ? agora - marketingLoopStartAt : 0;
+  marketingLoopRemainingMs = Math.max(0, marketingLoopRemainingMs - decorrido);
+
+  limparTimerMarketing();
+  pararAnimacaoBarraMarketing();
+  pararAnimacaoProgressoMarketing();
+  atualizarBarraMarketingManual();
 }
 
-async function fetchAniversariantesMes() {
-  const APIBASE = getApiBase();
-  const r = await fetch(`${APIBASE}/api/aniversariantes/mes`, { method: 'GET' });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data?.message || 'Erro ao listar aniversariantes do mês.');
+function retomarLoopMarketingPainel() {
+  marketingLoopPaused = false;
 
-  const itens = Array.isArray(data.items) ? data.items : [];
+  const tempoRestante = marketingLoopRemainingMs > 0
+    ? marketingLoopRemainingMs
+    : marketingLoopIntervalMs;
 
-  return itens.map(item => ({
-    id: item.id,
-    nome: item.nome || '',
-    setor: item.setor || '',
-    localTrabalho: item.localTrabalho || '',
-    foto: normalizarFotoAniversariante(item.foto, APIBASE),
-    dataNascimento: item.dataNascimento || null,
-    aniversarioHoje: Boolean(item.aniversarioHoje) || isAniversarioHoje(item.dataNascimento)
-  }));
-}
+  limparTimerMarketing();
+  pararAnimacaoBarraMarketing();
 
-function obterQuantidadeAniversariantesPorPagina() {
-  const largura = window.innerWidth;
-  const altura = window.innerHeight;
+  marketingLoopStartAt = Date.now() - (marketingLoopIntervalMs - tempoRestante);
 
-  if (largura <= 640) {
-    return 4;
+  const barra = obterBarraProgressoMarketing();
+  if (barra) {
+    const percentualInicial = ((marketingLoopIntervalMs - tempoRestante) / marketingLoopIntervalMs) * 100;
+    barra.style.width = `${Math.max(0, Math.min(100, percentualInicial))}%`;
   }
 
-  const desktopCompacto = altura <= 820 || window.devicePixelRatio >= 1.25;
+  iniciarAnimacaoBarraMarketing();
 
-  return desktopCompacto ? 6 : 8;
+  marketingLoopTimer = setTimeout(() => {
+    if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
+    proximoSlideMarketingPainel();
+  }, tempoRestante);
 }
 
-function agruparAniversariantesPorPagina(items) {
-  const lista = Array.isArray(items) ? items : [];
-  const tamanhoPagina = obterQuantidadeAniversariantesPorPagina();
-  const grupos = [];
+function abrirBirthdayDetalhe(item) {
+  if (!item) return;
 
-  for (let i = 0; i < lista.length; i += tamanhoPagina) {
-    grupos.push(lista.slice(i, i + tamanhoPagina));
+  marketingBirthdayExpandedItem = item;
+  pausarLoopMarketingPainel();
+
+  renderBirthdayCardMarketing([item], {
+    pagina: 1,
+    totalPaginas: 1,
+    expandido: true
+  });
+}
+
+function fecharBirthdayDetalhe() {
+  marketingBirthdayExpandedItem = null;
+  pararAnimacaoProgressoMarketing();
+
+  const infoAtual = obterSlidePorIndice(marketingLoopIndex);
+  if (infoAtual?.slide?.tipo === 'birthday') {
+    renderBirthdayCardMarketing(infoAtual.slide.items, {
+      pagina: infoAtual.slide.pagina,
+      totalPaginas: infoAtual.slide.totalPaginas,
+      expandido: false
+    });
   }
 
-  return grupos;
+  retomarLoopMarketingPainel();
 }
 
-let resizeBirthdayTimer = null;
-
-window.addEventListener('resize', () => {
-  clearTimeout(resizeBirthdayTimer);
-
-  resizeBirthdayTimer = setTimeout(() => {
-    exibirSlideMarketing(marketingLoopIndex, { reiniciarTempo: true });
-  }, 180);
-});
-
+window.fecharBirthdayDetalhe = fecharBirthdayDetalhe;
+window.abrirBirthdayDetalhe = abrirBirthdayDetalhe;
 
 function obterSlidePorIndice(index) {
   const slides = [];
-  const gruposAniversariantes = agruparAniversariantesPorPagina(marketingBirthdayItems);
 
+  const gruposAniversariantes = agruparAniversariantesPorPagina(marketingBirthdayItems);
   gruposAniversariantes.forEach((grupo, grupoIndex) => {
     slides.push({
       tipo: 'birthday',
@@ -4031,22 +5992,21 @@ function obterSlidePorIndice(index) {
     });
   });
 
-  marketingLoopUrls.forEach(url => {
+  marketingLoopCards.forEach(card => {
     slides.push({
       tipo: 'imagem',
-      url
+      ...card
     });
   });
 
   if (!slides.length) {
     slides.push({
       tipo: 'fallback',
-      url: 'imagens/PaginaPrincipal.jpg'
+      url: obterFallbackMarketing()
     });
   }
 
   const indiceNormalizado = ((index % slides.length) + slides.length) % slides.length;
-
   return {
     slide: slides[indiceNormalizado],
     indexNormalizado: indiceNormalizado,
@@ -4065,12 +6025,11 @@ function exibirSlideMarketing(index, { reiniciarTempo = true } = {}) {
   atualizarContadorMarketingPainel();
 
   if (slide.tipo === 'birthday') {
-    renderBirthdayCardMarketing(
-      slide.items,
-      slide.pagina,
-      slide.totalPaginas,
-      false
-    );
+    renderBirthdayCardMarketing(slide.items, {
+      pagina: slide.pagina,
+      totalPaginas: slide.totalPaginas,
+      expandido: false
+    });
     return;
   }
 
@@ -4078,17 +6037,25 @@ function exibirSlideMarketing(index, { reiniciarTempo = true } = {}) {
   esconderBirthdayCardMarketing();
   mostrarImagemMarketingArea();
 
-  const url = slide.url || 'imagens/PaginaPrincipal.jpg';
+  const url = slide.url || obterFallbackMarketing();
 
   preloadImage(url)
-    .then(() => {
+    .then(async () => {
       imgEl.style.opacity = 0;
 
-      setTimeout(() => {
+      setTimeout(async () => {
         imgEl.style.display = 'block';
         imgEl.src = url;
         imgEl.dataset.currentUrl = url;
         imgEl.style.opacity = 1;
+
+        if (slide.tipo === 'imagem' && Number(slide.apenasUmaVez) === 1 && slide.id) {
+          try {
+            await marcarCardMarketingComoExibido(slide.id);
+          } catch (err) {
+            console.error('Erro ao marcar card exibido:', err);
+          }
+        }
 
         atualizarContadorMarketingPainel();
 
@@ -4098,11 +6065,11 @@ function exibirSlideMarketing(index, { reiniciarTempo = true } = {}) {
       }, 150);
     })
     .catch(() => {
+      const fallback = obterFallbackMarketing();
       imgEl.style.display = 'block';
-      imgEl.src = 'imagens/PaginaPrincipal.jpg';
-      imgEl.dataset.currentUrl = 'imagens/PaginaPrincipal.jpg';
+      imgEl.src = fallback;
+      imgEl.dataset.currentUrl = fallback;
       imgEl.style.opacity = 1;
-
       atualizarContadorMarketingPainel();
 
       if (reiniciarTempo) {
@@ -4111,9 +6078,102 @@ function exibirSlideMarketing(index, { reiniciarTempo = true } = {}) {
     });
 }
 
+let resizeBirthdayTimer = null;
+
+window.addEventListener('resize', () => {
+  clearTimeout(resizeBirthdayTimer);
+
+  resizeBirthdayTimer = setTimeout(() => {
+    exibirSlideMarketing(marketingLoopIndex, { reiniciarTempo: true });
+  }, 180);
+});
+
+async function proximoSlideMarketingPainel() {
+  if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
+
+  try {
+    await ensureListFreshGlobal();
+
+    if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
+
+    limparTimerMarketing();
+    pararAnimacaoBarraMarketing();
+    resetarBarraMarketing();
+
+    marketingLoopRemainingMs = marketingLoopIntervalMs;
+
+    exibirSlideMarketing(marketingLoopIndex + 1, { reiniciarTempo: false });
+    agendarProximoSlideMarketingPainel(marketingLoopIntervalMs);
+  } catch (err) {
+    console.error('Erro ao avançar slide do marketing:', err);
+    marketingLoopRemainingMs = marketingLoopIntervalMs;
+    agendarProximoSlideMarketingPainel(marketingLoopIntervalMs);
+  }
+}
+
+async function ensureListFreshGlobal(refreshListEveryMs = 60000, fallbackSrc = obterFallbackMarketing()) {
+  const now = Date.now();
+
+  if (
+    now - marketingLoopLastFetchMs < refreshListEveryMs &&
+    (marketingLoopCards.length || marketingBirthdayItems.length)
+  ) {
+    return;
+  }
+
+  marketingLoopLastFetchMs = now;
+
+  try {
+    const slideAtualInfo = obterSlidePorIndice(marketingLoopIndex);
+    const slideAtualTipo = slideAtualInfo?.slide?.tipo;
+    const slideAtualId = slideAtualInfo?.slide?.id || null;
+    const slideAtualBirthdayPagina = slideAtualInfo?.slide?.pagina || 1;
+
+    const [cardsPainel, aniversariantes] = await Promise.all([
+      fetchMarketingPainelCards().catch(() => []),
+      fetchAniversariantesMes().catch(() => [])
+    ]);
+
+    marketingLoopCards = Array.isArray(cardsPainel) ? cardsPainel : [];
+    marketingBirthdayItems = Array.isArray(aniversariantes) ? aniversariantes : [];
+
+    const gruposAnivers = agruparAniversariantesPorPagina(marketingBirthdayItems);
+
+    if (slideAtualTipo === 'birthday' && gruposAnivers.length) {
+      marketingLoopIndex = Math.max(0, Math.min(slideAtualBirthdayPagina - 1, gruposAnivers.length - 1));
+    } else if (slideAtualTipo === 'imagem' && slideAtualId != null) {
+      const idxImagem = marketingLoopCards.findIndex(x => String(x.id) === String(slideAtualId));
+      marketingLoopIndex = idxImagem >= 0 ? gruposAnivers.length + idxImagem : 0;
+    } else {
+      marketingLoopIndex = 0;
+    }
+
+    const totalNovo = obterTotalSlidesMarketing() || 1;
+    if (marketingLoopIndex >= totalNovo) {
+      marketingLoopIndex = 0;
+    }
+
+    atualizarContadorMarketingPainel();
+  } catch (err) {
+    console.error('Erro ao atualizar lista do marketing:', err);
+    marketingLoopCards = [];
+    marketingBirthdayItems = [];
+    marketingLoopIndex = 0;
+
+    const el = document.getElementById('painelMarketingImg');
+    if (el) {
+      el.src = fallbackSrc;
+      el.dataset.currentUrl = fallbackSrc;
+    }
+
+    atualizarBarraProgressoMarketing(0);
+    atualizarContadorMarketingPainel();
+  }
+}
+
 async function iniciarLoopMarketingPainel({
   imgId = 'painelMarketingImg',
-  fallbackSrc = 'imagens/PaginaPrincipal.jpg',
+  fallbackSrc = obterFallbackMarketing(),
   intervalMs = 20000,
   refreshListEveryMs = 60000
 } = {}) {
@@ -4137,84 +6197,7 @@ async function iniciarLoopMarketingPainel({
   };
 
   async function ensureListFresh() {
-    const now = Date.now();
-
-    if (
-      now - marketingLoopLastFetchMs < refreshListEveryMs &&
-      (marketingLoopUrls.length || marketingBirthdayItems.length)
-    ) {
-      return;
-    }
-
-    marketingLoopLastFetchMs = now;
-
-    try {
-      const [urlsNovas, aniversariantes] = await Promise.all([
-        fetchMarketingUrls().catch(() => []),
-        fetchAniversariantesMes().catch(() => [])
-      ]);
-
-      const slideAtual = obterSlidePorIndice(marketingLoopIndex);
-      const slideAtualTipo = slideAtual.slide?.tipo;
-      const slideAtualUrl = slideAtual.slide?.url || '';
-
-      marketingLoopUrls = urlsNovas;
-      marketingBirthdayItems = aniversariantes;
-
-      const totalNovo = obterTotalSlidesMarketing() || 1;
-
-      if (slideAtualTipo === 'birthday' && marketingBirthdayItems.length) {
-        marketingLoopIndex = 0;
-      } else if (slideAtualTipo === 'imagem' && slideAtualUrl) {
-        const idxImagem = marketingLoopUrls.indexOf(slideAtualUrl);
-
-        if (marketingBirthdayItems.length) {
-          marketingLoopIndex = idxImagem >= 0 ? idxImagem + 1 : 0;
-        } else {
-          marketingLoopIndex = idxImagem >= 0 ? idxImagem : 0;
-        }
-      } else {
-        marketingLoopIndex = 0;
-      }
-
-      if (marketingLoopIndex >= totalNovo) {
-        marketingLoopIndex = 0;
-      }
-
-      atualizarContadorMarketingPainel();
-    } catch (err) {
-      console.error('Erro ao atualizar lista do marketing:', err);
-      marketingLoopUrls = [];
-      marketingBirthdayItems = [];
-      marketingLoopIndex = 0;
-      el.src = fallbackSrc;
-      el.dataset.currentUrl = fallbackSrc;
-      atualizarBarraProgressoMarketing(0);
-      atualizarContadorMarketingPainel();
-    }
-  }
-
-  async function proximoSlideMarketingPainel() {
-    if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
-
-    try {
-      await ensureListFresh();
-
-      if (marketingBirthdayExpandedItem || marketingLoopPaused) return;
-
-      limparTimerMarketing();
-      pararAnimacaoBarraMarketing();
-      resetarBarraMarketing();
-
-      marketingLoopPaused = false;
-      marketingBirthdayExpandedItem = null;
-      marketingLoopRemainingMs = marketingLoopIntervalMs;
-
-      exibirSlideMarketing(marketingLoopIndex + 1, { reiniciarTempo: true });
-    } catch (err) {
-      console.error('Erro ao avançar slide do marketing:', err);
-      agendarProximoSlideMarketingPainel(marketingLoopIntervalMs);
-    }
+    return ensureListFreshGlobal(refreshListEveryMs, fallbackSrc);
   }
 
   window.proximoSlideMarketingPainel = proximoSlideMarketingPainel;
@@ -4227,133 +6210,143 @@ async function iniciarLoopMarketingPainel({
 
   btnAnteriorNovo?.addEventListener('click', async () => {
     await ensureListFresh();
-
     limparTimerMarketing();
     pararAnimacaoBarraMarketing();
     resetarBarraMarketing();
-
     marketingLoopPaused = false;
     marketingBirthdayExpandedItem = null;
     marketingLoopRemainingMs = marketingLoopIntervalMs;
-
     exibirSlideMarketing(marketingLoopIndex - 1, { reiniciarTempo: true });
   });
 
   btnProximoNovo?.addEventListener('click', async () => {
     await ensureListFresh();
-
     limparTimerMarketing();
     pararAnimacaoBarraMarketing();
     resetarBarraMarketing();
-
     marketingLoopPaused = false;
     marketingBirthdayExpandedItem = null;
     marketingLoopRemainingMs = marketingLoopIntervalMs;
-
     exibirSlideMarketing(marketingLoopIndex + 1, { reiniciarTempo: true });
   });
 
   await ensureListFresh();
   exibirSlideMarketing(marketingLoopIndex, { reiniciarTempo: true });
-  agendarProximoSlideMarketingPainel(intervalMs);
 }
+
+function isHomologacaoAmbiente() {
+  const apiBase = String(
+    sessionStorage.getItem('api_base') ||
+    sessionStorage.getItem('apibase') ||
+    ''
+  ).toLowerCase();
+
+  return (
+    apiBase.includes('copy') ||
+    apiBase.includes('homolog') ||
+    apiBase.includes('hml')
+  );
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  atualizarAmbienteLabel();
+  atualizarCorBotoesAgendamento();
+  aplicarCorBarraMarketingPorApiBase();
+});
+
 
 function atualizarAmbienteLabel() {
   const el = document.getElementById('ambienteLabel');
   if (!el) return;
 
-  const apiBase = String(sessionStorage.getItem('api_base') || '').toLowerCase();
-  const isCopy = apiBase.includes('copy');
-
-  el.textContent = isCopy ? 'Homologação' : 'Produção';
-  el.style.color = isCopy ? '#ff0000' : 'hsl(var(--primary))';
+  const isHomolog = isHomologacaoAmbiente();
+  el.textContent = isHomolog ? 'Homologação' : 'Produção';
+  el.style.color = isHomolog ? '#dc2626' : '#16a34a';
+  el.style.fontWeight = '700';
 }
 
 function atualizarCorBotoesAgendamento() {
-  const apiBase = String(sessionStorage.getItem('api_base') || '').toLowerCase();
-  const isCopy = apiBase.includes('copy');
-  const cor = isCopy ? '#ff0000' : 'hsl(var(--primary))';
+  const isHomolog = isHomologacaoAmbiente();
+  const bg = isHomolog ? '#dc2626' : '';
+  const border = isHomolog ? '#dc2626' : '';
+  const color = isHomolog ? '#ffffff' : '';
 
-  ['AgendarSalaReuniao', 'AgendarCarro'].forEach(id => {
+  ['AgendarSalaReuniao', 'AgendarCarro', 'btnPainelAnterior', 'btnPainelProximo'].forEach(id => {
     const botao = document.getElementById(id);
     if (!botao) return;
-    botao.style.backgroundColor = cor;
-    botao.style.borderColor = cor;
+
+    botao.style.backgroundColor = bg;
+    botao.style.borderColor = border;
+    botao.style.color = color;
   });
 
   document.querySelectorAll('.home-mobile-tab-btn').forEach(botao => {
-    const ativo = botao.classList.contains('active');
-
-    if (isCopy) {
-      if (ativo) {
-        botao.style.backgroundColor = '#ff0000';
-        botao.style.borderColor = '#ff0000';
-        botao.style.color = '#ffffff';
-      } else {
-        botao.style.backgroundColor = 'rgba(255, 0, 0, 0.08)';
-        botao.style.borderColor = '#ff0000';
-        botao.style.color = '#ff0000';
-      }
-    } else {
-      botao.style.backgroundColor = '';
-      botao.style.borderColor = '';
-      botao.style.color = '';
-    }
+    botao.style.backgroundColor = bg;
+    botao.style.borderColor = border;
+    botao.style.color = color;
   });
 }
 
 
-document.addEventListener('DOMContentLoaded', () => {
-  atualizarAmbienteLabel();
-  atualizarCorBotoesAgendamento();
 
-  const homeTabButtons = document.querySelectorAll('.home-mobile-tab-btn');
-  const homePainelPanel = document.getElementById('homePainelPanel');
-  const homeCalendarioPanel = document.getElementById('homeCalendarioPanel');
+// ===== Gestão de Pedido =====//
 
-  function setHomeTab(tab) {
-    homeTabButtons.forEach((btn) => {
-      const active = btn.dataset.homeTab === tab;
-      btn.classList.toggle('active', active);
-      btn.classList.toggle('bg-white/70', active);
-      btn.classList.toggle('text-foreground', active);
-      btn.classList.toggle('bg-white/40', !active);
-      btn.classList.toggle('text-muted-foreground', !active);
-    });
+function ativarAbaPedidos(nomeAba) {
+  const abaDash = document.getElementById('abaPedidosDashboard');
+  const abaTab = document.getElementById('abaPedidosTabela');
+  const painelDash = document.getElementById('painelPedidosDashboard');
+  const painelTab = document.getElementById('painelPedidosTabela');
+  const btnNovo = document.getElementById('btnNovoPedido');
 
-    if (window.innerWidth < 1024) {
-      if (tab === 'painel') {
-        homePainelPanel.classList.add('active');
-        homeCalendarioPanel.classList.remove('active');
-      } else {
-        homeCalendarioPanel.classList.add('active');
-        homePainelPanel.classList.remove('active');
-      }
-    }
+  const isTabela = nomeAba === 'tabela';
 
-    atualizarCorBotoesAgendamento();
-  }
+  // aria-selected
+  abaDash?.setAttribute('aria-selected', isTabela ? 'false' : 'true');
+  abaTab?.setAttribute('aria-selected', isTabela ? 'true' : 'false');
 
-
-  homeTabButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      setHomeTab(btn.dataset.homeTab);
-    });
-  });
-
-  resetHomePanelsDesktop();
-  window.addEventListener('resize', resetHomePanelsDesktop);
-});
-
-  function resetHomePanelsDesktop() {
-    if (window.innerWidth >= 1024) {
-      homePainelPanel.classList.add('active');
-      homeCalendarioPanel.classList.add('active');
+  // classes (estilo ativo/inativo)
+  if (abaDash && abaTab) {
+    if (!isTabela) {
+      abaDash.className = "px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground";
+      abaTab.className  = "px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground";
     } else {
-      const activeBtn = document.querySelector('.home-mobile-tab-btn.active');
-      setHomeTab(activeBtn?.dataset.homeTab || 'painel');
+      abaTab.className  = "px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground";
+      abaDash.className = "px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground";
     }
   }
+
+  // painéis
+  if (painelDash) painelDash.hidden = isTabela;
+  if (painelTab)  painelTab.hidden  = !isTabela;
+
+  // botão novo pedido (só na tabela)
+  if (btnNovo) btnNovo.classList.toggle('hidden', !isTabela);
+}
+
+document.getElementById('abaPedidosDashboard')?.addEventListener('click', () => ativarAbaPedidos('dashboard'));
+document.getElementById('abaPedidosTabela')?.addEventListener('click', () => ativarAbaPedidos('tabela'));
+
+// estado inicial
+ativarAbaPedidos('dashboard');
+
+function mostrarMsgMarketing(msg) {
+  const el = document.getElementById('marketingMsg');
+  if (!el) return;
+  if (!msg) { el.classList.add('hidden'); el.textContent = ''; return; }
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function escapeHtml(s) {
+  return String(s ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+
 
 // =====================
 // CLIENTES + FILIAIS (MySQL API)
@@ -4375,7 +6368,7 @@ function escapeHtml(s) {
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+    .replaceAll("'", '&#39;');
 }
 
 function somenteNumeros(v) {
@@ -9744,10 +11737,7 @@ document.addEventListener('click', async (e) => {
 
 function obterUsuarioLogado() {
   return (
-    sessionStorage.getItem('usuarioNome') ||
     sessionStorage.getItem('usuario') ||
-    sessionStorage.getItem('userName') ||
-    sessionStorage.getItem('usuarioEmail') ||
     ''
   );
 }
@@ -12085,3 +14075,707 @@ document.addEventListener('DOMContentLoaded', function() {
     weatherNextBtn.addEventListener('click', () => toggleWeatherCard('next'));
   }
 });
+
+
+// ===============================
+// RESERVA DE CARRO + MEUS AGENDAMENTOS
+// ===============================
+
+function removerModalReservaCarro() {
+  document.getElementById('carroModalOverlay')?.remove();
+  document.getElementById('carroModal')?.remove();
+}
+
+function removerModalDetalhesAgendamento() {
+  document.getElementById('detalhesAgendamentoOverlay')?.remove();
+  document.getElementById('detalhesAgendamentoModal')?.remove();
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function pad2(n) {
+  return String(n).padStart(2, '0');
+}
+
+function todayDateTimeLocalPlus(minutesToAdd = 0) {
+  const d = new Date(Date.now() + minutesToAdd * 60000);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+
+function formatarDataHoraBR(value) {
+  if (!value) return '-';
+
+  const s = String(value).trim();
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
+
+  if (!m) return s;
+
+  const [, ano, mes, dia, hora, minuto] = m;
+  return `${dia}/${mes}/${ano} ${hora}:${minuto}`;
+}
+
+function formatarTextoDataHora(value) {
+  return formatarDataHoraBR(value);
+}
+
+function obterApiBase() {
+  return (
+    sessionStorage.getItem('apibase') ||
+    sessionStorage.getItem('api_base') ||
+    localStorage.getItem('apibase') ||
+    localStorage.getItem('api_base') ||
+    ''
+  ).trim().replace(/\/+$/, '');
+}
+
+function classeStatusAgendamento(status) {
+  const s = String(status || '').toUpperCase();
+
+  if (s === 'APROVADA') return 'bg-green-100 text-green-700 border border-green-200';
+  if (s === 'RECUSADA' || s === 'CANCELADA') return 'bg-red-100 text-red-700 border border-red-200';
+  if (s === 'CONCLUIDA') return 'bg-blue-100 text-blue-700 border border-blue-200';
+  return 'bg-amber-100 text-amber-700 border border-amber-200';
+}
+
+function normalizarLista(json) {
+  if (Array.isArray(json?.items)) return json.items;
+  if (Array.isArray(json)) return json;
+  return [];
+}
+
+async function abrirModalReservaCarro() {
+  removerModalReservaCarro();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'carroModalOverlay';
+  overlay.className = 'fixed inset-0 bg-black/30 backdrop-blur-sm z-[170]';
+  document.body.appendChild(overlay);
+
+  const modal = document.createElement('div');
+  modal.id = 'carroModal';
+  modal.className = 'fixed inset-0 z-[180]';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'carroModalTitle');
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-y-auto no-scrollbar">
+      <div class="min-h-full flex items-start justify-center p-4 md:p-8">
+        <div class="w-full max-w-4xl mx-auto px-4 sm:px-6">
+          <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
+            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+              <div>
+                <h3 id="carroModalTitle" class="text-lg font-semibold text-foreground">Solicitação de reserva de carro</h3>
+                <p class="text-sm text-muted-foreground">Informe o tipo do veículo, período, destinos, urgência e observações.</p>
+              </div>
+              <button id="closeCarroModal" type="button" class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center" aria-label="Fechar" title="Fechar">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <form id="carroForm" class="px-6 py-6 space-y-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label for="carroTipoVeiculo" class="text-sm font-medium">Tipo de veículo</label>
+                  <select id="carroTipoVeiculo" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" required>
+                    <option value="" selected disabled>Selecione...</option>
+                    <option value="SEM PREFERÊNCIA">Sem preferência</option>
+                    <option value="ABERTO">Aberto</option>
+                    <option value="FECHADO">Fechado</option>
+                  </select>
+                </div>
+
+                <div class="space-y-2">
+                  <label for="carroUrgencia" class="text-sm font-medium">Grau de urgência</label>
+                  <select id="carroUrgencia" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" required>
+                    <option value="" selected disabled>Selecione...</option>
+                    <option value="BAIXA">Baixa</option>
+                    <option value="MEDIA">Média</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="URGENTE">Urgente</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label for="carroDataNecessaria" class="text-sm font-medium">Data e hora necessária</label>
+                  <input id="carroDataNecessaria" type="datetime-local" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" required>
+                </div>
+
+                <div class="space-y-2">
+                  <label for="carroPrevisaoDevolucao" class="text-sm font-medium">Previsão de devolução</label>
+                  <input id="carroPrevisaoDevolucao" type="datetime-local" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" required>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <div class="flex items-center justify-between gap-3 flex-wrap">
+                  <label class="text-sm font-medium">Destinos</label>
+                  <span id="carroDestinosCount" class="text-xs text-muted-foreground">0 selecionado(s)</span>
+                </div>
+
+                <div id="carroDestinosBox" class="rounded-xl border border-border bg-white/50 p-3 max-h-72 overflow-auto no-scrollbar space-y-2">
+                  <p id="carroDestinosLoading" class="text-sm text-muted-foreground">Carregando destinos...</p>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <label for="carroObservacoes" class="text-sm font-medium">Observações</label>
+                <textarea id="carroObservacoes" rows="4" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="Informe detalhes da solicitação, motorista, carga, finalidade, etc."></textarea>
+              </div>
+
+              <p id="carroFormErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
+
+              <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                <button id="btnSalvarReservaCarro" type="submit" class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+                  Salvar
+                </button>
+                <button id="btnCancelarReservaCarro" type="button" class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const inputDataNecessaria = document.getElementById('carroDataNecessaria');
+  const inputPrevisaoDevolucao = document.getElementById('carroPrevisaoDevolucao');
+  const destinosBox = document.getElementById('carroDestinosBox');
+  const destinosCount = document.getElementById('carroDestinosCount');
+  const destinosLoading = document.getElementById('carroDestinosLoading');
+  const form = document.getElementById('carroForm');
+  const btnSalvar = document.getElementById('btnSalvarReservaCarro');
+
+  const selectedDestinos = new Set();
+  let destinosCache = [];
+
+  function fechar() {
+    removerModalReservaCarro();
+  }
+
+  function setErro(msg) {
+    const el = document.getElementById('carroFormErro');
+    if (!el) return;
+
+    if (!msg) {
+      el.textContent = '';
+      el.classList.add('hidden');
+      return;
+    }
+
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function setSalvarLoading(loading) {
+    if (!btnSalvar) return;
+    btnSalvar.disabled = loading;
+    btnSalvar.textContent = loading ? 'Salvando...' : 'Salvar';
+    btnSalvar.classList.toggle('opacity-70', loading);
+  }
+
+  function atualizarContador() {
+    if (destinosCount) {
+      destinosCount.textContent = `${selectedDestinos.size} selecionado(s)`;
+    }
+  }
+
+  function renderDestinos() {
+    if (!destinosBox) return;
+
+    if (!Array.isArray(destinosCache) || !destinosCache.length) {
+      destinosBox.innerHTML = `<p class="text-sm text-muted-foreground">Nenhum destino encontrado.</p>`;
+      atualizarContador();
+      return;
+    }
+
+    destinosBox.innerHTML = destinosCache.map(item => {
+      const id = String(item.id ?? item.ID ?? '').trim();
+      const nome = String(item.nome ?? item.NOME ?? '').trim();
+      const checked = selectedDestinos.has(id) ? 'checked' : '';
+
+      return `
+        <label class="flex items-start gap-3 rounded-xl border border-border bg-white/60 hover:bg-white/80 transition-all px-3 py-2 cursor-pointer">
+          <input type="checkbox" class="mt-1 carro-destino-checkbox" data-id="${escapeHtml(id)}" ${checked}>
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-semibold text-foreground truncate">${escapeHtml(nome || 'Sem nome')}</div>
+            <div class="text-xs text-muted-foreground">ID: ${escapeHtml(id)}</div>
+          </div>
+        </label>
+      `;
+    }).join('');
+
+    destinosBox.querySelectorAll('.carro-destino-checkbox').forEach(chk => {
+      chk.addEventListener('change', () => {
+        const id = String(chk.getAttribute('data-id') || '');
+        if (!id) return;
+
+        if (chk.checked) selectedDestinos.add(id);
+        else selectedDestinos.delete(id);
+
+        atualizarContador();
+      });
+    });
+
+    atualizarContador();
+  }
+
+  async function carregarDestinos() {
+    try {
+      const APIBASE = obterApiBase();
+      if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
+
+      const resp = await fetch(`${APIBASE}/api/local-trabalho`, { method: 'GET' });
+      const json = await resp.json().catch(() => ({}));
+
+      if (!resp.ok) {
+        throw new Error(json?.message || `Erro ao listar destinos. Status ${resp.status}`);
+      }
+
+      destinosCache = normalizarLista(json);
+      renderDestinos();
+    } catch (err) {
+      destinosBox.innerHTML = `<p class="text-sm text-destructive whitespace-pre-line">${escapeHtml(err?.message || 'Erro ao carregar destinos.')}</p>`;
+    } finally {
+      destinosLoading?.remove();
+    }
+  }
+
+  overlay.addEventListener('click', fechar);
+  document.getElementById('closeCarroModal')?.addEventListener('click', fechar);
+  document.getElementById('btnCancelarReservaCarro')?.addEventListener('click', fechar);
+
+  const agora = todayDateTimeLocalPlus(10);
+  const depois = todayDateTimeLocalPlus(130);
+
+  if (inputDataNecessaria) {
+    inputDataNecessaria.min = todayDateTimeLocalPlus(0);
+    inputDataNecessaria.value = agora;
+  }
+
+  if (inputPrevisaoDevolucao) {
+    inputPrevisaoDevolucao.min = agora;
+    inputPrevisaoDevolucao.value = depois;
+  }
+
+  inputDataNecessaria?.addEventListener('change', () => {
+    if (!inputPrevisaoDevolucao) return;
+
+    inputPrevisaoDevolucao.min = inputDataNecessaria.value || todayDateTimeLocalPlus(0);
+
+    if (
+      inputPrevisaoDevolucao.value &&
+      inputDataNecessaria.value &&
+      inputPrevisaoDevolucao.value <= inputDataNecessaria.value
+    ) {
+      inputPrevisaoDevolucao.value = inputDataNecessaria.value;
+    }
+  });
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    setErro('');
+
+    if (!form.reportValidity()) return;
+
+    const tipoVeiculo = document.getElementById('carroTipoVeiculo')?.value?.trim();
+    const urgencia = document.getElementById('carroUrgencia')?.value?.trim();
+    const dataNecessaria = document.getElementById('carroDataNecessaria')?.value;
+    const previsaoDevolucao = document.getElementById('carroPrevisaoDevolucao')?.value;
+    const observacoes = document.getElementById('carroObservacoes')?.value?.trim() || '';
+    const destinos = Array.from(selectedDestinos.values());
+    const usuario = obterUsuarioLogado();
+
+    if (!tipoVeiculo) return setErro('Selecione o tipo de veículo.');
+    if (!urgencia) return setErro('Selecione o grau de urgência.');
+    if (!dataNecessaria) return setErro('Informe a data e hora necessária.');
+    if (!previsaoDevolucao) return setErro('Informe a previsão de devolução.');
+    if (previsaoDevolucao <= dataNecessaria) return setErro('A previsão de devolução deve ser maior que a data e hora necessária.');
+    if (!destinos.length) return setErro('Selecione pelo menos um destino.');
+    if (!usuario) return setErro('Usuário logado não identificado.');
+
+    try {
+      setSalvarLoading(true);
+
+      const APIBASE = obterApiBase();
+      if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
+
+      const payload = {
+        tipoVeiculo,
+        dataNecessaria,
+        previsaoDevolucao,
+        destinos,
+        observacoes,
+        urgencia,
+        usuarioSolicitante: usuario
+      };
+
+      const resp = await fetch(`${APIBASE}/api/reservas-carro`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await resp.json().catch(() => ({}));
+
+      if (!resp.ok || !json?.success) {
+        throw new Error(json?.message || `Falha ao salvar. Status ${resp.status}`);
+      }
+
+      fechar();
+      await carregarMeusAgendamentos();
+      alert(json?.message || 'Solicitação de reserva de carro salva com sucesso.');
+    } catch (err) {
+      setErro(err?.message || 'Erro ao salvar a solicitação.');
+    } finally {
+      setSalvarLoading(false);
+    }
+  });
+
+  await carregarDestinos();
+}
+
+async function carregarMeusAgendamentos() {
+  const tbody = document.getElementById('tbodyMeusAgendamentos');
+  const msg = document.getElementById('meusAgendamentosMsg');
+
+  if (!tbody) return;
+
+  const usuario = obterUsuarioLogado();
+
+  if (!usuario) {
+    if (msg) {
+      msg.textContent = 'Usuário logado não identificado.';
+      msg.classList.remove('hidden');
+    }
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="px-4 py-6 form-subtitle-sm text-center">
+          Usuário logado não identificado.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  try {
+    if (msg) {
+      msg.textContent = '';
+      msg.classList.add('hidden');
+    }
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="px-4 py-6 form-subtitle-sm text-center">
+          Carregando agendamentos...
+        </td>
+      </tr>
+    `;
+
+    const APIBASE = obterApiBase();
+    if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
+
+    const response = await fetch(`${APIBASE}/api/reservas-carro/usuario/${encodeURIComponent(usuario)}`);
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.message || 'Erro ao carregar agendamentos.');
+    }
+
+    const items = normalizarLista(data);
+
+    const total = items.length;
+    const pendente = items.filter(x => String(x.status_solicitacao || '').toUpperCase() === 'PENDENTE').length;
+    const aprovada = items.filter(x => String(x.status_solicitacao || '').toUpperCase() === 'APROVADA').length;
+    const recusada = items.filter(x => ['RECUSADA', 'CANCELADA'].includes(String(x.status_solicitacao || '').toUpperCase())).length;
+
+    const cardTotal = document.getElementById('cardAgendamentoTotal');
+    const cardPendente = document.getElementById('cardAgendamentoPendente');
+    const cardAprovada = document.getElementById('cardAgendamentoAprovada');
+    const cardRecusada = document.getElementById('cardAgendamentoRecusada');
+
+    if (cardTotal) cardTotal.textContent = total;
+    if (cardPendente) cardPendente.textContent = pendente;
+    if (cardAprovada) cardAprovada.textContent = aprovada;
+    if (cardRecusada) cardRecusada.textContent = recusada;
+
+    if (!items.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="px-4 py-6 form-subtitle-sm text-center">
+            Nenhum agendamento encontrado.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = items.map(item => `
+      <tr class="border-t border-border/70">
+        <td class="px-4 py-3 font-semibold">#${Number(item.id) || '-'}</td>
+        <td class="px-4 py-3">${escapeHtml(item.tipo_veiculo || '-')}</td>
+        <td class="px-4 py-3">${escapeHtml(formatarDataHoraBR(item.data_necessaria))}</td>
+        <td class="px-4 py-3">${escapeHtml(formatarDataHoraBR(item.previsao_devolucao))}</td>
+        <td class="px-4 py-3">${escapeHtml(item.destinos || '-')}</td>
+        <td class="px-4 py-3">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${classeStatusAgendamento(item.status_solicitacao)}">
+            ${escapeHtml(item.status_solicitacao || 'PENDENTE')}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-right">
+          <button
+            type="button"
+            class="rounded-lg border border-border bg-white/70 hover:bg-white px-3 py-2 text-xs font-semibold transition-all"
+            onclick="abrirDetalhesAgendamento(${Number(item.id)})">
+            Ver detalhes
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error('Erro ao carregar meus agendamentos:', err);
+
+    if (msg) {
+      msg.textContent = err?.message || 'Erro ao carregar agendamentos.';
+      msg.classList.remove('hidden');
+    }
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="px-4 py-6 text-sm text-red-600 text-center">
+          Erro ao carregar agendamentos.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+async function abrirDetalhesAgendamento(idReserva) {
+  try {
+    const id = Number(idReserva);
+    if (!id) throw new Error('ID da reserva inválido.');
+
+    removerModalDetalhesAgendamento();
+
+    const APIBASE = obterApiBase();
+    if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
+
+    const resp = await fetch(`${APIBASE}/api/reservas-carro/${id}`);
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json?.success) {
+      throw new Error(json?.message || 'Erro ao buscar detalhes da reserva.');
+    }
+
+    const item = json.item || {};
+    const destinos = Array.isArray(item.destinos) ? item.destinos : [];
+
+    const overlay = document.createElement('div');
+    overlay.id = 'detalhesAgendamentoOverlay';
+    overlay.className = 'fixed inset-0 bg-black/30 backdrop-blur-sm z-[190]';
+    document.body.appendChild(overlay);
+
+    const modal = document.createElement('div');
+    modal.id = 'detalhesAgendamentoModal';
+    modal.className = 'fixed inset-0 z-[200]';
+    modal.innerHTML = `
+      <div class="w-full h-full overflow-y-auto no-scrollbar">
+        <div class="min-h-full flex items-start justify-center p-4 md:p-8">
+          <div class="w-full max-w-3xl mx-auto px-4 sm:px-6">
+            <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
+              <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-foreground">Detalhes do agendamento #${escapeHtml(item.id)}</h3>
+                  <p class="text-sm text-muted-foreground">Informações da sua solicitação de veículo.</p>
+                </div>
+                <button id="closeDetalhesAgendamento" type="button" class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center" aria-label="Fechar" title="Fechar">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+
+              <div class="px-6 py-6 space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="rounded-xl border border-border bg-white/60 p-4">
+                    <div class="text-xs text-muted-foreground">Tipo de veículo</div>
+                    <div class="mt-1 font-semibold">${escapeHtml(item.tipo_veiculo || '-')}</div>
+                  </div>
+
+                  <div class="rounded-xl border border-border bg-white/60 p-4">
+                    <div class="text-xs text-muted-foreground">Status</div>
+                    <div class="mt-2">
+                      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${classeStatusAgendamento(item.status_solicitacao)}">
+                        ${escapeHtml(item.status_solicitacao || 'PENDENTE')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="rounded-xl border border-border bg-white/60 p-4">
+                    <div class="text-xs text-muted-foreground">Data necessária</div>
+                    <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(item.data_necessaria))}</div>
+                  </div>
+
+                  <div class="rounded-xl border border-border bg-white/60 p-4">
+                    <div class="text-xs text-muted-foreground">Previsão de devolução</div>
+                    <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(item.previsao_devolucao))}</div>
+                  </div>
+
+                  <div class="rounded-xl border border-border bg-white/60 p-4">
+                    <div class="text-xs text-muted-foreground">Urgência</div>
+                    <div class="mt-1 font-semibold">${escapeHtml(item.urgencia || '-')}</div>
+                  </div>
+
+                  <div class="rounded-xl border border-border bg-white/60 p-4">
+                    <div class="text-xs text-muted-foreground">Solicitante</div>
+                    <div class="mt-1 font-semibold">${escapeHtml(item.usuario_solicitante || '-')}</div>
+                  </div>
+                </div>
+
+                <div class="rounded-xl border border-border bg-white/60 p-4">
+                  <div class="text-xs text-muted-foreground">Destinos</div>
+                  <div class="mt-2 space-y-2">
+                    ${
+                      destinos.length
+                        ? destinos.map(dest => `
+                          <div class="rounded-lg border border-border bg-white/70 px-3 py-2 text-sm">
+                            ${escapeHtml(dest.nome || dest.NOME || '-')}
+                          </div>
+                        `).join('')
+                        : `<div class="text-sm text-muted-foreground">Nenhum destino informado.</div>`
+                    }
+                  </div>
+                </div>
+
+                <div class="rounded-xl border border-border bg-white/60 p-4">
+                  <div class="text-xs text-muted-foreground">Observações</div>
+                  <div class="mt-2 text-sm whitespace-pre-line">${escapeHtml(item.observacoes || '-')}</div>
+                </div>
+
+                <div class="pt-2 flex justify-end">
+                  <button id="btnFecharDetalhesAgendamento" type="button" class="rounded-xl border border-border bg-white/70 px-4 py-3 font-medium hover:bg-white transition-all">
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    function fechar() {
+      removerModalDetalhesAgendamento();
+    }
+
+    overlay.addEventListener('click', fechar);
+    document.getElementById('closeDetalhesAgendamento')?.addEventListener('click', fechar);
+    document.getElementById('btnFecharDetalhesAgendamento')?.addEventListener('click', fechar);
+  } catch (err) {
+    alert(err?.message || 'Erro ao abrir detalhes do agendamento.');
+  }
+}
+
+function abrirFormularioAgendamentoCarro() {
+  const secao = document.getElementById('secao-meus-agendamentos');
+
+  if (typeof showPage === 'function') {
+    showPage('secao-meus-agendamentos');
+  } else {
+    document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
+    if (secao) secao.classList.add('active');
+  }
+
+  abrirModalReservaCarro();
+}
+
+async function salvarReservaCarro(payload) {
+  const APIBASE = obterApiBase();
+  if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
+
+  const response = await fetch(`${APIBASE}/api/reservas-carro`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.message || 'Erro ao salvar reserva.');
+  }
+
+  await carregarMeusAgendamentos();
+  return data;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btnHomeAgendarCarro = document.getElementById('AgendarCarro');
+  const btnNovoAgendamentoCarro = document.getElementById('btnNovoAgendamentoCarro');
+  const btnAtualizarMeusAgendamentos = document.getElementById('btnAtualizarMeusAgendamentos');
+
+  if (btnHomeAgendarCarro) {
+    btnHomeAgendarCarro.addEventListener('click', abrirFormularioAgendamentoCarro);
+  }
+
+  if (btnNovoAgendamentoCarro) {
+    btnNovoAgendamentoCarro.addEventListener('click', abrirFormularioAgendamentoCarro);
+  }
+
+  if (btnAtualizarMeusAgendamentos) {
+    btnAtualizarMeusAgendamentos.addEventListener('click', carregarMeusAgendamentos);
+  }
+
+  document.querySelectorAll('.menu-item[data-page="secao-meus-agendamentos"]').forEach(item => {
+    item.addEventListener('click', () => {
+      setTimeout(() => {
+        carregarMeusAgendamentos();
+      }, 100);
+    });
+  });
+});
+
+
+function ativarHomeMobileTab(tab) {
+  const painel = document.getElementById('homePainelPanel');
+  const calendario = document.getElementById('homeCalendarioPanel');
+  const botoes = document.querySelectorAll('.home-mobile-tab-btn');
+
+  if (!painel || !calendario) return;
+
+  const isDesktop = window.innerWidth >= 1024;
+
+  if (isDesktop) {
+    painel.classList.add('active');
+    calendario.classList.add('active');
+    botoes.forEach(btn => btn.classList.remove('active'));
+    return;
+  }
+
+  if (tab === 'calendario') {
+    painel.classList.remove('active');
+    calendario.classList.add('active');
+  } else {
+    painel.classList.add('active');
+    calendario.classList.remove('active');
+  }
+
+  botoes.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.homeTab === tab);
+  });
+}
+
+window.addEventListener('resize', resetHomePanelsDesktop);
