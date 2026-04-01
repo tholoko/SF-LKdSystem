@@ -1,0 +1,2505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="imagens/favicon.ico" />
+  <title>Sociedade Franciosi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js"></script>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            border: "hsl(var(--border))",
+            background: "hsl(var(--background))",
+            foreground: "hsl(var(--foreground))",
+            primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
+            secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
+            muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
+            accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
+            destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
+            card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
+            sidebar: {
+              background: "hsl(var(--sidebar-background))",
+              foreground: "hsl(var(--sidebar-foreground))",
+              border: "hsl(var(--sidebar-border))"
+            },
+            success: { DEFAULT: "hsl(var(--success))", foreground: "hsl(var(--success-foreground))" },
+            warning: { DEFAULT: "hsl(var(--warning))", foreground: "hsl(var(--warning-foreground))" },
+            info: { DEFAULT: "hsl(var(--info))", foreground: "hsl(var(--info-foreground))" }
+          },
+          borderRadius: { lg: "var(--radius)" }
+        }
+      }
+    }
+  </script>
+
+<style>
+  :root {
+    --background: 30 20% 98%;
+    --foreground: 150 25% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 25% 15%;
+    --primary: 145 45% 28%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 35 30% 92%;
+    --secondary-foreground: 150 25% 15%;
+    --muted: 30 15% 94%;
+    --muted-foreground: 150 10% 45%;
+    --accent: 38 85% 55%;
+    --accent-foreground: 150 25% 15%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 15% 88%;
+    --radius: 0.625rem;
+    --sidebar-background: 30 15% 96%;
+    --sidebar-foreground: 150 25% 15%;
+    --sidebar-border: 30 15% 88%;
+    --success: 145 60% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 200 80% 50%;
+    --info-foreground: 0 0% 100%;
+  }
+
+
+  /* ========================================
+   IMAGEM DE FUNDO OFUSCADA
+   ======================================= */
+
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Body SEM background-image — apenas cor de fallback */
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: hsl(var(--background));
+    min-height: 100vh;
+    position: relative; /* necessário para o ::before funcionar */
+  }
+
+  /* Pseudo-elemento carrega a imagem com opacidade */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.20)),
+      url('imagens/PaginaPrincipal.jpg') center / cover no-repeat;
+    opacity: 0.45; /* ← AJUSTE AQUI: 0.2 = bem sutil | 0.5 = médio | 0.8 = forte */
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Garantir que toda página herde o fundo */
+  html {
+    background: inherit;
+  }
+
+
+  .glass {
+    background: hsl(var(--card) / 0.86);
+    backdrop-filter: blur(10px);
+    border: 1px solid hsl(var(--border) / 0.60);
+  }
+
+
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 320px;
+    transform: translateX(-110%);
+    transition: transform .28s ease;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  #overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.25);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+    z-index: 40;
+  }
+
+  #overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .hide-scrollbar,
+  .menu-items,
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar,
+  .menu-items::-webkit-scrollbar,
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .page-content {
+    display: none;
+  }
+
+  .page-content.active {
+    display: block;
+    min-height: 0;
+  }
+
+  input[type="date"],
+  input[type="datetime-local"] {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 640px) {
+    input[type="date"],
+    input[type="datetime-local"] {
+      max-width: 90%;
+    }
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    border-width: 1px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .status-ativo {
+    background: hsl(var(--success) / 0.15);
+    color: hsl(var(--success));
+    border-color: hsl(var(--success) / 0.20);
+  }
+
+  .status-inativo {
+    background: hsl(var(--destructive) / 0.15);
+    color: hsl(var(--destructive));
+    border-color: hsl(var(--destructive) / 0.20);
+  }
+
+  .home-mobile-tab-btn.active {
+    background: hsl(var(--primary));
+    color: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,.12);
+  }
+
+  @media (max-width: 1023px) {
+    .home-mobile-tabs-wrap {
+      display: block !important;
+    }
+
+    .home-desktop-layout {
+      display: block !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    .home-left-column,
+    .home-right-column {
+      display: contents !important;
+    }
+
+    #homePainelPanel,
+    #homeCalendarioPanel {
+      display: none !important;
+      width: 100% !important;
+    }
+
+    #homePainelPanel.active,
+    #homeCalendarioPanel.active {
+      display: block !important;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    #homePainelPanel,
+    #homeCalendarioPanel {
+      display: none !important;
+    }
+
+    #homePainelPanel.active,
+    #homeCalendarioPanel.active {
+      display: block !important;
+    }
+  }
+
+
+
+  @media (min-width: 1024px) {
+    html, body {
+      height: auto;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    body {
+      min-height: 100dvh;
+    }
+
+    #main {
+      min-height: 100dvh;
+      height: auto;
+      overflow: visible;
+      width: 100%;
+    }
+
+    .home-page-shell {
+      height: calc(100dvh - 1.5rem);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-height: 0;
+    }
+
+    .home-mobile-tabs-wrap {
+      display: none !important;
+    }
+
+    .home-desktop-layout {
+      display: grid !important;
+      grid-template-columns: minmax(340px, 4fr) minmax(480px, 8fr);
+      gap: 1rem;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      align-items: stretch;
+    }
+
+    .home-left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .home-right-column {
+      display: flex;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .home-mobile-panel {
+      display: block !important;
+      min-height: 0;
+    }
+
+    .home-card-fit {
+      min-height: 0 !important;
+    }
+
+    .home-calendar-card {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .home-right-panel-card {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .home-scroll-area {
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .home-media-fit {
+      min-height: 440px;
+      flex: 1;
+    }
+
+    #home .glass {
+      max-height: 100%;
+    }
+  }
+
+  #main {
+    width: 100%;
+  }
+
+  #painelMarketingStage,
+  #painelBirthdayCard {
+    width: 100%;
+    height: 100%;
+  }
+
+  #painelBirthdayCard {
+    overflow: hidden;
+  }
+
+  #painelMarketingImg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .painel-birthday-card.elegante {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: #f8f6f3;
+    padding: 14px;
+    animation: birthdayCardFadeIn .6s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .painel-birthday-paper {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,.65), transparent 30%),
+      radial-gradient(circle at 80% 15%, rgba(255,255,255,.45), transparent 24%),
+      linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,.08));
+    opacity: .9;
+    pointer-events: none;
+  }
+
+  .painel-birthday-paper::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(rgba(0,0,0,.018) 1px, transparent 1px),
+      radial-gradient(rgba(0,0,0,.012) 1px, transparent 1px);
+    background-size: 18px 18px, 26px 26px;
+    background-position: 0 0, 10px 10px;
+    opacity: .7;
+  }
+
+  .painel-birthday-decor {
+    position: absolute;
+    border-radius: 999px;
+    opacity: .16;
+    pointer-events: none;
+  }
+
+  .painel-birthday-decor.decor-1 {
+    width: 140px;
+    height: 140px;
+    right: -30px;
+    top: -40px;
+    background: linear-gradient(135deg, #f87171, #fb7185);
+    filter: blur(16px);
+  }
+
+  .painel-birthday-decor.decor-2 {
+    width: 130px;
+    height: 130px;
+    left: -35px;
+    bottom: -35px;
+    background: linear-gradient(135deg, #fbbf24, #fb7185);
+    filter: blur(20px);
+  }
+
+  .painel-birthday-decor.decor-3 {
+    width: 80px;
+    height: 80px;
+    left: 52%;
+    top: 18px;
+    background: linear-gradient(135deg, #fca5a5, #f87171);
+    filter: blur(18px);
+  }
+
+  .painel-birthday-layout {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1.35fr .95fr;
+    gap: 14px;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .painel-birthday-left,
+  .painel-birthday-right {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .painel-birthday-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .painel-birthday-right-inner {
+    width: 100%;
+    max-width: 290px;
+    text-align: center;
+    padding: 6px 4px;
+  }
+
+  .painel-birthday-mini-title {
+    font-size: .72rem;
+    font-weight: 700;
+    color: #b91c1c;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .painel-birthday-big-title {
+    font-size: 1.55rem;
+    line-height: .95;
+    font-weight: 400;
+    color: #111827;
+    margin-bottom: 8px;
+    font-family: "Georgia", "Times New Roman", serif;
+  }
+
+  .painel-birthday-big-title span {
+    display: inline-block;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ef4444;
+    letter-spacing: -.03em;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  .painel-birthday-line {
+    width: 90px;
+    height: 8px;
+    margin: 0 auto 12px;
+    position: relative;
+  }
+
+  .painel-birthday-line::before,
+  .painel-birthday-line::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #f87171, transparent);
+  }
+
+  .painel-birthday-line::after {
+    transform: scaleX(.6);
+  }
+
+  .painel-birthday-message {
+    font-size: .84rem;
+    line-height: 1.38;
+    color: #1f2937;
+    font-weight: 500;
+    max-width: 260px;
+    margin: 0 auto;
+  }
+
+  .painel-birthday-count {
+    margin-top: 12px;
+    font-size: .72rem;
+    color: #64748b;
+    font-weight: 700;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-4 {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-6 {
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-8 {
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+  }
+
+  .painel-birthday-person {
+    min-width: 0;
+    min-height: 0;
+    background: rgba(255,255,255,.84);
+    border: 1px solid rgba(255,255,255,.92);
+    border-radius: 18px;
+    padding: 10px 8px 8px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(15,23,42,.08);
+    transition: transform .2s ease, box-shadow .2s ease;
+    animation: birthdayPersonIn .5s ease both;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .painel-birthday-person:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(15,23,42,.10);
+  }
+
+  .painel-birthday-person.is-today {
+    background: linear-gradient(180deg, rgba(255,247,237,.98), rgba(255,255,255,.94));
+    border: 1px solid rgba(251,146,60,.45);
+    box-shadow:
+      0 0 0 2px rgba(251,146,60,.10),
+      0 12px 26px rgba(251,113,133,.14);
+    position: relative;
+  }
+
+  .painel-birthday-person.is-today::before {
+    content: 'Hoje';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #fb7185, #f97316);
+    color: #fff;
+    font-size: .62rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .painel-birthday-photo-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 7px;
+    flex-shrink: 0;
+  }
+
+  .painel-birthday-photo {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+    border: 4px solid #ffffff;
+    box-shadow:
+      0 6px 16px rgba(15,23,42,.10),
+      0 0 0 2px rgba(251,113,133,.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .painel-birthday-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .painel-birthday-no-photo {
+    font-size: .9rem;
+    font-weight: 800;
+    color: #be123c;
+  }
+
+  .painel-birthday-person-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .painel-birthday-person-name {
+    font-size: .78rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1.1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 28px;
+  }
+
+  .painel-birthday-person-date {
+    font-size: .68rem;
+    font-weight: 700;
+    color: #e11d48;
+    line-height: 1.1;
+  }
+
+  .painel-birthday-person-meta {
+    font-size: .64rem;
+    color: #475569;
+    line-height: 1.12;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-8 .painel-birthday-person {
+    padding: 8px 8px 7px;
+    border-radius: 16px;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-8 .painel-birthday-photo {
+    width: 50px;
+    height: 50px;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-8 .painel-birthday-person-name {
+    font-size: .72rem;
+    min-height: 22px;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-8 .painel-birthday-person-date {
+    font-size: .62rem;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-8 .painel-birthday-person-meta {
+    font-size: .58rem;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-6 .painel-birthday-person {
+    padding: 10px 8px 8px;
+    border-radius: 18px;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-6 .painel-birthday-photo {
+    width: 56px;
+    height: 56px;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-6 .painel-birthday-person-name {
+    font-size: .78rem;
+    min-height: 26px;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-6 .painel-birthday-person-date {
+    font-size: .68rem;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-6 .painel-birthday-person-meta {
+    font-size: .64rem;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-4 .painel-birthday-person {
+    padding: 8px 6px 7px;
+    border-radius: 14px;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-4 .painel-birthday-photo {
+    width: 48px;
+    height: 48px;
+    border-width: 3px;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-4 .painel-birthday-person-name {
+    font-size: .70rem;
+    min-height: 22px;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-4 .painel-birthday-person-date {
+    font-size: .60rem;
+  }
+
+  .painel-birthday-people-grid.fixed-responsive.modo-4 .painel-birthday-person-meta {
+    font-size: .56rem;
+  }
+
+  @keyframes birthdayCardFadeIn {
+    from { opacity: 0; transform: scale(.985); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes birthdayPersonIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 1023px) {
+    .painel-birthday-card.elegante { padding: 12px; }
+
+    .painel-birthday-layout {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+    }
+
+    .painel-birthday-right { order: 1; }
+    .painel-birthday-left  { order: 2; }
+
+    .painel-birthday-right-inner { max-width: none; padding: 0; }
+    .painel-birthday-big-title   { font-size: 1.35rem; }
+    .painel-birthday-big-title span { font-size: 1.9rem; }
+    .painel-birthday-message { max-width: none; font-size: .78rem; line-height: 1.3; }
+    .painel-birthday-count   { margin-top: 8px; }
+  }
+
+  @media (min-width: 641px) {
+    .home-media-fit { min-height: 520px; }
+
+    .painel-birthday-layout {
+      grid-template-columns: 1.15fr .95fr;
+      gap: 14px;
+    }
+
+    .painel-birthday-right-inner { max-width: 280px; }
+    .painel-birthday-big-title   { font-size: 1.45rem; }
+    .painel-birthday-big-title span { font-size: 2rem; }
+    .painel-birthday-message { font-size: .78rem; line-height: 1.28; max-width: 240px; }
+  }
+
+  @media (max-width: 640px) {
+    .home-media-fit { min-height: 540px; }
+
+    .painel-birthday-card.elegante { padding: 10px; }
+
+    .painel-birthday-layout {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 8px;
+    }
+
+    .painel-birthday-right-inner { max-width: none; padding: 0; }
+    .painel-birthday-mini-title  { font-size: .66rem; margin-bottom: 6px; }
+    .painel-birthday-big-title   { font-size: 1.18rem; margin-bottom: 4px; }
+    .painel-birthday-big-title span { font-size: 1.65rem; }
+    .painel-birthday-line        { width: 72px; margin-bottom: 8px; }
+    .painel-birthday-message     { font-size: .70rem; line-height: 1.22; max-width: none; }
+    .painel-birthday-count       { font-size: .64rem; margin-top: 6px; }
+    .painel-birthday-photo-wrap  { margin-bottom: 5px; }
+
+    .painel-birthday-person.is-today::before {
+      top: 6px; right: 6px; font-size: .56rem; padding: 3px 6px;
+    }
+  }
+
+  .painel-birthday-card.elegante.is-expanded { padding: 18px; }
+
+  .painel-birthday-detail-wrap {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .painel-birthday-detail-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255,255,255,.92);
+    color: #0f172a;
+    box-shadow: 0 12px 24px rgba(15,23,42,.12);
+    cursor: pointer;
+    z-index: 4;
+    transition: transform .2s ease, background .2s ease;
+  }
+
+  .painel-birthday-detail-close:hover {
+    transform: scale(1.05);
+    background: #fff;
+  }
+
+  .painel-birthday-detail-card {
+    width: 100%;
+    max-width: 760px;
+    min-height: 320px;
+    border-radius: 28px;
+    background: rgba(255,255,255,.90);
+    border: 1px solid rgba(255,255,255,.96);
+    box-shadow: 0 24px 50px rgba(15,23,42,.12);
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: center;
+    padding: 28px;
+  }
+
+  .painel-birthday-detail-card.is-today {
+    background: linear-gradient(180deg, rgba(255,247,237,.98), rgba(255,255,255,.96));
+    border-color: rgba(251,146,60,.45);
+  }
+
+  .painel-birthday-detail-photo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .painel-birthday-photo--detail {
+    width: 170px;
+    height: 170px;
+    border-width: 6px;
+    box-shadow:
+      0 12px 28px rgba(15,23,42,.12),
+      0 0 0 3px rgba(251,113,133,.10);
+  }
+
+  .painel-birthday-detail-content { min-width: 0; }
+
+  .painel-birthday-detail-name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1.05;
+    color: #111827;
+    margin-bottom: 8px;
+  }
+
+  .painel-birthday-detail-date {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e11d48;
+    margin-bottom: 14px;
+  }
+
+  .painel-birthday-detail-meta {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .painel-birthday-detail-meta span {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .95rem;
+    color: #334155;
+    font-weight: 600;
+  }
+
+  .painel-birthday-detail-message {
+    font-size: .95rem;
+    line-height: 1.5;
+    color: #334155;
+    max-width: 420px;
+  }
+
+  @media (max-width: 640px) {
+    .painel-birthday-card.elegante.is-expanded { padding: 12px; }
+
+    .painel-birthday-detail-card {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 18px;
+      min-height: auto;
+      text-align: center;
+    }
+
+    .painel-birthday-detail-close { width: 38px; height: 38px; }
+
+    .painel-birthday-photo--detail { width: 120px; height: 120px; border-width: 5px; }
+    .painel-birthday-detail-name  { font-size: 1.2rem; }
+    .painel-birthday-detail-date  { font-size: .9rem; }
+
+    .painel-birthday-detail-meta span {
+      justify-content: center;
+      font-size: .82rem;
+    }
+
+    .painel-birthday-detail-message { font-size: .8rem; max-width: none; }
+  }
+
+
+  /* ========================================
+   WEATHER CARD + 8 QUADROS NO CARD LIMPO
+   ======================================== */
+
+  #weatherHeroCard {
+    height: 140px !important;
+    background: transparent !important;
+  }
+
+  .home-weather-card {
+    position: relative;
+    overflow: hidden;
+    color: white;
+    border-radius: 1rem !important;
+  }
+
+  .home-weather-bg {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    transition: all .7s ease !important;
+    border-radius: 1rem !important;
+  }
+
+  .home-weather-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,.35), rgba(15,23,42,.30), rgba(2,6,23,.55));
+    border-radius: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .home-weather-content {
+    position: relative;
+    z-index: 20;
+    padding: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .weather-nav-btn {
+    z-index: 50 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: relative !important;
+    background: rgba(255,255,255,0.20) !important;
+    border: 1px solid rgba(255,255,255,0.30) !important;
+    backdrop-filter: blur(12px) !important;
+    color: #ffffff !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  .weather-nav-btn:hover:not(.blank-mode) {
+    background: rgba(255,255,255,0.35) !important;
+    transform: scale(1.08) !important;
+  }
+
+  #weatherHeroCard.blank-mode { padding: 8px !important; }
+
+  .blank-mode .home-weather-overlay {
+    background: linear-gradient(135deg,
+      white,
+      white,
+      white) !important;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.06) !important;
+  }
+
+  .blank-mode .home-weather-bg {
+    opacity: 0.02 !important;
+    filter: blur(4px) !important;
+  }
+
+  .blank-mode .weather-grid-container {
+    padding-top: 50px !important;
+    display: grid !important;
+    grid-template-columns: repeat(8, 1fr) !important;
+    grid-template-rows: repeat(1, 1fr) !important;
+    gap: 6px !important;
+    height: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .blank-mode .weather-grid-item {
+    aspect-ratio: 1 !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    border: 1.5px solid rgba(0,0,0,0.08) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10) !important;
+  }
+
+  .blank-mode .weather-grid-item:hover {
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.20) !important;
+    background: #ffffff !important;
+    border-color: rgba(0,0,0,0.15) !important;
+    z-index: 60 !important;
+  }
+
+  .blank-mode .weather-grid-item img {
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: contain !important;
+    filter: grayscale(0.3) !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .blank-mode .weather-grid-item:hover img {
+    filter: grayscale(0) brightness(1.1) !important;
+  }
+
+  .blank-mode .weather-grid-item::after {
+    content: attr(data-tooltip) !important;
+    position: fixed !important;
+    bottom: auto !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background: rgba(0,0,0,0.95) !important;
+    color: #ffffff !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 9999 !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+    letter-spacing: 0.5px !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+  }
+
+  .blank-mode .weather-grid-item:hover::after {
+    opacity: 1 !important;
+    transform: translate(-50%, -100%) !important;
+  }
+
+  .climate-hidden .flex.items-start > *:not(.flex.items-center.gap-1.shrink-0),
+  .climate-hidden .min-w-0.flex-1,
+  .climate-hidden .mt-2,
+  .climate-hidden .w-8.h-8.rounded-xl {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .blank-mode .weather-nav-btn {
+    background: #374151 !important;
+    border: 1px solid #4b5563 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.20) !important;
+  }
+
+  .blank-mode .weather-nav-btn:hover {
+    background: #1f2937 !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35) !important;
+  }
+
+  @media (max-width: 1023px) {
+    #weatherHeroCard {
+      display: none !important;
+    }
+  }
+
+  .form-label-sm {
+    font-size: 0.78rem;
+    line-height: 1rem;
+    font-weight: 500;
+  }
+
+  .form-control-sm {
+    min-height: 38px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.82rem;
+    line-height: 1.1rem;
+    border-radius: 0.75rem;
+  }
+
+  .form-btn-sm {
+    min-height: 38px;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.82rem;
+    line-height: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .form-title-sm {
+    font-size: 1rem;
+    line-height: 1.25rem;
+  }
+
+  .form-subtitle-sm {
+    font-size: 0.78rem;
+    line-height: 1rem;
+  }
+
+</style>
+
+</head>
+
+<body>
+  <div id="overlay" aria-hidden="true"></div>
+
+  <nav id="sidebar" class="bg-sidebar-background border-r border-sidebar-border shadow-2xl">
+    <div class="p-6 border-b border-sidebar-border flex items-center justify-between gap-4">
+      <div class="text-left">
+        <div class="text-lg font-extrabold tracking-tight">
+          <span class="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Sociedade Franciosi
+          </span>
+        </div>
+
+        <div
+          id="ambienteLabel"
+          class="mt-1 text-sm font-bold text-green-600"
+        >
+          Produção
+        </div>
+      </div>
+
+      <button id="closeSidebarBtn"
+        class="w-11 h-11 rounded-xl bg-white/55 border border-sidebar-border/60 hover:bg-white/80 transition-all text-sidebar-foreground form-title-sm shadow"
+        title="Fechar menu">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="menu-items hide-scrollbar flex-1 px-3 py-3">
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="home">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
+          <i class="fas fa-house"></i>
+        </div>
+        <span class="font-medium truncate">Início</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-pedidos">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-success/15 text-success shrink-0">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <span class="font-medium truncate">Pedidos</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-clientes">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
+          <i class="fas fa-building"></i>
+        </div>
+        <span class="font-medium truncate">Clientes</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-marketing">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-accent/20 text-foreground shrink-0">
+          <i class="fas fa-bullhorn"></i>
+        </div>
+        <span class="font-medium truncate">Marketing</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-emails-automaticos">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <span class="font-medium truncate">E-mails Automáticos</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+          data-page="secao-meus-agendamentos">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
+          <i class="fas fa-car-side"></i>
+        </div>
+        <span class="font-medium truncate">Agendamento Veículos</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="user-management">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
+          <i class="fas fa-user-cog"></i>
+        </div>
+        <span class="font-medium truncate">Gestão Usuários</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="inventory-control">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-warning/15 text-warning shrink-0">
+          <i class="fas fa-boxes-stacked"></i>
+        </div>
+        <span class="font-medium truncate">Estoque</span>
+      </div>
+
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+          data-page="secao-perfis">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0">
+          <i class="fas fa-id-badge"></i>
+        </div>
+        <span class="font-medium truncate">Perfis</span>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-sidebar-border">
+      <div class="flex items-center gap-3 rounded-2xl px-4 py-4 hover:bg-secondary transition-all">
+        <div
+          id="userAvatar"
+          class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white bg-primary shadow shrink-0 cursor-pointer transform transition-all duration-200 hover:scale-110 hover:opacity-90"
+          title=""
+        >
+          US
+        </div>
+        <div class="flex-1 min-w-0">
+          <div id="userDisplayName" class="font-bold text-sidebar-foreground leading-tight truncate">Usuário</div>
+          <div id="userDomain" class="form-subtitle-sm truncate">Domínio</div>
+        </div>
+        <button id="logoutBtn"
+          class="w-11 h-11 rounded-xl bg-white/55 border border-sidebar-border/60 hover:bg-destructive hover:text-white transition-all shrink-0"
+          title="Sair">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main" class="min-h-screen w-full px-3 md:px-4 lg:px-5 py-3 md:py-4">
+    <!-- HOME -->
+    <section id="home" class="page-content active">
+      <div class="home-page-shell pl-0 lg:pl-6 pr-0 lg:pr-1">
+        <div class="home-desktop-layout">
+          <div class="home-left-column">
+            <div class="glass rounded-2xl p-4 md:p-5 shadow">
+              <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onclick="openSidebarSafe()"
+                    class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+                    title="Abrir menu"
+                    aria-label="Abrir menu">
+                    <i class="fas fa-bars"></i>
+                  </button>
+
+                  <div>
+                    <h1 id="helloTitleHome" class="text-lg md:form-title-sm font-bold">Olá, Usuário!</h1>
+                    <p id="todayLabel" class="form-subtitle-sm">Carregando...</p>
+                  </div>
+                </div>
+
+                <div id="weatherHeroCard" class="home-weather-card blank-mode relative overflow-hidden rounded-2xl border border-white/20 px-3 py-2.5 min-w-0 shadow-xl h-[140px]">
+                  <!-- Background Image -->
+                  <div id="weatherHeroBg" class="home-weather-bg" style="background-image: url('https://pplx-res.cloudinary.com/image/upload/pplx_search_images/747d2bfffda9ec2b1d42c19efcd0193134ddedf7.jpg');"></div>
+                  
+                  <!-- Overlay -->
+                  <div class="home-weather-overlay"></div>
+                  
+                  <!-- Content -->
+                  <div class="home-weather-content climate-hidden relative z-10 flex flex-col h-full justify-between">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between gap-2 pt-1">
+                      <div class="min-w-0 flex-1">
+                        <p class="text-[9px] uppercase tracking-[0.16em] text-white/70 font-medium">CLIMA</p>
+                        <p id="weatherCity" class="text-[11px] font-semibold truncate text-white mt-0.5">Luis Eduardo Magalhães - BA</p>
+                      </div>
+                      
+                      <!-- Icon + Navigation Buttons -->
+                      <div class="flex items-center gap-1 shrink-0">
+                        <!-- Weather Icon -->
+                        <div class="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md border border-white/15 flex items-center justify-center shadow-sm">
+                          <i id="weatherIconTop" class="fas fa-cloud-sun text-xs text-white/90"></i>
+                        </div>
+                        
+                        <!-- Navigation Buttons (ao lado do ícone) -->
+                        <div class="flex items-center gap-0.5">
+                          <button id="weatherPrevBtn" class="weather-nav-btn w-6 h-6 rounded-full bg-white/10 hover:bg-white/25 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/70 text-[9px] hover:scale-105 hover:text-white transition-all duration-200 shadow-md hover:shadow-lg" title="Anterior">
+                            <i class="fas fa-chevron-left"></i>
+                          </button>
+                          <button id="weatherNextBtn" class="weather-nav-btn w-6 h-6 rounded-full bg-white/10 hover:bg-white/25 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/70 text-[9px] hover:scale-105 hover:text-white transition-all duration-200 shadow-md hover:shadow-lg" title="Próximo">
+                            <i class="fas fa-chevron-right"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Main Content -->
+                    <div class="mt-2 flex items-end justify-between gap-3 pb-0.5">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span id="weatherTemp" class="text-2xl font-extrabold leading-none text-white drop-shadow-sm">--°C</span>
+                          <span id="weatherDesc" class="text-[11px] text-white/90 font-medium">Carregando...</span>
+                        </div>
+                        <p id="weatherUpdatedAt" class="mt-1 text-[9px] text-white/75 font-medium">Atualizando...</p>
+                      </div>
+                      
+                      <div class="text-right text-[10px] text-white/85 space-y-1 shrink-0 min-w-[52px]">
+                        <p id="weatherHumidity">Umidade --%</p>
+                        <p id="weatherWind" class="truncate">Vento -- km/h</p>
+                      </div>
+                    </div>
+
+                    <!-- 8 QUADROS (aparece no modo limpo) -->
+                    <div class="weather-grid-container opacity-100">                     
+                      <!-- QUADRO 2 -->
+                      <a href="https://franciosi.autosky.cloud/" class="weather-grid-item" data-tooltip="SAP" target="_blank">
+                        <img src="imagens/sap.png" alt="SAP">
+                      </a>
+                      
+                      <!-- QUADRO 3 -->
+                      <a href="https://admfranciosi206624.totvsagro.cloudtotvs.com.br/pimsmc/login.jsp" class="weather-grid-item" data-tooltip="PIMS PRO" target="_blank">
+                        <img src="imagens/totvsicon.ico" alt="PIMS PRO">
+                      </a>
+                      
+                      <!-- QUADRO 4 -->
+                      <a href="https://admfranciosi206625.totvsagro.cloudtotvs.com.br/pimsmc/login.jsp" class="weather-grid-item" data-tooltip="PIMS DEV" target="_blank">
+                        <img src="imagens/totvsicon.ico" alt="PIMS DEV">
+                      </a>
+
+                      <!-- QUADRO 4 -->
+                      <a href="https://auth.qive.com.br/auth/realms/saas/protocol/openid-connect/auth?approval_prompt=force&client_id=saas&redirect_uri=https%3A%2F%2Fapp.qive.com.br%2Foauth2%2Fcallback&response_type=code&scope=openid+profile+email&state=ys_PW8S1e_VwhcvRfnmtPs_ACkCv5ZvHKwyjRb-B8Os%3A%2F" class="weather-grid-item" data-tooltip="QIVE" target="_blank">
+                        <img src="imagens/qive.png" alt="QIVE">
+                      </a>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div id="homeCalendarioPanel" class="home-mobile-panel min-h-0 home-calendar-card">
+              <div class="glass rounded-2xl p-5 shadow flex flex-col home-card-fit h-full min-h-0">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0 flex-1">
+                    <h2 class="text-lg font-semibold">Calendário</h2>
+                    <p class="form-subtitle-sm">Selecione uma data para visualizar agendametos.</p>
+                  </div>
+
+                  <div class="home-mobile-tabs-wrap lg:hidden shrink-0">
+                    <button
+                      type="button"
+                      class="home-mobile-tab-btn w-11 h-11 rounded-xl border border-border bg-white/40 text-muted-foreground transition-all flex items-center justify-center"
+                      data-home-tab="painel"
+                      aria-label="Painel informativo"
+                      title="Painel informativo">
+                      <i class="fas fa-table-columns text-sm"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="space-y-2 mt-4">
+                  <input id="calendarInput" type="date"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30" />
+                </div>
+
+                <div class="grid grid-cols-1 gap-2">
+                  <button
+                    id="AgendarSalaReuniao"
+                    type="button"
+                    class="mt-1 w-full rounded-xl bg-primary text-white form-control-sm text-sm font-semibold hover:opacity-90 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 flex items-center justify-center gap-2"
+                    aria-label="Agendar sala de reunião"
+                    title="Agendar sala de reunião">
+                    <i class="fas fa-calendar-plus text-sm" aria-hidden="true"></i>
+                    <span>Sala Reunião</span>
+                  </button>
+                </div>
+
+                <div class="rounded-xl border border-border bg-muted/40 p-4 flex-1 flex flex-col min-h-[220px] lg:min-h-0 home-scroll-area">
+                  <p class="text-sm font-semibold">Resumo do dia</p>
+                  <div id="resumoDiaLista" class="mt-3 space-y-2 overflow-auto no-scrollbar"></div>
+                  <p id="resumoDiaVazio" class="form-subtitle-sm mt-3">
+                    Nenhum evento cadastrado.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="home-right-column">
+            <div id="homePainelPanel" class="home-mobile-panel w-full active">
+              <div class="glass rounded-2xl p-5 shadow home-right-panel-card">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0 flex-1">
+                    <h2 class="text-lg font-semibold">Sociedade Franciosi</h2>
+                    <p class="form-subtitle-sm">Painel informativo</p>
+                  </div>
+
+                  <div class="home-mobile-tabs-wrap lg:hidden shrink-0">
+                    <button
+                      type="button"
+                      class="home-mobile-tab-btn w-11 h-11 rounded-xl border border-border bg-white/40 text-muted-foreground transition-all flex items-center justify-center"
+                      data-home-tab="calendario"
+                      aria-label="Calendário"
+                      title="Calendário">
+                      <i class="fas fa-calendar-alt text-sm"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="mt-4 rounded-2xl border border-border bg-muted/40 overflow-hidden home-media-fit min-h-[520px] lg:min-h-[420px] flex items-center justify-center relative">
+                  <div id="painelMarketingStage" class="w-full h-full min-h-[520px] lg:min-h-[420px] relative">
+                    <img
+                      id="painelMarketingImg"
+                      src="imagens/PaginaPrincipal.jpg"
+                      alt="Imagem do painel"
+                      class="w-full h-full object-contain cursor-pointer select-none transition-opacity duration-500 opacity-100 absolute inset-0"
+                      title="Clique para abrir"
+                      style="display: block;"
+                    />
+
+                    <div
+                      id="painelBirthdayCard"
+                      class="absolute inset-0 opacity-0 pointer-events-none transition-opacity duration-500"
+                      style="display: none;"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="mt-3 rounded-2xl border border-border bg-white/70 backdrop-blur-sm form-control-sm">
+                  <div class="flex items-center justify-between gap-3">
+                    <button
+                      id="btnPainelAnterior"
+                      type="button"
+                      class="w-11 h-11 rounded-xl border border-border bg-white/90 hover:bg-white shadow-sm transition-all flex items-center justify-center text-foreground"
+                      title="Anterior"
+                      aria-label="Anterior"
+                    >
+                      <i class="fas fa-chevron-left"></i>
+                    </button>
+
+                    <div class="flex-1">
+                      <div id="painelMarketingContador" class="text-xs text-muted-foreground text-center mb-2">1 / 1</div>
+                      <div class="h-2 w-full rounded-full bg-muted/70 overflow-hidden">
+                        <div id="painelMarketingProgress" class="h-2 rounded-full bg-primary transition-none" style="width: 0%"></div>
+                      </div>
+                    </div>
+
+                    <button
+                      id="btnPainelProximo"
+                      type="button"
+                      class="w-11 h-11 rounded-xl border border-border bg-white/90 hover:bg-white shadow-sm transition-all flex items-center justify-center text-foreground"
+                      title="Próximo"
+                      aria-label="Próximo"
+                    >
+                      <i class="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+
+    <!-- PEDIDOS -->
+    <section id="secao-pedidos" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu">
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Pedidos</h3>
+              <p class="form-subtitle-sm">Gerencie os pedidos cadastrados no sistema</p>
+            </div>
+          </div>
+
+          <button
+            id="btnNovoPedido"
+            type="button"
+            aria-label="Novo pedido"
+            title="Novo pedido"
+            class="hidden w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <i class="fas fa-plus" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="mt-4">
+          <div class="inline-flex rounded-xl border border-border bg-white/50 p-1" role="tablist" aria-label="Abas de pedidos">
+            <button
+              id="abaPedidosDashboard"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              aria-controls="painelPedidosDashboard"
+              class="px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground">
+              Dashboard
+            </button>
+
+            <button
+              id="abaPedidosTabela"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="painelPedidosTabela"
+              class="px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground">
+              Pedidos
+            </button>
+          </div>
+        </div>
+
+        <div id="painelPedidosDashboard" role="tabpanel" aria-labelledby="abaPedidosDashboard" class="mt-4 space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
+              <div class="flex items-center justify-between gap-3">
+                <p class="form-label-sm text-foreground">Progresso Volume</p>
+                <i class="fas fa-arrow-trend-up text-muted-foreground"></i>
+              </div>
+              <div class="mt-3 text-3xl font-extrabold">0,0%</div>
+              <div class="mt-3">
+                <div class="h-2 w-full rounded-full bg-muted/60 overflow-hidden">
+                  <div class="h-2 rounded-full bg-primary" style="width: 0%"></div>
+                </div>
+                <p class="mt-2 text-xs text-muted-foreground">0 kg de 0 kg</p>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
+              <div class="flex items-center justify-between gap-3">
+                <p class="form-label-sm text-foreground">Progresso Receita</p>
+                <i class="fas fa-dollar-sign text-muted-foreground"></i>
+              </div>
+              <div class="mt-3 text-3xl font-extrabold">0,0%</div>
+              <div class="mt-3">
+                <div class="h-2 w-full rounded-full bg-muted/60 overflow-hidden">
+                  <div class="h-2 rounded-full bg-primary" style="width: 0%"></div>
+                </div>
+                <p class="mt-2 text-xs text-muted-foreground">R$ 0,00 de R$ 0,00</p>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
+              <div class="flex items-center justify-between gap-3">
+                <p class="form-label-sm text-foreground">Meus Clientes</p>
+                <i class="fas fa-users text-muted-foreground"></i>
+              </div>
+              <div class="mt-3 text-3xl font-extrabold">0</div>
+              <p class="mt-2 text-xs text-muted-foreground">clientes ativos</p>
+            </div>
+
+            <div class="rounded-2xl border border-border bg-white/60 shadow-sm p-5">
+              <div class="flex items-center justify-between gap-3">
+                <p class="form-label-sm text-foreground">Pedidos Pendentes</p>
+                <i class="fas fa-clipboard-list text-muted-foreground"></i>
+              </div>
+              <div class="mt-3 text-3xl font-extrabold">0</div>
+              <p class="mt-2 text-xs text-muted-foreground">em aberto</p>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-border bg-white/50 shadow-sm p-6">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h4 class="font-semibold text-foreground">Visão geral</h4>
+                <p class="form-subtitle-sm">Resumo e indicadores dos pedidos</p>
+              </div>
+
+              <button
+                type="button"
+                class="rounded-xl border border-border bg-white/60 hover:bg-white/90 px-4 py-2 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-primary/30"
+                id="btnAtualizarDashboardPedidos">
+                Atualizar
+              </button>
+            </div>
+
+            <div class="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="rounded-2xl border border-border bg-muted/30 p-4 min-h-[220px]">
+                <div class="text-sm font-semibold text-foreground">Pedidos por status</div>
+                <div class="form-subtitle-sm mt-2">Placeholder</div>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-muted/30 p-4 min-h-[220px]">
+                <div class="text-sm font-semibold text-foreground">Últimos pedidos</div>
+                <div class="form-subtitle-sm mt-2">Placeholder</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="painelPedidosTabela" role="tabpanel" aria-labelledby="abaPedidosTabela" class="mt-4" hidden>
+          <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+            <table class="min-w-full text-sm">
+              <thead class="bg-muted/40 text-muted-foreground">
+                <tr>
+                  <th class="text-left font-semibold form-control-sm">Pedido</th>
+                  <th class="text-left font-semibold form-control-sm">Cliente</th>
+                  <th class="text-left font-semibold form-control-sm">Data</th>
+                  <th class="text-left font-semibold form-control-sm">Status</th>
+                  <th class="text-right font-semibold form-control-sm">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyPedidos" class="divide-y divide-border"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIENTES -->
+    <section id="secao-clientes" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu">
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Clientes</h3>
+              <p class="form-subtitle-sm">Gerencie clientes e filiais</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btnAtualizarClientes" type="button"
+              class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all"
+              title="Atualizar lista"
+              aria-label="Atualizar lista">
+              <i class="fas fa-rotate-right" aria-hidden="true"></i>
+            </button>
+
+            <button id="btnNovoCliente" type="button"
+              class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 flex items-center justify-center transition-all"
+              title="Novo cliente"
+              aria-label="Novo cliente">
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <input id="inputBuscaClientes" type="text"
+          placeholder="Buscar por razão social ou CPF/CNPJ..."
+          class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30" />
+
+        <div id="clientesMsg" class="form-subtitle-sm hidden"></div>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm">
+            <thead class="bg-muted/40 text-muted-foreground">
+              <tr>
+                <th class="text-left font-semibold form-control-sm">Razão Social</th>
+                <th class="text-left font-semibold form-control-sm">CPF/CNPJ</th>
+                <th class="text-left font-semibold form-control-sm">Cidade/UF</th>
+                <th class="text-left font-semibold form-control-sm">Contato</th>
+                <th class="text-left font-semibold form-control-sm">Telefone</th>
+                <th class="text-right font-semibold form-control-sm">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyClientes" class="divide-y divide-border"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <!-- ESTOQUE -->
+    <section id="inventory-control" class="page-content md:ml-4">
+      <div class="space-y-6">
+        <div class="glass rounded-2xl border border-border p-6">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex items-start gap-3">
+              <button
+                type="button"
+                onclick="openSidebarSafe()"
+                class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+                title="Abrir menu"
+                aria-label="Abrir menu">
+                <i class="fas fa-bars"></i>
+              </button>
+
+              <div>
+                <h2 class="text-2xl font-semibold text-foreground">Controle de estoque</h2>
+                <p class="form-subtitle-sm">Gestão de materiais do escritório.</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <button id="btnNovoProdutoEstoque" type="button"
+                      class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
+                <i class="fas fa-download mr-2" aria-hidden="true"></i>
+                Importar do sistema
+              </button>
+
+              <button id="btnImportarPdfEstoque" type="button"
+                class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
+                <i class="fas fa-file-pdf mr-2" aria-hidden="true"></i>
+                Importar XML/PDF
+              </button>
+              <input id="inputImportarPdfEstoque" type="file" accept=".pdf,.xml,application/pdf,text/xml,application/xml" hidden />
+            </div>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl border border-border p-4 md:p-6 space-y-4">
+          <div class="flex flex-wrap gap-2">
+            <button id="abaEstoqueEscritorio" type="button" aria-selected="true"
+              class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all">
+              Almoxarifado
+            </button>
+
+            <button id="abaEstoqueCentroCusto" type="button" aria-selected="false"
+              class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">
+              Centro de custo
+            </button>
+          </div>
+
+          <!-- Painel Estoque -->
+          <div id="painelEstoqueEscritorio" class="space-y-4">
+            <div id="estoqueEscritorioErro"
+              class="hidden rounded-xl border border-destructive/20 bg-destructive/10 form-control-sm text-sm text-destructive"></div>
+
+            <div class="overflow-x-auto rounded-2xl border border-border bg-white/40">
+              <table class="min-w-full text-sm">
+                <thead class="bg-white/50 border-b border-border">
+                  <tr>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Código</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Descrição</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Qtd. disponível</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Qtd. em pedido</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyEstoqueEscritorio">
+                  <tr>
+                    <td colspan="4" class="px-4 py-6 form-subtitle-sm">Nenhum item carregado.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- Painel Centro de Custo -->
+          <div id="painelEstoqueCentroCusto" class="hidden space-y-4">
+            <div id="estoqueCentroCustoErro"
+              class="hidden rounded-xl border border-destructive/20 bg-destructive/10 form-control-sm text-sm text-destructive"></div>
+
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-base font-semibold text-foreground">Materiais recebidos</h3>
+                <p class="form-subtitle-sm">Itens transferidos para o seu centro de custo.</p>
+              </div>
+
+              <button
+                id="btnAbrirPendenciasCentroCusto"
+                type="button"
+                class="hidden relative rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 form-label-sm text-amber-700 hover:bg-amber-100 transition-all"
+              >
+                <i class="fas fa-bell mr-2"></i>
+                Pendências
+                <span
+                  id="badgePendenciasCentroCusto"
+                  class="hidden absolute -top-2 -right-2 min-w-[22px] h-[22px] px-1 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center"
+                >0</span>
+              </button>
+            </div>
+
+              <!-- 🚨 AQUI - ALERTAS DE RECUSAS -->
+              <div id="alertasRecusasPendentes" class="space-y-3"></div>  
+              <!-- 🚨 FIM - ALERTAS DE RECUSAS -->
+
+            <div
+              id="alertasPendenciasCentroCusto"
+              class="hidden rounded-2xl border border-amber-200 bg-amber-50/80 p-4 space-y-3"
+            ></div>
+
+            <div class="overflow-x-auto rounded-2xl border border-border bg-white/40">
+              <table class="min-w-full text-sm">
+                <thead class="bg-white/50 border-b border-border">
+                  <tr>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Código</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">Descrição</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Quantidade</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Em tranferência</th>
+                    <th class="form-control-sm text-left font-semibold text-foreground">UN</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyEstoqueCentroCusto">
+                  <tr>
+                    <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
+                      Nenhum item carregado.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- MARKETING -->
+    <section id="secao-marketing" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-5">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu">
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Marketing</h3>
+              <p class="form-subtitle-sm">Gerencie cards do painel informativo, datas e recorrências.</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="relative">
+              <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm"></i>
+              <input
+                id="inputBuscaMarketing"
+                type="text"
+                placeholder="Buscar título, card ou recorrência"
+                class="pl-9 pr-4 py-2 rounded-xl border border-border bg-white/70 text-sm outline-none min-w-[260px]"
+              />
+            </div>
+
+            <select
+              id="filtroStatusMarketing"
+              class="rounded-xl border border-border bg-white/70 px-3 py-2 text-sm outline-none">
+              <option value="">Todos status</option>
+              <option value="1">Ativos</option>
+              <option value="0">Inativos</option>
+            </select>
+
+            <select
+              id="filtroRecorrenciaMarketing"
+              class="rounded-xl border border-border bg-white/70 px-3 py-2 text-sm outline-none">
+              <option value="">Todas recorrências</option>
+              <option value="once">Somente uma vez</option>
+              <option value="daily">Diariamente</option>
+              <option value="monthly">Mensalmente</option>
+              <option value="yearly">Anualmente</option>
+              <option value="always">Sempre</option>
+            </select>
+
+            <button id="btnAtualizarMarketing" type="button"
+              class="w-11 h-11 rounded-xl border border-border bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all"
+              title="Atualizar lista">
+              <i class="fas fa-rotate-right"></i>
+            </button>
+
+            <button id="btnNovoCardMarketing" type="button"
+              class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center"
+              title="Novo card"
+              aria-label="Novo card">
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="rounded-2xl border border-border bg-white/60 p-4">
+            <div class="text-xs uppercase tracking-wide text-muted-foreground">Total</div>
+            <div id="marketingTotalCards" class="text-2xl font-bold text-foreground mt-1">0</div>
+          </div>
+
+          <div class="rounded-2xl border border-border bg-white/60 p-4">
+            <div class="text-xs uppercase tracking-wide text-muted-foreground">Ativos no painel</div>
+            <div id="marketingTotalAtivos" class="text-2xl font-bold text-emerald-600 mt-1">0</div>
+          </div>
+
+          <div class="rounded-2xl border border-border bg-white/60 p-4">
+            <div class="text-xs uppercase tracking-wide text-muted-foreground">Agendados</div>
+            <div id="marketingTotalAgendados" class="text-2xl font-bold text-amber-600 mt-1">0</div>
+          </div>
+
+          <div class="rounded-2xl border border-border bg-white/60 p-4">
+            <div class="text-xs uppercase tracking-wide text-muted-foreground">Recorrentes</div>
+            <div id="marketingTotalRecorrentes" class="text-2xl font-bold text-sky-600 mt-1">0</div>
+          </div>
+        </div>
+
+        <div id="marketingMsg" class="form-subtitle-sm hidden"></div>
+
+        <div
+          id="marketingToolbarInfo"
+          class="rounded-2xl border border-border bg-white/50 px-4 py-3 text-sm text-muted-foreground">
+          Selecione quais cards ficarão visíveis no painel, defina datas e escolha a recorrência de exibição.
+        </div>
+
+        <div id="gridMarketing" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3"></div>
+
+        <div id="marketingVazio" class="hidden">
+          <div class="rounded-2xl border border-dashed border-border bg-white/40 p-10 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-white shadow-sm border border-border mx-auto mb-4 flex items-center justify-center text-primary text-2xl">
+              <i class="fas fa-image"></i>
+            </div>
+            <div class="font-semibold text-foreground">Nenhum card cadastrado</div>
+            <p class="form-subtitle-sm mt-1">Cadastre um novo card de marketing para exibir no painel informativo.</p>
+            <button id="btnNovoCardMarketingVazio" type="button"
+              class="mt-4 rounded-xl bg-primary text-white px-4 py-2 font-medium hover:opacity-90 transition-all inline-flex items-center gap-2">
+              <i class="fas fa-plus"></i>
+              <span>Novo card</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="modalMarketingOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[140]"></div>
+
+    <div id="modalMarketing" class="hidden fixed inset-0 z-[150] flex items-center justify-center p-4">
+      <div class="w-full max-w-5xl glass rounded-2xl border border-border shadow-2xl overflow-hidden">
+        <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+          <div>
+            <h3 id="modalMarketingTitulo" class="font-semibold text-foreground">Novo card de marketing</h3>
+            <p class="form-subtitle-sm">Defina imagem, painel, período de exibição e recorrência.</p>
+          </div>
+
+          <button id="btnFecharModalMarketing" type="button"
+            class="w-10 h-10 rounded-xl border border-border bg-white/70 hover:bg-white transition-all flex items-center justify-center"
+            aria-label="Fechar" title="Fechar">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 xl:grid-cols-[1.2fr_.8fr] gap-6">
+          <div class="space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label-sm block mb-2">Título</label>
+                <input id="mkTitulo" type="text"
+                  class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none"
+                  placeholder="Ex.: Campanha de vacinação" />
+              </div>
+
+              <div>
+                <label class="form-label-sm block mb-2">Card do painel</label>
+                <select id="mkCard"
+                  class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none">
+                  <option value="principal">Principal</option>
+                  <option value="comunicados">Comunicados</option>
+                  <option value="campanhas">Campanhas</option>
+                  <option value="avisos">Avisos</option>
+                  <option value="institucional">Institucional</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label-sm block mb-2">Descrição</label>
+              <textarea id="mkDescricao" rows="3"
+                class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none"
+                placeholder="Descrição curta para identificação do card"></textarea>
+            </div>
+
+            <div>
+              <label class="form-label-sm block mb-2">Imagem</label>
+              <input id="mkArquivo" type="file" accept="image/*"
+                class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="form-label-sm block mb-2">Data inicial</label>
+                <input id="mkDataInicio" type="date"
+                  class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none" />
+              </div>
+
+              <div>
+                <label class="form-label-sm block mb-2">Data final</label>
+                <input id="mkDataFim" type="date"
+                  class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none" />
+              </div>
+
+              <div>
+                <label class="form-label-sm block mb-2">Ordem</label>
+                <input id="mkOrdem" type="number" min="0" value="0"
+                  class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label-sm block mb-2">Recorrência</label>
+                <select id="mkRecorrencia"
+                  class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none">
+                  <option value="once">Somente uma vez</option>
+                  <option value="daily">Diariamente</option>
+                  <option value="monthly">Mensalmente</option>
+                  <option value="yearly">Anualmente</option>
+                  <option value="always">Sempre</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label-sm block mb-2">Status</label>
+                <select id="mkAtivo"
+                  class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none">
+                  <option value="1">Ativo</option>
+                  <option value="0">Inativo</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label class="flex items-center gap-3 rounded-2xl border border-border bg-white/60 p-4">
+                <input id="mkExibirPainel" type="checkbox" checked class="w-4 h-4" />
+                <div>
+                  <div class="font-medium text-sm">Exibir no painel</div>
+                  <div class="text-xs text-muted-foreground">Controla se este card participa do slideshow.</div>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-3 rounded-2xl border border-border bg-white/60 p-4">
+                <input id="mkApenasUmaVez" type="checkbox" class="w-4 h-4" />
+                <div>
+                  <div class="font-medium text-sm">Mostrar apenas uma vez</div>
+                  <div class="text-xs text-muted-foreground">Depois da primeira exibição, o item sai do painel.</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="rounded-2xl border border-border bg-white/60 p-4">
+              <label class="form-label-sm block mb-3">Pré-visualização</label>
+              <div class="aspect-[4/3] rounded-2xl border border-dashed border-border bg-muted/20 overflow-hidden flex items-center justify-center">
+                <img id="mkPreview" class="hidden w-full h-full object-cover" alt="Pré-visualização" />
+                <div id="mkPreviewVazio" class="text-sm text-muted-foreground text-center px-6">
+                  Selecione uma imagem para visualizar o card.
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-border bg-white/60 p-4 space-y-3">
+              <div class="text-sm font-semibold">Resumo do card</div>
+              <div class="text-xs text-muted-foreground">Use este card para organizar o painel por tipo, período e frequência de exibição.</div>
+
+              <div class="flex flex-wrap gap-2">
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                  Painel informativo
+                </span>
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Agendável
+                </span>
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                  Recorrente
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 py-5 border-t border-border flex flex-col sm:flex-row gap-3">
+          <button id="btnCancelarModalMarketing" type="button"
+            class="sm:flex-1 rounded-xl border border-border bg-white/60 form-control-sm font-medium hover:bg-white transition-all">
+            Cancelar
+          </button>
+
+          <button id="btnSalvarModalMarketing" type="button"
+            class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
+            Salvar card
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GESTÃO DE USUÁRIOS -->
+    <section id="user-management" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu">
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Gestão de Usuários</h3>
+              <p class="form-subtitle-sm">Gerencie os usuários cadastrados</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button
+              id="btnAddUnidadeTrabalhoExterno"
+              type="button"
+              class="h-12 w-12 shrink-0 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all flex items-center justify-center shadow-sm"
+              aria-label="Gerenciar Unidade de Trabalho"
+              title="Gerenciar Unidade de Trabalho"
+            >
+              <i class="fas fa-location-dot text-lg" aria-hidden="true"></i>
+            </button>
+
+            <button
+              id="btnBaixarTemplateUsuario"
+              type="button"
+              class="w-11 h-11 rounded-xl border border-green-300 bg-green-100 text-green-700 hover:bg-green-200 transition-all flex items-center justify-center shadow-sm"
+              title="Baixar template para cadastro em lote"
+              aria-label="Baixar template para cadastro em lote"
+            >
+              <i class="fas fa-file-excel text-xl" aria-hidden="true"></i>
+            </button>
+
+            <button
+              id="btnNovoUsuario"
+              type="button"
+              class="w-10 h-10 rounded-xl border border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800 transition-all flex items-center justify-center shadow-sm"
+              title="Novo usuário"
+              aria-label="Novo usuário"
+            >
+              <i class="fas fa-user-plus text-base" aria-hidden="true"></i>
+            </button>
+          </div>
+
+
+        </div>
+
+        <p id="gestaoUsuariosErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr>
+                <th class="form-control-sm text-left">Usuário</th>
+                <th class="form-control-sm text-left">Setor</th>
+                <th class="form-control-sm text-left">Perfil</th>
+                <th class="form-control-sm text-left">Centro de custo</th>
+                <th class="form-control-sm text-left">Status</th>
+                <th class="form-control-sm text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyGestaoUsuarios"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PERFIS -->
+    <section id="secao-perfis" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu">
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Perfis</h3>
+              <p class="form-subtitle-sm">Cadastre e gerencie permissões dos perfis</p>
+            </div>
+          </div>
+
+          <button id="btnNovoPerfil" type="button"
+            class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center"
+            title="Novo perfil"
+            aria-label="Novo perfil">
+            <i class="fas fa-plus" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div id="perfilMsg" class="form-subtitle-sm hidden"></div>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm">
+            <thead class="bg-muted/40 text-muted-foreground">
+              <tr>
+                <th class="text-left font-semibold form-control-sm">Perfil</th>
+                <th class="text-left font-semibold form-control-sm">Status</th>
+                <th class="text-left font-semibold form-control-sm">Atualizado em</th>
+                <th class="text-right font-semibold form-control-sm">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyPerfis"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- EMAILS AUTOMÁTICOS -->
+    <section id="secao-emails-automaticos" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu">
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Emails Automáticos</h3>
+              <p class="form-subtitle-sm">Configure remetentes e destinatários para captura automática</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btnAtualizarEmailsAuto" type="button"
+              class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all"
+              title="Atualizar lista">
+              <i class="fas fa-rotate-right"></i>
+            </button>
+
+            <button id="btnNovoRemetente" type="button"
+              class="w-10 h-10 rounded-xl bg-info text-white hover:opacity-90 transition-all flex items-center justify-center"
+              title="Novo remetente"
+              aria-label="Novo remetente">
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div class="inline-flex rounded-xl border border-border bg-white/50 p-1" role="tablist" aria-label="Abas emails">
+            <button id="abaRemetentes" type="button" role="tab" aria-selected="true" aria-controls="painelRemetentes"
+              class="px-4 py-2 rounded-lg form-label-sm transition-all bg-white shadow text-foreground">
+              Remetentes
+            </button>
+
+            <button id="abaDestinatarios" type="button" role="tab" aria-selected="false" aria-controls="painelDestinatarios"
+              class="px-4 py-2 rounded-lg form-label-sm transition-all text-muted-foreground hover:text-foreground">
+              Destinatários
+            </button>
+          </div>
+        </div>
+
+        <div id="painelRemetentes" role="tabpanel" aria-labelledby="abaRemetentes" class="mt-4 space-y-4">
+          <input id="inputBuscaRemetentes" type="text"
+            placeholder="Buscar por email ou nome..."
+            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30" />
+
+          <div id="emailsMsg" class="form-subtitle-sm hidden"></div>
+
+          <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+            <table class="min-w-full text-sm">
+              <thead class="bg-muted/40 text-muted-foreground">
+                <tr>
+                  <th class="text-left font-semibold form-control-sm">#</th>
+                  <th class="text-left font-semibold form-control-sm">Email</th>
+                  <th class="text-left font-semibold form-control-sm">Nome</th>
+                  <th class="text-left font-semibold form-control-sm">Status</th>
+                  <th class="text-right font-semibold form-control-sm">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyRemetentes" class="divide-y divide-border"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="painelDestinatarios" role="tabpanel" aria-labelledby="abaDestinatarios" class="mt-4 space-y-4" hidden>
+          <div class="flex items-start gap-4">
+            <select id="selectRemetenteDest" class="flex-1 rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30">
+              <option value="">Selecione um remetente...</option>
+            </select>
+
+            <button id="btnNovoDestinatario" type="button"
+              class="w-10 h-10 rounded-xl bg-info text-white hover:opacity-90 transition-all flex items-center justify-center"
+              title="Novo destinatário"
+              aria-label="Novo destinatário">
+              <i class="fas fa-user-plus" aria-hidden="true"></i>
+            </button>
+
+          </div>
+
+          <input id="inputBuscaDestinatarios" type="text"
+            placeholder="Buscar por email ou nome..."
+            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-info/30" />
+
+          <div id="emailsDestMsg" class="form-subtitle-sm hidden"></div>
+
+          <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+            <table class="min-w-full text-sm">
+              <thead class="bg-muted/40 text-muted-foreground">
+                <tr>
+                  <th class="text-left font-semibold form-control-sm">Remetente</th>
+                  <th class="text-left font-semibold form-control-sm">Email Dest.</th>
+                  <th class="text-left font-semibold form-control-sm">Nome Dest.</th>
+                  <th class="text-left font-semibold form-control-sm">Status</th>
+                  <th class="text-right font-semibold form-control-sm">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyDestinatarios" class="divide-y divide-border"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Agendamento Veículos -->
+    <section id="secao-meus-agendamentos" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu">
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Agendamento Veículos</h3>
+              <p class="form-subtitle-sm">Acompanhe suas solicitações de veículo</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              id="btnGerenciarVeiculos"
+              type="button"
+              class="w-10 h-10 rounded-xl border border-green-300/70 bg-green-100/80 text-green-800 hover:bg-green-200/80 transition-all flex items-center justify-center shadow-sm"
+              title="Gerenciar veículos"
+              aria-label="Gerenciar veículos">
+              <i class="fas fa-car-side"></i>
+            </button>
+
+            <button
+              id="btnAtualizarMeusAgendamentos"
+              type="button"
+              class="w-10 h-10 rounded-xl border border-emerald-300/70 bg-emerald-100/80 text-emerald-800 hover:bg-emerald-200/80 transition-all flex items-center justify-center shadow-sm"
+              title="Atualizar lista"
+              aria-label="Atualizar lista">
+              <i class="fas fa-rotate-right"></i>
+            </button>
+
+            <button
+              id="btnNovoAgendamentoCarro"
+              type="button"
+              class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center"
+              title="Novo agendamento"
+              aria-label="Novo agendamento">
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
+          </div>
+
+
+        </div>
+
+        <div id="meusAgendamentosMsg" class="form-subtitle-sm hidden"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+          <button type="button" id="cardFiltroTotal" data-status="TODOS" class="card-filtro-agendamento rounded-2xl border border-border bg-white/60 shadow-sm p-5 text-left transition-all hover:bg-white/80">
+            <div class="flex items-center justify-between gap-3">
+              <p class="form-label-sm text-foreground">Total</p>
+              <i class="fas fa-list text-muted-foreground"></i>
+            </div>
+            <div id="cardAgendamentoTotal" class="mt-3 text-3xl font-extrabold">0</div>
+            <p class="mt-2 text-xs text-muted-foreground">solicitações</p>
+          </button>
+
+          <button type="button" id="cardFiltroPendente" data-status="PENDENTE" class="card-filtro-agendamento rounded-2xl border border-border bg-white/60 shadow-sm p-5 text-left transition-all hover:bg-white/80">
+            <div class="flex items-center justify-between gap-3">
+              <p class="form-label-sm text-foreground">Pendentes</p>
+              <i class="fas fa-clock text-amber-500"></i>
+            </div>
+            <div id="cardAgendamentoPendente" class="mt-3 text-3xl font-extrabold">0</div>
+            <p class="mt-2 text-xs text-muted-foreground">aguardando análise</p>
+          </button>
+
+          <button type="button" id="cardFiltroAguardandoConfirmacao" data-status="AGUARDANDO_CONFIRMACAO" class="card-filtro-agendamento rounded-2xl border border-border bg-white/60 shadow-sm p-5 text-left transition-all hover:bg-white/80">
+            <div class="flex items-center justify-between gap-3">
+              <p class="form-label-sm text-foreground">Aguardando confirmação</p>
+              <i class="fas fa-hourglass-half text-orange-500"></i>
+            </div>
+            <div id="cardAgendamentoAguardandoConfirmacao" class="mt-3 text-3xl font-extrabold">0</div>
+            <p class="mt-2 text-xs text-muted-foreground">em confirmação</p>
+          </button>
+
+          <button type="button" id="cardFiltroAprovada" data-status="APROVADA" class="card-filtro-agendamento rounded-2xl border border-border bg-white/60 shadow-sm p-5 text-left transition-all hover:bg-white/80">
+            <div class="flex items-center justify-between gap-3">
+              <p class="form-label-sm text-foreground">Aprovadas</p>
+              <i class="fas fa-circle-check text-green-600"></i>
+            </div>
+            <div id="cardAgendamentoAprovada" class="mt-3 text-3xl font-extrabold">0</div>
+            <p class="mt-2 text-xs text-muted-foreground">liberadas</p>
+          </button>
+
+          <button type="button" id="cardFiltroRecusada" data-status="RECUSADA" class="card-filtro-agendamento rounded-2xl border border-border bg-white/60 shadow-sm p-5 text-left transition-all hover:bg-white/80">
+            <div class="flex items-center justify-between gap-3">
+              <p class="form-label-sm text-foreground">Recusadas</p>
+              <i class="fas fa-circle-xmark text-red-600"></i>
+            </div>
+            <div id="cardAgendamentoRecusada" class="mt-3 text-3xl font-extrabold">0</div>
+            <p class="mt-2 text-xs text-muted-foreground">não aprovadas</p>
+          </button>
+
+          <button type="button" id="cardFiltroDevolvida" data-status="DEVOLVIDA" class="card-filtro-agendamento rounded-2xl border border-border bg-white/60 shadow-sm p-5 text-left transition-all hover:bg-white/80">
+            <div class="flex items-center justify-between gap-3">
+              <p class="form-label-sm text-foreground">Devolvidas</p>
+              <i class="fas fa-rotate-left text-blue-600"></i>
+            </div>
+            <div id="cardAgendamentoDevolvida" class="mt-3 text-3xl font-extrabold">0</div>
+            <p class="mt-2 text-xs text-muted-foreground">já devolvidas</p>
+          </button>
+        </div>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm">
+            <thead class="bg-muted/40 text-muted-foreground">
+              <tr>
+                <th class="text-left font-semibold form-control-sm">Código</th>
+                <th class="text-left font-semibold form-control-sm">Solicitante</th>
+                <th class="text-left font-semibold form-control-sm">Tipo</th>
+                <th class="text-left font-semibold form-control-sm">Necessária</th>
+                <th class="text-left font-semibold form-control-sm">Devolução</th>
+                <th class="text-left font-semibold form-control-sm">Destinos</th>
+                <th class="text-left font-semibold form-control-sm">Status</th>
+                <th class="text-right font-semibold form-control-sm">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyMeusAgendamentos">
+              <tr>
+                <td colspan="7" class="px-4 py-6 form-subtitle-sm text-center">
+                  Nenhum agendamento encontrado.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>
