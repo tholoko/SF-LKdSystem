@@ -18316,6 +18316,7 @@ async function abrirModalVeiculo(modo = 'new', veiculo = null) {
       const json = await salvarVeiculo(payload, isEdit ? veiculo?.id : null);
       fechar();
       alert(json?.message || (isEdit ? 'Veículo atualizado com sucesso.' : 'Veículo cadastrado com sucesso.'));
+      abrirModalGestaoVeiculos();
     } catch (err) {
       setErro(err?.message || 'Erro ao salvar veículo.');
     } finally {
