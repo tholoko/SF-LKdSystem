@@ -22863,6 +22863,10 @@ function limparEstadoImportacaoUsuarios() {
   resultadoImportacaoWrapper?.classList.add('hidden');
 }
 
+function somenteNumerosImportar(valor) {
+  return String(valor ?? '').replace(/\D+/g, '');
+}
+
 function renderizarPreviewImportacao(dados) {
   const {
     previewImportacaoResumo,
@@ -22889,15 +22893,66 @@ function renderizarPreviewImportacao(dados) {
     return;
   }
 
-  const colunas = Object.keys(linhas[0] || {});
+  const ordemPreferencial = [
+    'NOME',
+    'EMAIL',
+    'TELEFONE',
+    'CPF',
+    'DATA NASCIMENTO',
+    'DATA ADMISSÃO',
+    'DATA ADMISSAO',
+    'FUNÇÃO',
+    'FUNCAO',
+    'SETOR',
+    'PERFIL',
+    'STATUS',
+    'CENTRO CUSTO',
+    'UNIDADE TRABALHO'
+  ];
+
+  const colunasEncontradas = Array.from(
+    new Set(linhas.flatMap(linha => Object.keys(linha || {})))
+  );
+
+  const colunasOrdenadas = [
+    ...ordemPreferencial.filter(col => colunasEncontradas.includes(col)),
+    ...colunasEncontradas.filter(col => !ordemPreferencial.includes(col))
+  ];
+
+  const formatarTextoSeguro = (valor) => {
+    if (valor === null || valor === undefined) return '-';
+
+    const texto = String(valor).trim();
+    return texto ? escaparHtml(texto) : '-';
+  };
+
+  const formatarValorColuna = (coluna, valor, linha) => {
+    const texto = String(valor ?? '').trim();
+
+    if (coluna === 'EMAIL' || coluna === 'E-MAIL') {
+      if (!texto) {
+        const cpf = String(linha['CPF'] ?? '').replace(/\D+/g, '');
+        if (cpf) {
+          return escaparHtml(`${cpf}@temp.local (automático)`);
+        }
+        return 'Será gerado automaticamente';
+      }
+    }
+
+    if ((coluna === 'TELEFONE' || coluna === 'CELULAR' || coluna === 'TELEFONE 1') && !texto) {
+      return '-';
+    }
+
+    return formatarTextoSeguro(valor);
+  };
 
   previewImportacaoTabelaWrapper.innerHTML = `
     <div class="rounded-2xl border border-border bg-white40 overflow-auto">
       <table class="min-w-full text-sm">
-        <thead class="bg-muted/40 sticky top-0">
+        <thead class="bg-muted/40 sticky top-0 z-10">
           <tr>
-            <th class="px-3 py-2 text-left text-xs font-semibold text-muted-foreground uppercase">#</th>
-            ${colunas.map(col => `
+            <th class="px-3 py-2 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">#</th>
+            ${colunasOrdenadas.map(col => `
               <th class="px-3 py-2 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">
                 ${escaparHtml(col)}
               </th>
@@ -22907,12 +22962,20 @@ function renderizarPreviewImportacao(dados) {
         <tbody>
           ${linhas.map((linha, index) => `
             <tr class="border-t border-border/70 hover:bg-white60">
-              <td class="px-3 py-2 text-sm text-muted-foreground">${index + 1}</td>
-              ${colunas.map(col => `
-                <td class="px-3 py-2 text-sm text-foreground whitespace-nowrap">
-                  ${escaparHtml(linha[col])}
-                </td>
-              `).join('')}
+              <td class="px-3 py-2 text-sm text-muted-foreground whitespace-nowrap">
+                ${index + 1}
+              </td>
+              ${colunasOrdenadas.map(col => {
+                const valorFormatado = formatarValorColuna(col, linha[col], linha);
+                return `
+                  <td
+                    class="px-3 py-2 text-sm text-foreground max-w-[220px] whitespace-nowrap overflow-hidden text-ellipsis"
+                    title="${valorFormatado}"
+                  >
+                    ${valorFormatado}
+                  </td>
+                `;
+              }).join('')}
             </tr>
           `).join('')}
         </tbody>
