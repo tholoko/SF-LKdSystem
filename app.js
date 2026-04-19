@@ -26,6 +26,7 @@ async function openSidebarSafe() {
       marketing: document.querySelector('[data-page="secao-marketing"]'),
       emailautomaticos: document.querySelector('[data-page="secao-emails-automaticos"]'),
       gestaousuarios: document.querySelector('[data-page="user-management"]'),
+      organograma: document.querySelector('[data-page="secao-organograma"]'),
       estoque: document.querySelector('[data-page="inventory-control"]'),
       perfilacesso: document.querySelector('[data-page="secao-perfis"]'),
       agendamentoveiculos: document.querySelector('[data-page="secao-meus-agendamentos"]')
@@ -81,6 +82,7 @@ async function openSidebarSafe() {
 
     if (Number(perm.gestaousuarios) === 1) {
       itensMenu.gestaousuarios?.classList.remove('hidden');
+      itensMenu.organograma?.classList.remove('hidden');
     }
 
     if (Number(perm.estoque) === 1) {
@@ -23065,7 +23067,7 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
-  const { modalPreviewImportacao, btnConfirmarImportacaoUsuarios } = getRefs();
+  const { modalPreviewImportacao } = getRefs();
 
   if (e.target === modalPreviewImportacao) {
     fecharModalPreviewImportacao();
@@ -23102,7 +23104,12 @@ document.addEventListener('click', async (e) => {
         throw new Error(json?.message || 'Erro ao importar planilha.');
       }
 
-      const { previewImportacaoResumo, resultadoImportacaoWrapper, resultadoImportacaoLista, inputImportarTemplateUsuarios } = getRefs();
+      const {
+        previewImportacaoResumo,
+        resultadoImportacaoWrapper,
+        resultadoImportacaoLista,
+        inputImportarTemplateUsuarios
+      } = getRefs();
 
       if (previewImportacaoResumo) {
         previewImportacaoResumo.textContent =
