@@ -1159,6 +1159,249 @@
     line-height: 1rem;
   }
 
+  .menu-group-toggle.active {
+    background: hsl(var(--secondary));
+    color: hsl(var(--foreground));
+  }
+
+  .menu-group.open .menu-subitems {
+    display: block;
+  }
+
+  .menu-group.open .menu-group-arrow {
+    transform: rotate(180deg);
+  }
+
+  .submenu-item {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .submenu-item.active,
+  .menu-item.bg-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--foreground));
+  }
+
+  .organograma-classico-wrap {
+    width: 100%;
+  }
+
+  .organograma-classico {
+    min-width: 900px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+  }
+
+  .org-node-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .org-node {
+    min-width: 160px;
+    max-width: 220px;
+    min-height: 56px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    background: #f55c00;
+    color: #fff;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .org-children-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .org-children-line {
+    width: 2px;
+    height: 26px;
+    background: #7a7a7a;
+  }
+
+  .org-children {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 28px;
+    position: relative;
+    padding-top: 26px;
+  }
+
+  .org-children::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    right: 50%;
+    height: 2px;
+    background: #7a7a7a;
+  }
+
+  .org-child-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .org-child-line {
+    width: 2px;
+    height: 26px;
+    background: #7a7a7a;
+    position: absolute;
+    top: -26px;
+  }
+
+  .org-children > .org-child-item:first-child::before,
+  .org-children > .org-child-item:last-child::after,
+  .org-children > .org-child-item:only-child::before {
+    content: '';
+    position: absolute;
+    top: -26px;
+    height: 2px;
+    background: #7a7a7a;
+  }
+
+  .org-children > .org-child-item:first-child::before {
+    left: 50%;
+    width: calc(50% + 14px);
+  }
+
+  .org-children > .org-child-item:last-child::after {
+    right: 50%;
+    width: calc(50% + 14px);
+  }
+
+  .org-children > .org-child-item:only-child::before {
+    left: 50%;
+    width: 0;
+  }
+
+  @media (max-width: 768px) {
+    .organograma-classico {
+      min-width: 700px;
+    }
+
+    .org-node {
+      min-width: 140px;
+      font-size: 12px;
+      padding: 12px 14px;
+    }
+
+    .org-children {
+      gap: 18px;
+    }
+  }
+
+  .organograma-board {
+  min-width: 900px;
+  display: flex;
+  justify-content: center;
+  padding: 12px 24px 32px;
+}
+
+.org-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.org-card {
+  min-width: 140px;
+  max-width: 220px;
+  min-height: 54px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: #f45a00;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.org-children-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.org-parent-line {
+  width: 2px;
+  height: 26px;
+  background: #7c7c7c;
+}
+
+.org-children {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding-top: 28px;
+}
+
+.org-children::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 60px;
+  right: 60px;
+  height: 2px;
+  background: #7c7c7c;
+}
+
+.org-child {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.org-child::before {
+  content: '';
+  position: absolute;
+  top: -28px;
+  width: 2px;
+  height: 28px;
+  background: #7c7c7c;
+}
+
+@media (max-width: 1024px) {
+  .organograma-board {
+    min-width: 760px;
+    justify-content: flex-start;
+  }
+
+  .org-children {
+    gap: 20px;
+  }
+
+  .org-card {
+    min-width: 130px;
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+}
+
 </style>
 
 </head>
@@ -1190,71 +1433,137 @@
       </button>
     </div>
 
-    <div class="menu-items hide-scrollbar flex-1 px-3 py-3">
-      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="home">
+    <div class="menu-items hide-scrollbar flex-1 px-3 py-3 space-y-2">
+
+      <!-- Home -->
+      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+          data-page="home">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
           <i class="fas fa-house"></i>
         </div>
-        <span class="font-medium truncate">Início</span>
+        <div><span class="font-medium truncate">Início</span></div>
       </div>
 
-      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-pedidos">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-success/15 text-success shrink-0">
-          <i class="fas fa-shopping-cart"></i>
+      <!-- Vendas -->
+      <div class="menu-group" data-menu-group="vendas">
+        <button type="button"
+                class="menu-group-toggle w-full flex items-center justify-between gap-3 form-control-sm rounded-xl transition-all text-muted-foreground hover:bg-secondary hover:text-foreground px-3 py-2">
+          <div class="flex items-center gap-4 min-w-0">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-success/15 text-success shrink-0">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <span class="font-medium truncate">Vendas</span>
+          </div>
+          <i class="fas fa-chevron-down menu-group-arrow text-xs transition-transform"></i>
+        </button>
+
+        <div class="menu-subitems hidden mt-2 ml-4 pl-4 border-l border-sidebar-border space-y-1">
+          <div class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+              data-page="secao-pedidos">
+            <i class="fas fa-shopping-cart w-4 text-success"></i>
+            <span class="font-medium truncate">Pedidos</span>
+          </div>
+
+          <div class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+              data-page="secao-clientes">
+            <i class="fas fa-building w-4 text-primary"></i>
+            <span class="font-medium truncate">Cliente</span>
+          </div>
         </div>
-        <span class="font-medium truncate">Pedidos</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-clientes">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
-          <i class="fas fa-building"></i>
+      <!-- Cadastro -->
+      <div class="menu-group" data-menu-group="cadastro">
+        <button type="button"
+                class="menu-group-toggle w-full flex items-center justify-between gap-3 form-control-sm rounded-xl transition-all text-muted-foreground hover:bg-secondary hover:text-foreground px-3 py-2">
+          <div class="flex items-center gap-4 min-w-0">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0">
+              <i class="fas fa-address-book"></i>
+            </div>
+            <span class="font-medium truncate">Cadastro</span>
+          </div>
+          <i class="fas fa-chevron-down menu-group-arrow text-xs transition-transform"></i>
+        </button>
+
+        <div class="menu-subitems hidden mt-2 ml-4 pl-4 border-l border-sidebar-border space-y-1">
+          <div class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+              data-page="user-management">
+            <i class="fas fa-user-cog w-4 text-primary"></i>
+            <span class="font-medium truncate">Gestão Usuários</span>
+          </div>
+
+          <div class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+              data-page="secao-perfis">
+            <i class="fas fa-id-badge w-4 text-info"></i>
+            <span class="font-medium truncate">Perfis</span>
+          </div>
+
+          <div class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+              data-page="secao-emails-automaticos">
+            <i class="fas fa-envelope w-4 text-info"></i>
+            <span class="font-medium truncate">E-mails Automáticos</span>
+          </div>
+
+          <div
+            class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+            data-page="secao-organograma"
+          >
+            <i class="fas fa-sitemap w-4 text-info"></i>
+            <span class="font-medium truncate">Organograma</span>
+          </div>
         </div>
-        <span class="font-medium truncate">Clientes</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-marketing">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-accent/20 text-foreground shrink-0">
-          <i class="fas fa-bullhorn"></i>
+      <!-- Estoque -->
+      <div class="menu-group" data-menu-group="estoque">
+        <button type="button"
+                class="menu-group-toggle w-full flex items-center justify-between gap-3 form-control-sm rounded-xl transition-all text-muted-foreground hover:bg-secondary hover:text-foreground px-3 py-2">
+          <div class="flex items-center gap-4 min-w-0">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-warning/15 text-warning shrink-0">
+              <i class="fas fa-boxes-stacked"></i>
+            </div>
+            <span class="font-medium truncate">Estoque</span>
+          </div>
+          <i class="fas fa-chevron-down menu-group-arrow text-xs transition-transform"></i>
+        </button>
+
+        <div class="menu-subitems hidden mt-2 ml-4 pl-4 border-l border-sidebar-border space-y-1">
+          <div class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+              data-page="inventory-control">
+            <i class="fas fa-warehouse w-4 text-warning"></i>
+            <span class="font-medium truncate">Centro de Custo</span>
+          </div>
         </div>
-        <span class="font-medium truncate">Marketing</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="secao-emails-automaticos">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0">
-          <i class="fas fa-envelope"></i>
+      <!-- Utilitários -->
+      <div class="menu-group" data-menu-group="utilitarios">
+        <button type="button"
+                class="menu-group-toggle w-full flex items-center justify-between gap-3 form-control-sm rounded-xl transition-all text-muted-foreground hover:bg-secondary hover:text-foreground px-3 py-2">
+          <div class="flex items-center gap-4 min-w-0">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-accent/20 text-foreground shrink-0">
+              <i class="fas fa-screwdriver-wrench"></i>
+            </div>
+            <span class="font-medium truncate">Utilitários</span>
+          </div>
+          <i class="fas fa-chevron-down menu-group-arrow text-xs transition-transform"></i>
+        </button>
+
+        <div class="menu-subitems hidden mt-2 ml-4 pl-4 border-l border-sidebar-border space-y-1">
+          <div class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+              data-page="secao-marketing">
+            <i class="fas fa-bullhorn w-4 text-foreground"></i>
+            <span class="font-medium truncate">Marketing</span>
+          </div>
+
+          <div class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+              data-page="secao-meus-agendamentos">
+            <i class="fas fa-car-side w-4 text-primary"></i>
+            <span class="font-medium truncate">Agendamento Veículos</span>
+          </div>
         </div>
-        <span class="font-medium truncate">E-mails Automáticos</span>
       </div>
 
-      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
-          data-page="secao-meus-agendamentos">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
-          <i class="fas fa-car-side"></i>
-        </div>
-        <span class="font-medium truncate">Agendamento Veículos</span>
-      </div>
-
-      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="user-management">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/10 text-primary shrink-0">
-          <i class="fas fa-user-cog"></i>
-        </div>
-        <span class="font-medium truncate">Gestão Usuários</span>
-      </div>
-
-      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground" data-page="inventory-control">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-warning/15 text-warning shrink-0">
-          <i class="fas fa-boxes-stacked"></i>
-        </div>
-        <span class="font-medium truncate">Estoque</span>
-      </div>
-
-      <div class="menu-item flex items-center gap-4 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
-          data-page="secao-perfis">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-info/15 text-info shrink-0">
-          <i class="fas fa-id-badge"></i>
-        </div>
-        <span class="font-medium truncate">Perfis</span>
-      </div>
     </div>
 
     <div class="p-4 border-t border-sidebar-border">
@@ -1511,6 +1820,172 @@
       </div>
     </section>
 
+    <!-- CADASTRO ORGANOGRAMA -->
+    <section id="secao-organograma" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-5">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu"
+            >
+              <i class="fas fa-bars"></i>
+            </button>
+            <div>
+              <h3 class="font-semibold">Organograma</h3>
+              <p class="form-subtitle-sm">Cadastre vínculos entre setores por unidade de trabalho.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              id="btnAtualizarOrganograma"
+              type="button"
+              class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all"
+              title="Atualizar lista"
+              aria-label="Atualizar lista"
+            >
+              <i class="fas fa-rotate-right"></i>
+            </button>
+
+            <button
+              id="btnGerenciarUsuariosOrganograma"
+              type="button"
+              class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+              title="Vincular usuários aos setores"
+              aria-label="Vincular usuários aos setores"
+            >
+              <i class="fas fa-users"></i>
+            </button>
+
+            <button
+              id="btnNovoVinculoOrganograma"
+              type="button"
+              class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center"
+              title="Novo vínculo"
+              aria-label="Novo vínculo"
+            >
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div class="xl:col-span-1 space-y-4">
+            <div class="rounded-2xl border border-border bg-white/60 p-4">
+              <label class="form-label-sm block mb-2">Unidade de trabalho</label>
+              <select id="orgFiltroUnidade" class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none">
+                <option value="">Selecione...</option>
+              </select>
+            </div>
+
+            <div class="rounded-2xl border border-border bg-white/60 p-4 space-y-4">
+              <div>
+                <label class="form-label-sm block mb-2">Setor pai</label>
+                <div class="flex items-stretch gap-2">
+                  <select
+                    id="orgSetorPai"
+                    class="flex-1 min-w-0 rounded-xl border border-border bg-white/70 form-control-sm outline-none"
+                  >
+                    <option value="">Selecione...</option>
+                  </select>
+
+                  <button
+                    id="btnGerenciarSetoresOrganogramaPai"
+                    type="button"
+                    class="h-11 w-11 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+                    aria-label="Gerenciar setores do organograma"
+                    title="Gerenciar setores do organograma"
+                  >
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label-sm block mb-2">Setor filho</label>
+                <div class="flex items-stretch gap-2">
+                  <select
+                    id="orgSetorFilho"
+                    class="flex-1 min-w-0 rounded-xl border border-border bg-white/70 form-control-sm outline-none"
+                  >
+                    <option value="">Selecione...</option>
+                  </select>
+
+                  <button
+                    id="btnGerenciarSetoresOrganogramaFilho"
+                    type="button"
+                    class="h-11 w-11 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+                    aria-label="Gerenciar setores do organograma"
+                    title="Gerenciar setores do organograma"
+                  >
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex gap-2">
+                <button
+                  id="btnSalvarVinculoOrganograma"
+                  type="button"
+                  class="flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
+                >
+                  Salvar vínculo
+                </button>
+
+                <button
+                  id="btnLimparVinculoOrganograma"
+                  type="button"
+                  class="rounded-xl border border-border bg-white/60 form-control-sm px-4 hover:bg-white transition-all"
+                >
+                  Limpar
+                </button>
+              </div>
+
+              <p id="organogramaMsg" class="form-subtitle-sm hidden"></p>
+            </div>
+          </div>
+
+<div class="xl:col-span-2 space-y-4">
+  <div class="rounded-3xl border border-border bg-[#f3f3f3] p-5 shadow-sm">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h4 class="text-lg font-semibold tracking-wide text-foreground">
+          Árvore hierárquica
+        </h4>
+        <p class="form-subtitle-sm mt-1">
+          Visualização clássica do organograma por unidade de trabalho.
+        </p>
+      </div>
+    </div>
+
+    <div
+      id="organogramaArvore"
+      class="mt-5 overflow-x-auto overflow-y-hidden rounded-2xl bg-transparent px-2 py-4"
+    ></div>
+  </div>
+
+  <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+    <table class="min-w-full text-sm">
+      <thead class="bg-muted/40 text-muted-foreground">
+        <tr>
+          <th class="text-left font-semibold form-control-sm">Unidade</th>
+          <th class="text-left font-semibold form-control-sm">Setor pai</th>
+          <th class="text-left font-semibold form-control-sm">Setor filho</th>
+          <th class="text-right font-semibold form-control-sm">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyOrganograma" class="divide-y divide-border"></tbody>
+    </table>
+  </div>
+</div>
+        </div>
+      </div>
+    </section>
+
     <!-- PEDIDOS -->
     <section id="secao-pedidos" class="page-content md:ml-4">
       <div class="glass rounded-2xl p-6 shadow space-y-4">
@@ -1738,7 +2213,7 @@
               </button>
 
               <div>
-                <h2 class="text-2xl font-semibold text-foreground">Controle de estoque</h2>
+                <h2 class="text-2xl font-semibold text-foreground">Estoque - Centro de Custo</h2>
                 <p class="form-subtitle-sm">Gestão de materiais do escritório.</p>
               </div>
             </div>
@@ -1750,11 +2225,21 @@
                 Importar do sistema
               </button>
 
+              <button
+                id="btnLancamentoManualEstoque"
+                type="button"
+                class="rounded-xl border border-emerald-200 bg-emerald-50 form-control-sm form-label-sm text-emerald-700 hover:bg-emerald-100 transition-all"
+              >
+                <i class="fas fa-keyboard mr-2" aria-hidden="true"></i>
+                Lançamento manual
+              </button>
+
               <button id="btnImportarPdfEstoque" type="button"
                 class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
                 <i class="fas fa-file-pdf mr-2" aria-hidden="true"></i>
                 Importar XML/PDF
               </button>
+
               <input id="inputImportarPdfEstoque" type="file" accept=".pdf,.xml,application/pdf,text/xml,application/xml" hidden />
             </div>
           </div>
@@ -2173,6 +2658,23 @@
             </button>
 
             <button
+              id="btnImportarTemplateUsuarios"
+              type="button"
+              class="w-11 h-11 rounded-xl border border-emerald-300 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-all flex items-center justify-center shadow-sm"
+              title="Importar template de usuários"
+              aria-label="Importar template de usuários"
+            >
+              <i class="fas fa-file-import text-lg" aria-hidden="true"></i>
+            </button>
+
+            <input
+              id="inputImportarTemplateUsuarios"
+              type="file"
+              accept=".xlsx,.xls"
+              style="display:none"
+            />
+
+            <button
               id="btnNovoUsuario"
               type="button"
               class="w-10 h-10 rounded-xl border border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800 transition-all flex items-center justify-center shadow-sm"
@@ -2182,21 +2684,90 @@
               <i class="fas fa-user-plus text-base" aria-hidden="true"></i>
             </button>
           </div>
-
-
         </div>
 
         <p id="gestaoUsuariosErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div class="relative w-full md:max-w-md">
+            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-muted-foreground pointer-events-none">
+              <i class="fas fa-search" aria-hidden="true"></i>
+            </span>
+
+            <input
+              id="inputFiltroGestaoUsuarios"
+              type="text"
+              class="w-full h-11 rounded-xl border border-border bg-white/70 pl-11 pr-10 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Filtrar usuários, setor, perfil, centro de custo, status..."
+              autocomplete="off"
+            />
+
+            <button
+              id="btnLimparFiltroGestaoUsuarios"
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-all hidden"
+              aria-label="Limpar filtro"
+              title="Limpar filtro"
+            >
+              <i class="fas fa-times-circle" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <p id="gestaoUsuariosFiltroResumo" class="text-sm text-muted-foreground"></p>
+        </div>
 
         <div class="overflow-auto rounded-2xl border border-border bg-white/50">
           <table class="min-w-full text-sm">
             <thead>
               <tr>
-                <th class="form-control-sm text-left">Usuário</th>
-                <th class="form-control-sm text-left">Setor</th>
-                <th class="form-control-sm text-left">Perfil</th>
-                <th class="form-control-sm text-left">Centro de custo</th>
-                <th class="form-control-sm text-left">Status</th>
+                <th class="form-control-sm text-left">
+                  <button type="button" class="inline-flex items-center gap-2 font-semibold text-muted-foreground hover:text-foreground transition-all"
+                    data-sort-gestao="nome" onclick="alternarOrdenacaoGestao('nome')">
+                    <span>Usuário</span>
+                    <span data-sort-icon><i class="fas fa-sort text-xs opacity-50" aria-hidden="true"></i></span>
+                  </button>
+                </th>
+
+                <th class="form-control-sm text-left">
+                  <button type="button" class="inline-flex items-center gap-2 font-semibold text-muted-foreground hover:text-foreground transition-all"
+                    data-sort-gestao="setor" onclick="alternarOrdenacaoGestao('setor')">
+                    <span>Setor</span>
+                    <span data-sort-icon><i class="fas fa-sort text-xs opacity-50" aria-hidden="true"></i></span>
+                  </button>
+                </th>
+
+                <th class="form-control-sm text-left">
+                  <button type="button" class="inline-flex items-center gap-2 font-semibold text-muted-foreground hover:text-foreground transition-all"
+                    data-sort-gestao="perfil" onclick="alternarOrdenacaoGestao('perfil')">
+                    <span>Perfil</span>
+                    <span data-sort-icon><i class="fas fa-sort text-xs opacity-50" aria-hidden="true"></i></span>
+                  </button>
+                </th>
+
+                <th class="form-control-sm text-left">
+                  <button type="button" class="inline-flex items-center gap-2 font-semibold text-muted-foreground hover:text-foreground transition-all"
+                    data-sort-gestao="centroCusto" onclick="alternarOrdenacaoGestao('centroCusto')">
+                    <span>Centro de custo</span>
+                    <span data-sort-icon><i class="fas fa-sort text-xs opacity-50" aria-hidden="true"></i></span>
+                  </button>
+                </th>
+
+                <th class="form-control-sm text-left">
+                  <button type="button" class="inline-flex items-center gap-2 font-semibold text-muted-foreground hover:text-foreground transition-all"
+                    data-sort-gestao="unidadeTrabalho" onclick="alternarOrdenacaoGestao('unidadeTrabalho')">
+                    <span>Unidade Trabalho</span>
+                    <span data-sort-icon><i class="fas fa-sort text-xs opacity-50" aria-hidden="true"></i></span>
+                  </button>
+                </th>
+
+                <th class="form-control-sm text-left">
+                  <button type="button" class="inline-flex items-center gap-2 font-semibold text-muted-foreground hover:text-foreground transition-all"
+                    data-sort-gestao="status" onclick="alternarOrdenacaoGestao('status')">
+                    <span>Status</span>
+                    <span data-sort-icon><i class="fas fa-sort text-xs opacity-50" aria-hidden="true"></i></span>
+                  </button>
+                </th>
+
                 <th class="form-control-sm text-right">Ações</th>
               </tr>
             </thead>
@@ -2204,6 +2775,62 @@
           </table>
         </div>
       </div>
+
+<div
+  id="modalPreviewImportacaoUsuarios"
+  class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="tituloModalPreviewImportacaoUsuarios"
+>
+  <div class="w-full max-w-6xl rounded-2xl border border-border bg-white shadow-2xl overflow-hidden">
+    <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+      <div>
+        <h3 id="tituloModalPreviewImportacaoUsuarios" class="form-title-sm font-semibold text-foreground">
+          Pré-visualização da importação
+        </h3>
+        <p id="previewImportacaoResumo" class="form-subtitle-sm mt-1 text-muted-foreground"></p>
+      </div>
+
+      <button
+        type="button"
+        id="btnFecharModalPreviewImportacao"
+        class="w-10 h-10 rounded-xl bg-white60 border border-border hover:bg-white transition-all flex items-center justify-center"
+        aria-label="Fechar"
+        title="Fechar"
+      >
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="p-6 max-h-[70vh] overflow-y-auto space-y-6">
+      <div id="previewImportacaoTabelaWrapper" class="min-w-0"></div>
+
+      <div id="resultadoImportacaoWrapper" class="hidden">
+        <h4 class="text-sm font-semibold text-foreground mb-3">Resultado da importação</h4>
+        <div id="resultadoImportacaoLista" class="space-y-3"></div>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 border-t border-border bg-white50 flex items-center justify-end gap-3">
+      <button
+        type="button"
+        id="btnCancelarPreviewImportacao"
+        class="px-4 py-2 rounded-xl border border-border bg-white60 form-control-sm text-foreground hover:bg-white transition-all"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        id="btnConfirmarImportacaoUsuarios"
+        class="px-4 py-2 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
+      >
+        Confirmar importação
+      </button>
+    </div>
+  </div>
+</div>
     </section>
 
     <!-- PERFIS -->
@@ -2384,7 +3011,27 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap justify-end">
+            <div class="relative min-w-[240px] w-full sm:w-[280px] md:w-[320px]">
+              <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none"></i>
+              <input
+                id="inputFiltroBuscaAgendamentos"
+                type="text"
+                class="w-full h-10 rounded-xl border border-border bg-white/80 pl-10 pr-10 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder="Buscar em qualquer coluna..."
+                autocomplete="off"
+              />
+              <button
+                id="btnLimparBuscaAgendamentos"
+                type="button"
+                class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg border border-border bg-white/80 hover:bg-white transition-all text-muted-foreground flex items-center justify-center"
+                title="Limpar busca"
+                aria-label="Limpar busca"
+              >
+                <i class="fas fa-times text-xs"></i>
+              </button>
+            </div>
+
             <button
               id="btnGerenciarVeiculos"
               type="button"

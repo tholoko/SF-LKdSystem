@@ -7,16 +7,11 @@ let APIBASE = sessionStorage.getItem('api_base') || '';
 let USUARIOLOGADO = sessionStorage.getItem('usuario');
 let EMAILLOGADO = sessionStorage.getItem('userEmail');
 
-
-
-
-
 async function openSidebarSafe() {
   try {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
     const usuarioId = sessionStorage.getItem('id') || '';
-
 
     if (!usuarioId) {
       console.warn('[Sidebar] Usuário não identificado na sessão.');
@@ -46,11 +41,15 @@ async function openSidebarSafe() {
       }
     });
 
-    const url = `${APIBASE}/api/permissoes/menu/${usuarioId}`;
+    document.querySelectorAll('.menu-group').forEach(grupo => {
+      grupo.classList.add('hidden');
+      grupo.classList.remove('open');
+      grupo.querySelector('.menu-group-toggle')?.classList.remove('active');
+    });
 
+    const url = `${APIBASE}/api/permissoes/menu/${usuarioId}`;
     const resp = await fetch(url);
     const data = await resp.json();
-
 
     if (!resp.ok || !data.success) {
       console.warn('[Sidebar] Falha ao buscar permissões do menu.');
@@ -59,8 +58,6 @@ async function openSidebarSafe() {
     }
 
     const perm = data.item || {};
-
-    console.log(perm);
 
     if (Number(perm.pedidos) === 1) {
       itensMenu.pedidos?.classList.remove('hidden');
@@ -93,6 +90,14 @@ async function openSidebarSafe() {
     if (Number(perm.perfilacesso) === 1) {
       itensMenu.perfilacesso?.classList.remove('hidden');
     }
+
+    document.querySelectorAll('.menu-group').forEach(grupo => {
+      const subitemsVisiveis = Array.from(
+        grupo.querySelectorAll('.menu-item[data-page]')
+      ).some(el => !el.classList.contains('hidden'));
+
+      grupo.classList.toggle('hidden', !subitemsVisiveis);
+    });
 
     if (sidebar) sidebar.classList.add('is-open');
     if (overlay) overlay.classList.add('show');
@@ -461,14 +466,22 @@ function DefinirSidebarAberta(abrir){
   floatingMenuBtn?.classList.toggle('is-hidden', abrir);
 }
 
-function DefinirPaginaAtiva(pageId, itemClicado){
-  document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('bg-secondary'));
-  itemClicado?.classList.add('bg-secondary');
+function DefinirPaginaAtiva(pageId, itemClicado) {
+  document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('bg-secondary', 'active'));
+  itemClicado?.classList.add('bg-secondary', 'active');
+
+  document.querySelectorAll('.menu-group-toggle').forEach(btn => btn.classList.remove('active'));
+
+  const grupo = itemClicado?.closest('.menu-group');
+  if (grupo) {
+    grupo.classList.add('open');
+    grupo.querySelector('.menu-group-toggle')?.classList.add('active');
+  }
 
   document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
   document.getElementById(pageId)?.classList.add('active');
 
-  if (window.innerWidth <= 900) DefinirSidebarAberta(false);
+  if (window.innerWidth < 900) DefinirSidebarAberta(false);
 }
 
 function InicializarHoje(){
@@ -1290,6 +1303,53 @@ function AbrirModalAgendamentoSala() {
     document.getElementById('btnNovoCliente')?.addEventListener('click', () => abrirModalCliente({ modo: 'new', cliente: null }));
     document.getElementById('inputBuscaClientes')?.addEventListener('input', () => renderTabelaClientes());
 
+    document.addEventListener('click', function (e) {
+      const toggle = e.target.closest('.menu-group-toggle');
+      if (toggle) {
+        const grupo = toggle.closest('.menu-group');
+        const estavaAberto = grupo?.classList.contains('open');
+
+        document.querySelectorAll('.menu-group').forEach(g => {
+          g.classList.remove('open');
+          g.querySelector('.menu-group-toggle')?.classList.remove('active');
+        });
+
+        if (!estavaAberto && grupo) {
+          grupo.classList.add('open');
+          toggle.classList.add('active');
+        }
+        return;
+      }
+
+      const item = e.target.closest('.menu-item[data-page]');
+      if (!item) return;
+
+      const page = item.dataset.page;
+      if (page === 'home') {
+        window.location.reload();
+        return;
+      }
+
+      DefinirPaginaAtiva(page, item);
+
+      const grupo = item.closest('.menu-group');
+      if (grupo) {
+        grupo.classList.add('open');
+        grupo.querySelector('.menu-group-toggle')?.classList.add('active');
+      }
+
+      if (page === 'secao-clientes') carregarClientes();
+      if (page === 'secao-perfis') carregarPerfis?.().catch(console.error);
+
+      carregarClimaHome();
+      iniciarLoopMarketingPainel({
+        imgId: 'painelMarketingImg',
+        fallbackSrc: 'imagens/PaginaPrincipal.jpg',
+        intervalMs: 20000,
+        refreshListEveryMs: 60000,
+      });
+    });
+
     document.addEventListener('click', async (e) => {
       const btnEdit = e.target.closest('.btnEditarCliente');
       const btnDel = e.target.closest('.btnExcluirCliente');
@@ -1339,62 +1399,7 @@ function RemoverModalDetalheAgendamento() {
   document.getElementById('agDetalheModal')?.remove();
 }
 
-function AbrirModalDetalheAgendamento(item) {
-  RemoverModalDetalheAgendamento();
 
-  const overlay = document.createElement('div');
-  overlay.id = 'agDetalheOverlay';
-  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[90]';
-  document.body.appendChild(overlay);
-
-  const modal = document.createElement('div');
-  modal.id = 'agDetalheModal';
-  modal.className = 'fixed inset-0 z-[100]';
-  modal.setAttribute('role', 'dialog');
-  modal.setAttribute('aria-modal', 'true');
-
-  modal.innerHTML = `
-    <div class="w-full h-full flex items-start justify-center p-4 md:p-8">
-      <div class="w-full max-w-xl mx-auto px-4 sm:px-6">
-        <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
-          <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
-            <div>
-              <h3 class="form-title-sm font-semibold text-foreground">Detalhes do agendamento</h3>
-            </div>
-            <button id="btnFecharAgDetalhe" type="button"
-              class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
-              aria-label="Fechar" title="Fechar">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-
-          <div class="px-6 py-6 space-y-2 text-sm">
-            <div><span class="text-muted-foreground">Sala:</span> <span class="font-semibold text-foreground">${item.sala}</span></div>
-            <div><span class="text-muted-foreground">Início:</span> <span class="font-semibold text-foreground">${fmtDataHoraCompleta(item.inicio)}</span></div>
-            <div><span class="text-muted-foreground">Fim:</span> <span class="font-semibold text-foreground">${fmtDataHoraCompleta(item.fim)}</span></div>
-            <div><span class="text-muted-foreground">Motivo:</span> <span class="font-semibold text-foreground">${item.motivo || '(não informado)'}</span></div>
-            <div><span class="text-muted-foreground">Agendado por:</span> <span class="font-semibold text-foreground">${item.usuario_agendamento || '(não informado)'}</span></div>
-            <div><span class="text-muted-foreground">Registro:</span> <span class="font-semibold text-foreground">${fmtDataHoraCompleta(item.data_agendamento)}</span></div>
-
-            <div class="pt-4">
-              <button id="btnOkAgDetalhe" type="button"
-                class="w-full rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  const fechar = () => RemoverModalDetalheAgendamento();
-  overlay.addEventListener('click', fechar);
-  document.getElementById('btnFecharAgDetalhe')?.addEventListener('click', fechar);
-  document.getElementById('btnOkAgDetalhe')?.addEventListener('click', fechar);
-}
 
 async function CarregarResumoDoDia() {
   const lista = document.getElementById('resumoDiaLista');
@@ -1450,7 +1455,7 @@ async function CarregarResumoDoDia() {
         </div>
       </div>
     `;
-    left.addEventListener('click', () => AbrirModalDetalheAgendamento(item));
+    left.addEventListener('click', () => abrirDetalhesAgendamento(item));
 
     // direita (ícone excluir)
     const del = document.createElement('button');
@@ -1500,6 +1505,195 @@ async function CarregarResumoDoDia() {
 // GESTÃO DE USUÁRIOS - COMPLETO ATUALIZADO
 // Com locais de trabalho dinâmicos (SF_LOCAL_TRABALHO)
 // ===============================
+
+let cacheUsuariosGestao = [];
+let termoFiltroGestaoUsuarios = '';
+let colunaOrdenacaoGestaoUsuarios = 'nome';
+let direcaoOrdenacaoGestaoUsuarios = 'asc';
+
+function obterValorOrdenacaoUsuario(u, coluna) {
+  switch (coluna) {
+    case 'nome':
+      return u.NOME ?? u.nome ?? '';
+    case 'setor':
+      return u.SETOR ?? u.setor ?? '';
+    case 'perfil':
+      return u.PERFIL ?? u.perfil ?? '';
+    case 'centroCusto':
+      return u.LOCAL_TRABALHO ?? u.local_trabalho ?? u.LOCALTRABALHO ?? u.localtrabalho ?? '';
+    case 'unidadeTrabalho':
+      return u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.UNIDADE_TRABALHO ?? u.unidade_trabalho ?? '';
+    case 'status':
+      return u.STATUS ?? u.status ?? '';
+    default:
+      return '';
+  }
+}
+
+function compararValoresOrdenacao(a, b) {
+  const va = normalizarTextoFiltro(a);
+  const vb = normalizarTextoFiltro(b);
+  return va.localeCompare(vb, 'pt-BR', { numeric: true, sensitivity: 'base' });
+}
+
+function ordenarUsuariosGestao(lista) {
+  const itens = Array.isArray(lista) ? [...lista] : [];
+
+  itens.sort((a, b) => {
+    const valorA = obterValorOrdenacaoUsuario(a, colunaOrdenacaoGestaoUsuarios);
+    const valorB = obterValorOrdenacaoUsuario(b, colunaOrdenacaoGestaoUsuarios);
+
+    const comparacao = compararValoresOrdenacao(valorA, valorB);
+    return direcaoOrdenacaoGestaoUsuarios === 'asc' ? comparacao : -comparacao;
+  });
+
+  return itens;
+}
+
+function alternarOrdenacaoGestao(coluna) {
+  if (colunaOrdenacaoGestaoUsuarios === coluna) {
+    direcaoOrdenacaoGestaoUsuarios = direcaoOrdenacaoGestaoUsuarios === 'asc' ? 'desc' : 'asc';
+  } else {
+    colunaOrdenacaoGestaoUsuarios = coluna;
+    direcaoOrdenacaoGestaoUsuarios = 'asc';
+  }
+
+  atualizarCabecalhoOrdenacaoGestao();
+  renderizarTabelaGestaoUsuarios();
+}
+
+function obterIconeOrdenacaoGestao(coluna) {
+  if (colunaOrdenacaoGestaoUsuarios !== coluna) {
+    return '<i class="fas fa-sort text-xs opacity-50" aria-hidden="true"></i>';
+  }
+
+  return direcaoOrdenacaoGestaoUsuarios === 'asc'
+    ? '<i class="fas fa-sort-up text-xs" aria-hidden="true"></i>'
+    : '<i class="fas fa-sort-down text-xs" aria-hidden="true"></i>';
+}
+
+function atualizarCabecalhoOrdenacaoGestao() {
+  document.querySelectorAll('[data-sort-gestao]').forEach((el) => {
+    const coluna = el.getAttribute('data-sort-gestao');
+    const icone = el.querySelector('[data-sort-icon]');
+    const ativo = coluna === colunaOrdenacaoGestaoUsuarios;
+
+    el.classList.toggle('text-foreground', ativo);
+    el.classList.toggle('text-muted-foreground', !ativo);
+
+    if (icone) {
+      icone.innerHTML = obterIconeOrdenacaoGestao(coluna);
+    }
+
+    el.setAttribute(
+      'aria-sort',
+      ativo ? (direcaoOrdenacaoGestaoUsuarios === 'asc' ? 'ascending' : 'descending') : 'none'
+    );
+  });
+}
+
+function normalizarTextoFiltro(valor) {
+  return String(valor ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function obterTextoFiltroUsuario(u) {
+  const nome = u.NOME ?? u.nome ?? '';
+  const email = u.EMAIL ?? u.email ?? '';
+  const setor = u.SETOR ?? u.setor ?? '';
+  const perfil = u.PERFIL ?? u.perfil ?? '';
+  const localTrabalho = u.LOCAL_TRABALHO ?? u.local_trabalho ?? u.LOCALTRABALHO ?? u.localtrabalho ?? '';
+  const unidadeTrabalho = u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.UNIDADE_TRABALHO ?? u.unidade_trabalho ?? '';
+  const status = u.STATUS ?? u.status ?? '';
+
+  return normalizarTextoFiltro([
+    nome,
+    email,
+    setor,
+    perfil,
+    localTrabalho,
+    unidadeTrabalho,
+    status
+  ].join(' '));
+}
+
+function filtrarUsuariosGestao(lista, termo) {
+  const termoNormalizado = normalizarTextoFiltro(termo);
+  if (!termoNormalizado) return Array.isArray(lista) ? lista : [];
+
+  return (Array.isArray(lista) ? lista : []).filter((u) =>
+    obterTextoFiltroUsuario(u).includes(termoNormalizado)
+  );
+}
+
+function atualizarResumoFiltroGestao(total, filtrados) {
+  const el = document.getElementById('gestaoUsuariosFiltroResumo');
+  if (!el) return;
+
+  if (!total) {
+    el.textContent = 'Nenhum usuário cadastrado.';
+    return;
+  }
+
+  if (!termoFiltroGestaoUsuarios) {
+    el.textContent = `${total} usuário(s) encontrado(s).`;
+    return;
+  }
+
+  el.textContent = `${filtrados} de ${total} usuário(s) exibido(s).`;
+}
+
+function renderizarTabelaGestaoUsuarios() {
+  const tbody = document.getElementById('tbodyGestaoUsuarios');
+  if (!tbody) return;
+
+  const usuariosFiltrados = ordenarUsuariosGestao(
+    filtrarUsuariosGestao(cacheUsuariosGestao, termoFiltroGestaoUsuarios)
+  );
+
+  atualizarResumoFiltroGestao(cacheUsuariosGestao.length, usuariosFiltrados.length);
+
+  if (!cacheUsuariosGestao.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 form-subtitle-sm">Nenhum usuário cadastrado.</td></tr>`;
+    return;
+  }
+
+  if (!usuariosFiltrados.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 form-subtitle-sm">Nenhum usuário encontrado para o filtro informado.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = usuariosFiltrados.map(rowUsuario).join('');
+}
+
+function configurarFiltroGestaoUsuarios() {
+  const input = document.getElementById('inputFiltroGestaoUsuarios');
+  const btnLimpar = document.getElementById('btnLimparFiltroGestaoUsuarios');
+
+  if (!input) return;
+  if (input.dataset.bound === 'true') return;
+
+  input.dataset.bound = 'true';
+
+  input.addEventListener('input', (e) => {
+    termoFiltroGestaoUsuarios = e.target.value || '';
+    if (btnLimpar) {
+      btnLimpar.classList.toggle('hidden', !termoFiltroGestaoUsuarios.trim());
+    }
+    renderizarTabelaGestaoUsuarios();
+  });
+
+  btnLimpar?.addEventListener('click', () => {
+    input.value = '';
+    termoFiltroGestaoUsuarios = '';
+    btnLimpar.classList.add('hidden');
+    input.focus();
+    renderizarTabelaGestaoUsuarios();
+  });
+}
 
 function getApiBaseGestaoUsuarios() {
   let raw =
@@ -1656,6 +1850,7 @@ function rowUsuario(u) {
   const setor = u.SETOR ?? u.setor ?? '';
   const perfil = u.PERFIL ?? u.perfil ?? '';
   const localTrabalho = u.LOCAL_TRABALHO ?? u.local_trabalho ?? u.LOCALTRABALHO ?? u.localtrabalho ?? '';
+  const unidadeTrabalho = u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.UNIDADE_TRABALHO ?? u.unidade_trabalho ?? '';
   const status = u.STATUS ?? u.status ?? '';
   const id = u.ID ?? u.id ?? '';
 
@@ -1673,6 +1868,7 @@ function rowUsuario(u) {
       <td class="form-control-sm">${escapeHtml(setor || '—')}</td>
       <td class="form-control-sm">${escapeHtml(perfil || '—')}</td>
       <td class="form-control-sm">${escapeHtml(localTrabalho || '—')}</td>
+      <td class="form-control-sm">${escapeHtml(unidadeTrabalho || '—')}</td>
       <td class="form-control-sm">${statusBadge(status)}</td>
       <td class="form-control-sm">
         <div class="flex justify-end gap-2">
@@ -1707,7 +1903,6 @@ function rowUsuario(u) {
     </tr>
   `;
 }
-
 
 async function apiGet(path) {
   const url = montarUrlApiGestao(path);
@@ -1803,8 +1998,10 @@ async function carregarGestaoUsuarios() {
 
     const tbody = document.getElementById('tbodyGestaoUsuarios');
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 form-subtitle-sm">Carregando usuários...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 form-subtitle-sm">Carregando usuários...</td></tr>`;
     }
+
+    configurarFiltroGestaoUsuarios();
 
     const [
       usuariosResp,
@@ -1829,30 +2026,26 @@ async function carregarGestaoUsuarios() {
     const funcoes = Array.isArray(funcoesResp?.items) ? funcoesResp.items : [];
     const unidades = Array.isArray(unidadesResp?.items) ? unidadesResp.items : [];
 
+    cacheUsuariosGestao = usuarios;
     cachePerfisGestao = perfis;
     cacheSetoresGestao = setores;
     cacheLocaisTrabalhoGestao = locais;
     cacheFuncoesGestao = funcoes;
     cacheLocaisTrabalhoGestaoUnidade = unidades;
 
-    if (!tbody) return;
-
-    if (!usuarios.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 form-subtitle-sm">Nenhum usuário cadastrado.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = usuarios.map(rowUsuario).join('');
+    renderizarTabelaGestaoUsuarios();
+    atualizarCabecalhoOrdenacaoGestao();
   } catch (err) {
     setGestaoUsuariosErro(err?.message || 'Erro ao carregar usuários.');
 
     const tbody = document.getElementById('tbodyGestaoUsuarios');
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-sm text-destructive">Falha ao carregar usuários.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-sm text-destructive">Falha ao carregar usuários.</td></tr>`;
     }
+
+    atualizarResumoFiltroGestao(0, 0);
   }
 }
-
 
 function removerModalGestaoUsuario() {
   document.getElementById('gestaoUsuarioOverlay')?.remove();
@@ -1918,6 +2111,9 @@ function setAbaGestaoUsuario(nome) {
   painelPess.classList.toggle('hidden', ativa !== 'pessoal');
   painelAdic.classList.toggle('hidden', ativa !== 'dados-adicionais');
 }
+
+
+// gerar crachar
 
 let LOGO_FRANCIOSI_URL = 'imagens/Logo Sementes.png';
 let LOGO_SF_URL = 'imagens/Logo Sociedade.png';
@@ -2557,6 +2753,9 @@ async function abrirModalCrachaRetrato(usuario = {}) {
 
   const nomeCompleto = String(u.NOME ?? u.nome ?? '').trim();
   const setor = String(u.SETOR ?? u.setor ?? '').trim();
+  const unidadeTrabalhoValor = String(
+    u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.LOCALTRABALHO ?? u.localtrabalho ?? ''
+  ).trim();
 
   const partesNome = nomeCompleto.split(/\s+/).filter(Boolean);
   const nomeCracha = (() => {
@@ -2564,6 +2763,38 @@ async function abrirModalCrachaRetrato(usuario = {}) {
     if (partesNome.length === 1) return partesNome[0];
     return `${partesNome[0]} ${partesNome[partesNome.length - 1]}`;
   })();
+
+  let unidadeTrabalho = unidadeTrabalhoValor;
+
+  try {
+    const listaUnidades = Array.isArray(cacheLocaisTrabalhoGestaoUnidade)
+      ? cacheLocaisTrabalhoGestaoUnidade
+      : [];
+
+    const unidadeEncontrada = listaUnidades.find((item) => {
+      const idItem = String(item?.ID ?? item?.id ?? '').trim();
+      const codigoItem = String(item?.CODIGO ?? item?.codigo ?? '').trim();
+      const nomeItem = String(item?.NOME ?? item?.nome ?? '').trim().toLowerCase();
+
+      return (
+        (unidadeTrabalhoValor && idItem === unidadeTrabalhoValor) ||
+        (unidadeTrabalhoValor && codigoItem === unidadeTrabalhoValor) ||
+        (unidadeTrabalhoValor && nomeItem === unidadeTrabalhoValor.toLowerCase())
+      );
+    });
+
+    if (unidadeEncontrada) {
+      unidadeTrabalho = String(
+        unidadeEncontrada.NOME ?? unidadeEncontrada.nome ?? unidadeTrabalhoValor
+      ).trim();
+    }
+  } catch (err) {
+    console.error('Erro ao resolver unidade de trabalho do crachá:', err);
+  }
+
+  unidadeTrabalho = String(unidadeTrabalho || '')
+    .replace(/\bFAZENDA\b/gi, 'FAZ.')
+    .trim();
 
   const fotoAtualRel = u.FOTO ?? u.foto ?? '';
   let fotoAtualAbs = '';
@@ -2608,7 +2839,7 @@ async function abrirModalCrachaRetrato(usuario = {}) {
 
   let fundoCracha = typeof FUNDO_CRACHA_URL !== 'undefined'
     ? FUNDO_CRACHA_URL
-    : 'imagens/fundo-cracha.png';
+    : (typeof FUNDOCRACHAURL !== 'undefined' ? FUNDOCRACHAURL : 'imagens/fundo-cracha.png');
 
   try {
     if (logoPrincipal) logoPrincipal = await imageUrlToDataUrl(logoPrincipal);
@@ -2634,6 +2865,9 @@ async function abrirModalCrachaRetrato(usuario = {}) {
     if (partesNome.length === 1) return partesNome[0].slice(0, 2).toUpperCase();
     return `${partesNome[0][0] || ''}${partesNome[partesNome.length - 1][0] || ''}`.toUpperCase();
   })();
+
+  const textoEmergencia = 'Em caso de perda ou emergência, entrar em contato pelo número abaixo:';
+  const telefoneEmergencia = '(77) 9910-0660';
 
   const overlayExistente = document.getElementById('crachaPreviewOverlay');
   const modalExistente = document.getElementById('crachaPreviewModal');
@@ -2676,6 +2910,7 @@ async function abrirModalCrachaRetrato(usuario = {}) {
             <div class="cracha-front-content">
               <div class="cracha-nome">${escaparHtml(nomeCracha || 'Nome do colaborador')}</div>
               <div class="cracha-setor">${escaparHtml(setor || 'Setor')}</div>
+              <div class="cracha-unidade">${escaparHtml(unidadeTrabalho || '')}</div>
             </div>
           </div>
         </div>
@@ -2690,294 +2925,343 @@ async function abrirModalCrachaRetrato(usuario = {}) {
             </div>
           </div>
 
-          <div class="cracha-verso-footer">Uso corporativo interno</div>
+          <div class="cracha-verso-conteudo">
+            <div class="cracha-verso-texto">${escaparHtml(textoEmergencia)}</div>
+            <div class="cracha-verso-telefone">${escaparHtml(telefoneEmergencia)}</div>
+          </div>
+
+          <div class="cracha-verso-footer"></div>
         </div>
       </div>
     `;
   }
 
   function gerarDocumentoImpressaoCracha() {
-    const htmlCracha = gerarHtmlCrachaRetrato();
-
     return `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Crachá Retrato - ${escaparHtml(nomeCracha || 'Colaborador')}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    @page {
-      size: 54mm 85.6mm;
-      margin: 0;
-    }
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <title>Crachá Retrato - ${escaparHtml(nomeCracha || 'Colaborador')}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      @page {
+        size: 54mm 85.6mm;
+        margin: 0;
+      }
 
-    * {
-      box-sizing: border-box;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
+      * {
+        box-sizing: border-box;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Barlow', Arial, sans-serif;
-      background: #eef2f7;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8mm;
-      padding: 8mm;
-    }
-
-    .cracha-sheet {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8mm;
-      justify-content: center;
-    }
-
-    .cracha-card {
-      position: relative;
-      width: 54mm;
-      height: 85.6mm;
-      border-radius: 4mm;
-      overflow: hidden;
-      background: #ffffff;
-      box-shadow: none;
-      border: 0.35mm solid rgba(37, 52, 141, 0.10);
-    }
-
-    .cracha-frente,
-    .cracha-verso {
-      background: #ffffff;
-    }
-
-    .cracha-frente-fundo {
-      position: absolute;
-      inset: 0;
-      background-color: #ffffff;
-      background-image: ${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-      z-index: 1;
-    }
-
-    .cracha-front-logos-wrap {
-      position: absolute;
-      left: 4mm;
-      right: 4mm;
-      bottom: 6mm;
-      z-index: 3;
-      display: flex;
-      justify-content: center;
-    }
-
-    .cracha-front-logos {
-      min-width: 42mm;
-      max-width: 47mm;
-      min-height: 10.5mm;
-      padding: 1.8mm 2.2mm;
-      border-radius: 3.4mm;
-      background: #ffffff;
-      box-shadow: none;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
-      gap: 3mm;
-    }
-
-    .cracha-front-logos-verso {
-      margin-bottom: 1.5mm;
-    }
-
-    .cracha-logo-top {
-      width: 23mm;
-      max-width: 23mm;
-      max-height: 10mm;
-      object-fit: contain;
-      display: block;
-    }
-
-    .cracha-logo-main {
-      width: 21mm;
-      max-width: 21mm;
-      max-height: 9mm;
-      object-fit: contain;
-      display: block;
-    }
-
-    .cracha-front-panel {
-      position: absolute;
-      left: 4mm;
-      right: 4mm;
-      top: 5mm;
-      bottom: 25mm;
-      z-index: 3;
-      background: #ffffff;
-      border-radius: 4mm;
-      box-shadow: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 4.4mm 3mm 3.2mm 3mm;
-    }
-
-    .cracha-photo-wrap {
-      position: relative;
-      width: 34mm;
-      height: 34mm;
-      border-radius: 50%;
-      overflow: hidden;
-      padding: 1.2mm;
-      background: #ffffff;
-      box-shadow: none;
-      margin-bottom: 3.8mm;
-      flex: 0 0 auto;
-      border: 0 !important;
-      outline: none !important;
-    }
-
-    .cracha-photo,
-    .cracha-photo-placeholder {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-      display: block;
-      background: #e8edf8;
-      border: 0 !important;
-      outline: none !important;
-      box-shadow: none !important;
-    }
-
-    .cracha-photo-placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #25348D;
-      font-size: 8.2mm;
-      font-weight: 800;
-    }
-
-    .cracha-front-content {
-      width: 100%;
-      text-align: center;
-    }
-
-    .cracha-nome {
-      color: #123b9c;
-      font-size: 4.2mm;
-      line-height: 1.04;
-      font-weight: 900;
-      text-transform: uppercase;
-      margin-bottom: 2mm;
-      word-break: break-word;
-    }
-
-    .cracha-setor {
-      display: inline-block;
-      max-width: 100%;
-      padding: 0;
-      border: 0;
-      background: transparent;
-      color: #79A81E;
-      font-size: 3.3mm;
-      line-height: 1.05;
-      font-weight: 900;
-      text-transform: uppercase;
-      word-break: break-word;
-    }
-
-    .cracha-verso-faixa-topo {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 22mm;
-      background-color: #ffffff;
-      background-image: ${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-      z-index: 1;
-    }
-
-    .cracha-verso-header {
-      position: relative;
-      z-index: 2;
-      padding: 5mm 3.5mm 2.5mm 3.5mm;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5mm;
-      text-align: center;
-    }
-
-    .cracha-verso-footer {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 8mm;
-      background-color: #ffffff;
-      background-image: ${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.7mm;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      padding: 0 2mm;
-      text-align: center;
-      z-index: 2;
-    }
-
-    @media print {
       html, body {
+        width: 54mm;
+        margin: 0;
+        padding: 0;
         background: #fff;
+        font-family: 'Barlow', Arial, sans-serif;
       }
 
       body {
-        padding: 0;
-        gap: 4mm;
+        display: block;
       }
 
-      .cracha-sheet {
-        gap: 4mm;
+      .print-page {
+        width: 54mm;
+        height: 85.6mm;
+        position: relative;
+        overflow: hidden;
+        page-break-after: always;
+        break-after: page;
       }
 
-      .cracha-card,
-      .cracha-front-logos,
-      .cracha-front-panel,
+      .print-page:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+
+      .cracha-card {
+        position: relative;
+        width: 54mm;
+        height: 85.6mm;
+        overflow: hidden;
+        background: #ffffff;
+      }
+
+      .cracha-frente-fundo {
+        position: absolute;
+        inset: 0;
+        background-color: #ffffff;
+        background-image: ${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        z-index: 1;
+      }
+
+      .cracha-front-logos-wrap {
+        position: absolute;
+        left: 4mm;
+        right: 4mm;
+        bottom: 6mm;
+        z-index: 3;
+        display: flex;
+        justify-content: center;
+      }
+
+      .cracha-front-logos {
+        min-width: 42mm;
+        max-width: 47mm;
+        min-height: 10.5mm;
+        padding: 1.8mm 2.2mm;
+        border-radius: 3.4mm;
+        background: #ffffff;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 3mm;
+      }
+
+      .cracha-logo-top {
+        width: 23mm;
+        max-width: 23mm;
+        max-height: 10mm;
+        object-fit: contain;
+        display: block;
+      }
+
+      .cracha-logo-main {
+        width: 21mm;
+        max-width: 21mm;
+        max-height: 9mm;
+        object-fit: contain;
+        display: block;
+      }
+
+      .cracha-front-panel {
+        position: absolute;
+        left: 4mm;
+        right: 4mm;
+        top: 5mm;
+        bottom: 25mm;
+        z-index: 3;
+        background: #ffffff;
+        border-radius: 4mm;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 4.4mm 3mm 3.2mm 3mm;
+      }
+
       .cracha-photo-wrap {
-        box-shadow: none !important;
+        width: 34mm;
+        height: 34mm;
+        border-radius: 50%;
+        overflow: hidden;
+        padding: 1.2mm;
+        background: #ffffff;
+        margin-bottom: 3.2mm;
+        flex: 0 0 auto;
       }
-    }
-  </style>
-</head>
-<body>
-  ${htmlCracha}
-  <script>
-    window.onload = () => {
-      setTimeout(() => window.print(), 400);
-    };
-  </script>
-</body>
-</html>
+
+      .cracha-photo,
+      .cracha-photo-placeholder {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+        background: #e8edf8;
+      }
+
+      .cracha-photo-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #25348D;
+        font-size: 7.6mm;
+        font-weight: 800;
+      }
+
+      .cracha-front-content {
+        width: 100%;
+        text-align: center;
+      }
+
+      .cracha-nome {
+        color: #123b9c;
+        font-size: 3.55mm;
+        line-height: 1.02;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin-bottom: 1.2mm;
+        word-break: break-word;
+      }
+
+      .cracha-setor {
+        color: #79A81E;
+        font-size: 2.75mm;
+        line-height: 1.02;
+        font-weight: 900;
+        text-transform: uppercase;
+        word-break: break-word;
+        margin-bottom: 0.8mm;
+        text-align: center;
+      }
+
+      .cracha-unidade {
+        color: #25348D;
+        font-size: 2.05mm;
+        line-height: 1.08;
+        font-weight: 700;
+        text-transform: uppercase;
+        word-break: break-word;
+        text-align: center;
+      }
+
+      .cracha-verso-faixa-topo {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 22mm;
+        background-color: #ffffff;
+        background-image: ${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        z-index: 1;
+      }
+
+      .cracha-verso-header {
+        position: relative;
+        z-index: 2;
+        padding: 5mm 3.5mm 2.5mm 3.5mm;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .cracha-verso-conteudo {
+        position: absolute;
+        top: 29mm;
+        left: 4.5mm;
+        right: 4.5mm;
+        bottom: 11mm;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .cracha-verso-texto {
+        color: #123b9c;
+        font-size: 2.15mm;
+        line-height: 1.22;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .cracha-verso-telefone {
+        margin-top: 2.2mm;
+        color: #79A81E;
+        font-size: 2.95mm;
+        line-height: 1.05;
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .cracha-verso-footer {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 8mm;
+        background-color: #ffffff;
+        background-image: ${fundoCracha ? `url('${escaparHtml(fundoCracha)}')` : 'none'};
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        z-index: 2;
+      }
+
+      @media print {
+        html, body {
+          width: 54mm;
+          height: auto;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="print-page">
+      <div class="cracha-card cracha-frente">
+        <div class="cracha-frente-fundo"></div>
+
+        <div class="cracha-front-logos-wrap">
+          <div class="cracha-front-logos">
+            ${logoSecundaria ? `<img src="${escaparHtml(logoSecundaria)}" alt="Logo Sociedade Franciosi" class="cracha-logo-top">` : ''}
+            ${logoPrincipal ? `<img src="${escaparHtml(logoPrincipal)}" alt="Logo Franciosi" class="cracha-logo-main">` : ''}
+          </div>
+        </div>
+
+        <div class="cracha-front-panel">
+          <div class="cracha-photo-wrap">
+            ${
+              fotoAtualAbs
+                ? `<img src="${escaparHtml(fotoAtualAbs)}" alt="${escaparHtml(nomeCracha)}" class="cracha-photo">`
+                : `<div class="cracha-photo-placeholder">${escaparHtml(iniciais)}</div>`
+            }
+          </div>
+
+          <div class="cracha-front-content">
+            <div class="cracha-nome">${escaparHtml(nomeCracha || 'Nome do colaborador')}</div>
+            <div class="cracha-setor">${escaparHtml(setor || 'Setor')}</div>
+            <div class="cracha-unidade">${escaparHtml(unidadeTrabalho || '')}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="print-page">
+      <div class="cracha-card cracha-verso">
+        <div class="cracha-verso-faixa-topo"></div>
+
+        <div class="cracha-verso-header">
+          <div class="cracha-front-logos cracha-front-logos-verso">
+            ${logoSecundaria ? `<img src="${escaparHtml(logoSecundaria)}" alt="Logo Sociedade Franciosi" class="cracha-logo-top">` : ''}
+            ${logoPrincipal ? `<img src="${escaparHtml(logoPrincipal)}" alt="Logo Franciosi" class="cracha-logo-main">` : ''}
+          </div>
+        </div>
+
+        <div class="cracha-verso-conteudo">
+          <div class="cracha-verso-texto">${escaparHtml(textoEmergencia)}</div>
+          <div class="cracha-verso-telefone">${escaparHtml(telefoneEmergencia)}</div>
+        </div>
+
+        <div class="cracha-verso-footer"></div>
+      </div>
+    </section>
+
+    <script>
+      window.onload = () => {
+        setTimeout(() => window.print(), 300);
+      };
+    </script>
+  </body>
+  </html>
     `.trim();
   }
 
@@ -3143,7 +3427,7 @@ async function abrirModalCrachaRetrato(usuario = {}) {
           padding: 4px;
           background: #ffffff;
           box-shadow: none;
-          margin-bottom: 14px;
+          margin-bottom: 12px;
           flex: 0 0 auto;
           border: 0 !important;
           outline: none !important;
@@ -3167,7 +3451,7 @@ async function abrirModalCrachaRetrato(usuario = {}) {
           align-items:center;
           justify-content:center;
           color:#25348D;
-          font-size:32px;
+          font-size:28px;
           font-weight:800;
         }
 
@@ -3178,23 +3462,37 @@ async function abrirModalCrachaRetrato(usuario = {}) {
 
         .mini-nome {
           color:#123b9c;
-          font-size:16px;
-          line-height:1.04;
+          font-size:14px;
+          line-height:1.02;
           font-weight:900;
           text-transform:uppercase;
-          margin-bottom:8px;
+          margin-bottom:6px;
           word-break:break-word;
         }
 
         .mini-setor {
-          display:inline-block;
+          display:block;
           padding:0;
           border:0;
           background:transparent;
           color:#79A81E;
-          font-size:12px;
-          line-height:1.05;
+          font-size:10px;
+          line-height:1.02;
           font-weight:900;
+          text-transform:uppercase;
+          word-break:break-word;
+          margin-bottom:3px;
+        }
+
+        .mini-unidade {
+          display:block;
+          padding:0;
+          border:0;
+          background:transparent;
+          color:#25348D;
+          font-size:8px;
+          line-height:1.08;
+          font-weight:700;
           text-transform:uppercase;
           word-break:break-word;
         }
@@ -3224,6 +3522,37 @@ async function abrirModalCrachaRetrato(usuario = {}) {
           text-align:center;
         }
 
+        .mini-verso-conteudo {
+          position:absolute;
+          top:108px;
+          left:16px;
+          right:16px;
+          bottom:32px;
+          z-index:2;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:center;
+          text-align:center;
+        }
+
+        .mini-verso-texto {
+          color:#123b9c;
+          font-size:8px;
+          line-height:1.2;
+          font-weight:700;
+          text-align:center;
+        }
+
+        .mini-verso-telefone {
+          margin-top:8px;
+          color:#79A81E;
+          font-size:11px;
+          line-height:1.05;
+          font-weight:900;
+          text-align:center;
+        }
+
         .mini-verso-footer {
           position:absolute;
           left:0;
@@ -3235,16 +3564,6 @@ async function abrirModalCrachaRetrato(usuario = {}) {
           background-repeat:no-repeat;
           background-position:center;
           background-size:cover;
-          color:#fff;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          font-size:7px;
-          font-weight:700;
-          letter-spacing:.06em;
-          text-transform:uppercase;
-          padding:0 6px;
-          text-align:center;
           z-index:2;
         }
       </style>
@@ -3272,6 +3591,7 @@ async function abrirModalCrachaRetrato(usuario = {}) {
             <div class="mini-front-content">
               <div class="mini-nome">${escaparHtml(nomeCracha || 'Nome do colaborador')}</div>
               <div class="mini-setor">${escaparHtml(setor || 'Setor')}</div>
+              <div class="mini-unidade">${escaparHtml(unidadeTrabalho || '')}</div>
             </div>
           </div>
         </div>
@@ -3286,7 +3606,12 @@ async function abrirModalCrachaRetrato(usuario = {}) {
             </div>
           </div>
 
-          <div class="mini-verso-footer">Uso corporativo interno</div>
+          <div class="mini-verso-conteudo">
+            <div class="mini-verso-texto">${escaparHtml(textoEmergencia)}</div>
+            <div class="mini-verso-telefone">${escaparHtml(telefoneEmergencia)}</div>
+          </div>
+
+          <div class="mini-verso-footer"></div>
         </div>
       </div>
     `;
@@ -3665,9 +3990,9 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                           </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Centro de Custo **</label>
+                          <label class="form-label-sm">Centro de Custo</label>
                           <div class="flex items-stretch gap-2">
-                            <select id="guLocalTrabalho" required ${formDisabledAttr}
+                            <select id="guLocalTrabalho" ${formDisabledAttr}
                               class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
                               ${localTrabalhoOptions}
                             </select>
@@ -6591,7 +6916,6 @@ document.addEventListener('DOMContentLoaded', () => {
   aplicarCorBarraMarketingPorApiBase();
 });
 
-
 function atualizarAmbienteLabel() {
   const el = document.getElementById('ambienteLabel');
   if (!el) return;
@@ -6623,8 +6947,6 @@ function atualizarCorBotoesAgendamento() {
     botao.style.color = color;
   });
 }
-
-
 
 // ===== Gestão de Pedido =====//
 
@@ -7600,7 +7922,6 @@ async function inicializarUfCidade(cliente) {
   });
 }
 
-
 async function garantirUFsCache() {
   if (cacheUFs) return cacheUFs;
   const estados = await ibgeGetJson(`${IBGE_BASE}/estados?orderBy=nome`); // [web:805]
@@ -7759,7 +8080,6 @@ function renderEmails() {
   }
 }
 
-
 function ativarAbaEmails(nomeAba) {
   const abaRem = document.getElementById('abaRemetentes');
   const abaDest = document.getElementById('abaDestinatarios');
@@ -7793,8 +8113,6 @@ function ativarAbaEmails(nomeAba) {
   }
 
 }
-
-
 
 function mostrarEmailsMsg(msg) {
   const el = document.getElementById('emailsMsg');
@@ -7938,7 +8256,6 @@ document.addEventListener('click', async (e) => {
     return;
   }
 });
-
 
 // Modal Remetente
 function removerModalRemetente() {
@@ -8225,7 +8542,6 @@ function getApiBaseGestaoUsuarios() {
   }
 }
 
-
 function montarUrlApiGestao(path) {
   const base = getApiBaseGestaoUsuarios();
   if (!base) throw new Error('API base inválida ou não configurada.');
@@ -8314,8 +8630,6 @@ function setAbaEstoque(nome) {
     carregarEstoqueCentroCusto();
   }
 }
-
-
 
 function rowEstoqueEscritorio(item) {
 
@@ -8426,7 +8740,6 @@ function rowEstoqueEscritorio(item) {
   `;
 }
 
-
 function renderEstoqueEscritorio(items = []) {
   const tbody = document.getElementById('tbodyEstoqueEscritorio');
   if (!tbody) return;
@@ -8444,7 +8757,6 @@ function renderEstoqueEscritorio(items = []) {
 
   tbody.innerHTML = items.map(rowEstoqueEscritorio).join('');
 }
-
 
 async function carregarEstoqueEscritorio() {
   const usuario = typeof obterUsuarioLogado === 'function'
@@ -9134,168 +9446,6 @@ async function abrirModalImportacaoNfe(dados) {
       body: JSON.stringify(payload)
     });
   }
-
-  async function criarProdutoRapido(item) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const codigoResp = await apiJson(apiUrl('/api/estoque/produtos/proximo-codigo'));
-        const codigoGerado = String(codigoResp?.codigo || '').trim();
-
-        if (!codigoGerado) {
-          throw new Error('Não foi possível gerar o código do produto.');
-        }
-
-        const overlayProduto = document.createElement('div');
-        overlayProduto.id = 'produtoRapidoOverlay';
-        overlayProduto.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[130]';
-
-        const modalProduto = document.createElement('div');
-        modalProduto.id = 'produtoRapidoModal';
-        modalProduto.className = 'fixed inset-0 z-[140]';
-
-        modalProduto.innerHTML = `
-          <div class="w-full h-full overflow-auto">
-            <div class="min-h-full flex items-center justify-center p-4">
-              <div class="w-full max-w-xl rounded-2xl border border-border bg-background shadow-2xl overflow-hidden">
-                <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
-                  <div>
-                    <h3 class="text-lg font-semibold text-foreground">Novo produto</h3>
-                    <p class="form-subtitle-sm">Cadastro rápido para vincular o item da nota.</p>
-                  </div>
-
-                  <button type="button" id="btnFecharProdutoRapido"
-                    class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center">
-                    <i class="fas fa-times" aria-hidden="true"></i>
-                  </button>
-                </div>
-
-                <form id="formProdutoRapido" class="px-6 py-6 space-y-4">
-                  <div>
-                    <label class="block form-label-sm text-foreground mb-1">Código</label>
-                    <input
-                      id="produtoRapidoCodigo"
-                      type="text"
-                      class="w-full rounded-xl border border-border bg-white/80 px-3 py-2"
-                      value="${escapeHtml(codigoGerado)}"
-                      readonly
-                    />
-                  </div>
-
-                  <div>
-                    <label class="block form-label-sm text-foreground mb-1">Descrição</label>
-                    <input
-                      id="produtoRapidoDescricao"
-                      type="text"
-                      class="w-full rounded-xl border border-border bg-white/80 px-3 py-2"
-                      value="${escapeHtml(normalizarTexto(item?._descricao).toUpperCase())}"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label class="block form-label-sm text-foreground mb-1">Unidade</label>
-                    <input
-                      id="produtoRapidoUnidade"
-                      type="text"
-                      class="w-full rounded-xl border border-border bg-white/80 px-3 py-2"
-                      value="${escapeHtml(normalizarTexto(item?._unidade).toUpperCase() || 'UN')}"
-                      maxlength="10"
-                      required
-                    />
-                  </div>
-
-                  <div class="flex justify-end gap-2 pt-2">
-                    <button
-                      type="button"
-                      id="btnCancelarProdutoRapido"
-                      class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
-                      Cancelar
-                    </button>
-
-                    <button
-                      type="submit"
-                      id="btnSalvarProdutoRapido"
-                      class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
-                      Salvar produto
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        `;
-
-        function fecharModalProduto() {
-          overlayProduto.remove();
-          modalProduto.remove();
-        }
-
-        function cancelar() {
-          fecharModalProduto();
-          resolve(null);
-        }
-
-        document.body.appendChild(overlayProduto);
-        document.body.appendChild(modalProduto);
-
-        overlayProduto.addEventListener('click', cancelar);
-        modalProduto.querySelector('#btnFecharProdutoRapido')?.addEventListener('click', cancelar);
-        modalProduto.querySelector('#btnCancelarProdutoRapido')?.addEventListener('click', cancelar);
-
-        modalProduto.querySelector('#formProdutoRapido')?.addEventListener('submit', async (e) => {
-          e.preventDefault();
-
-          const btnSalvar = modalProduto.querySelector('#btnSalvarProdutoRapido');
-          const codigo = normalizarTexto(modalProduto.querySelector('#produtoRapidoCodigo')?.value).toUpperCase();
-          const descricao = normalizarTexto(modalProduto.querySelector('#produtoRapidoDescricao')?.value).toUpperCase();
-          const unidade = normalizarTexto(modalProduto.querySelector('#produtoRapidoUnidade')?.value).toUpperCase();
-
-          if (!descricao) {
-            alert('Descrição é obrigatória.');
-            return;
-          }
-
-          if (!unidade) {
-            alert('Unidade é obrigatória.');
-            return;
-          }
-
-          try {
-            btnSalvar.disabled = true;
-            btnSalvar.textContent = 'Salvando...';
-
-            const data = await apiJson(apiUrl('/api/estoque/produtos'), {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                codigo,
-                descricao,
-                unidade
-              })
-            });
-
-            fecharModalProduto();
-            resolve(data.item || null);
-          } catch (err) {
-            btnSalvar.disabled = false;
-            btnSalvar.textContent = 'Salvar produto';
-
-            if ((err.message || '').includes('Já existe produto com esse código')) {
-              alert('Esse código foi utilizado por outro usuário neste instante. Abra novamente o cadastro para gerar um novo código.');
-              fecharModalProduto();
-              resolve(null);
-              return;
-            }
-
-            reject(err);
-          }
-        });
-      } catch (err) {
-        reject(err);
-      }
-    });
-  }
-
 
   let produtosSistema = [];
   let fornecedor = dados?._validacao?.fornecedor || null;
@@ -10538,6 +10688,167 @@ async function abrirModalImportacaoNfe(dados) {
   vincularEventosItens();
 }
 
+async function criarProdutoRapido(item) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const codigoResp = await apiJson(apiUrl('/api/estoque/produtos/proximo-codigo'));
+      const codigoGerado = String(codigoResp?.codigo || '').trim();
+
+      if (!codigoGerado) {
+        throw new Error('Não foi possível gerar o código do produto.');
+      }
+
+      const overlayProduto = document.createElement('div');
+      overlayProduto.id = 'produtoRapidoOverlay';
+      overlayProduto.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[130]';
+
+      const modalProduto = document.createElement('div');
+      modalProduto.id = 'produtoRapidoModal';
+      modalProduto.className = 'fixed inset-0 z-[140]';
+
+      modalProduto.innerHTML = `
+        <div class="w-full h-full overflow-auto">
+          <div class="min-h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-xl rounded-2xl border border-border bg-background shadow-2xl overflow-hidden">
+              <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-foreground">Novo produto</h3>
+                  <p class="form-subtitle-sm">Cadastro rápido para vincular o item da nota.</p>
+                </div>
+
+                <button type="button" id="btnFecharProdutoRapido"
+                  class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center">
+                  <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+              </div>
+
+              <form id="formProdutoRapido" class="px-6 py-6 space-y-4">
+                <div>
+                  <label class="block form-label-sm text-foreground mb-1">Código</label>
+                  <input
+                    id="produtoRapidoCodigo"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/80 px-3 py-2"
+                    value="${escapeHtml(codigoGerado)}"
+                    readonly
+                  />
+                </div>
+
+                <div>
+                  <label class="block form-label-sm text-foreground mb-1">Descrição</label>
+                  <input
+                    id="produtoRapidoDescricao"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/80 px-3 py-2"
+                    value="${escapeHtml(normalizarTexto(item?._descricao).toUpperCase())}"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label class="block form-label-sm text-foreground mb-1">Unidade</label>
+                  <input
+                    id="produtoRapidoUnidade"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/80 px-3 py-2"
+                    value="${escapeHtml(normalizarTexto(item?._unidade).toUpperCase() || 'UN')}"
+                    maxlength="10"
+                    required
+                  />
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    id="btnCancelarProdutoRapido"
+                    class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
+                    Cancelar
+                  </button>
+
+                  <button
+                    type="submit"
+                    id="btnSalvarProdutoRapido"
+                    class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
+                    Salvar produto
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      `;
+
+      function fecharModalProduto() {
+        overlayProduto.remove();
+        modalProduto.remove();
+      }
+
+      function cancelar() {
+        fecharModalProduto();
+        resolve(null);
+      }
+
+      document.body.appendChild(overlayProduto);
+      document.body.appendChild(modalProduto);
+
+      overlayProduto.addEventListener('click', cancelar);
+      modalProduto.querySelector('#btnFecharProdutoRapido')?.addEventListener('click', cancelar);
+      modalProduto.querySelector('#btnCancelarProdutoRapido')?.addEventListener('click', cancelar);
+
+      modalProduto.querySelector('#formProdutoRapido')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const btnSalvar = modalProduto.querySelector('#btnSalvarProdutoRapido');
+        const codigo = normalizarTexto(modalProduto.querySelector('#produtoRapidoCodigo')?.value).toUpperCase();
+        const descricao = normalizarTexto(modalProduto.querySelector('#produtoRapidoDescricao')?.value).toUpperCase();
+        const unidade = normalizarTexto(modalProduto.querySelector('#produtoRapidoUnidade')?.value).toUpperCase();
+
+        if (!descricao) {
+          alert('Descrição é obrigatória.');
+          return;
+        }
+
+        if (!unidade) {
+          alert('Unidade é obrigatória.');
+          return;
+        }
+
+        try {
+          btnSalvar.disabled = true;
+          btnSalvar.textContent = 'Salvando...';
+
+          const data = await apiJson(apiUrl('/api/estoque/produtos'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              codigo,
+              descricao,
+              unidade
+            })
+          });
+
+          fecharModalProduto();
+          resolve(data.item || null);
+        } catch (err) {
+          btnSalvar.disabled = false;
+          btnSalvar.textContent = 'Salvar produto';
+
+          if ((err.message || '').includes('Já existe produto com esse código')) {
+            alert('Esse código foi utilizado por outro usuário neste instante. Abra novamente o cadastro para gerar um novo código.');
+            fecharModalProduto();
+            resolve(null);
+            return;
+          }
+
+          reject(err);
+        }
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 async function adicionarAmarracaoItem(payload) {
   return apiJson(apiUrl('/api/estoque/produtos-amarracao/adicionar'), {
     method: 'POST',
@@ -10641,8 +10952,6 @@ document.addEventListener('change', async (e) => {
   await processarImportacaoDocumentoFiscal(file);
   input.value = '';
 });
-
-
 
 function getPdfJsLibSafe() {
   return (
@@ -11469,6 +11778,430 @@ function parseNFComXml(xmlDoc, xmlText) {
     textoOriginal: xmlText
   };
 }
+
+function abrirModalConfirmacaoLancamentoManual(dados) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[150]';
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-[160]';
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function fechar(retorno = false) {
+      overlay.remove();
+      modal.remove();
+      resolve(retorno);
+    }
+
+    modal.innerHTML = `
+      <div class="w-full h-full overflow-auto">
+        <div class="min-h-full flex items-center justify-center p-4">
+          <div class="w-full max-w-xl rounded-2xl border border-border bg-background shadow-2xl overflow-hidden">
+            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-semibold text-foreground">Confirmar lançamento manual</h3>
+                <p class="form-subtitle-sm">Revise os dados antes de salvar no estoque.</p>
+              </div>
+
+              <button
+                type="button"
+                id="btnFecharConfirmacaoLancamentoManual"
+                class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+              >
+                <i class="fas fa-times" aria-hidden="true"></i>
+              </button>
+            </div>
+
+            <div class="px-6 py-6 space-y-4">
+              <div class="rounded-2xl border border-border bg-white/60 p-4 space-y-3">
+                <div class="text-xs uppercase tracking-wide text-muted-foreground">Resumo do lançamento</div>
+                <div class="text-sm text-foreground"><strong>Código:</strong> ${escapeHtml(dados.codprodutosistema)}</div>
+                <div class="text-sm text-foreground"><strong>Descrição:</strong> ${escapeHtml(dados.descricaoprodutosistema)}</div>
+                <div class="text-sm text-foreground"><strong>Unidade:</strong> ${escapeHtml(dados.unidade)}</div>
+                <div class="text-sm text-foreground"><strong>Quantidade:</strong> ${escapeHtml(formatarNumero(dados.quantidade, 4))}</div>
+                <div class="text-sm text-foreground"><strong>Origem:</strong> MANUAL</div>
+              </div>
+
+              <div class="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  id="btnCancelarConfirmacaoLancamentoManual"
+                  class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  id="btnConfirmarLancamentoManual"
+                  class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all"
+                >
+                  Confirmar e salvar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
+
+    overlay.addEventListener('click', () => fechar(false));
+    modal.querySelector('#btnFecharConfirmacaoLancamentoManual')?.addEventListener('click', () => fechar(false));
+    modal.querySelector('#btnCancelarConfirmacaoLancamentoManual')?.addEventListener('click', () => fechar(false));
+    modal.querySelector('#btnConfirmarLancamentoManual')?.addEventListener('click', () => fechar(true));
+  });
+}
+
+function abrirModalLancamentoManualEstoque() {
+  return new Promise(async (resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[130]';
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-[140]';
+
+    function fechar(retorno = null) {
+      overlay.remove();
+      modal.remove();
+      resolve(retorno);
+    }
+
+    let produtosSistema = [];
+    try {
+      produtosSistema = await carregarProdutosSistema();
+    } catch (error) {
+      console.error('[Lançamento Manual] Erro ao carregar produtos:', error);
+      alert(error?.message || 'Erro ao carregar produtos do sistema.');
+      return resolve(null);
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function gerarOpcoesProdutos(produtos = produtosSistema) {
+      return produtos.map(prod => {
+        const id = String(prod.id ?? prod.ID ?? '');
+        const codigo = String(prod.codigo ?? prod.CODIGO ?? '');
+        const descricao = String(prod.descricao ?? prod.DESCRICAO ?? '');
+        const unidade = String(prod.unidade ?? prod.UNIDADE ?? '');
+
+        return `
+          <option value="${escapeHtml(id)}"
+                  data-codigo="${escapeHtml(codigo)}"
+                  data-descricao="${escapeHtml(descricao)}"
+                  data-unidade="${escapeHtml(unidade)}">
+            ${escapeHtml(codigo)} - ${escapeHtml(descricao)}
+          </option>
+        `;
+      }).join('');
+    }
+
+    modal.innerHTML = `
+      <div class="w-full h-full overflow-auto">
+        <div class="min-h-full flex items-center justify-center p-4">
+          <div class="w-full max-w-2xl rounded-2xl border border-border bg-background shadow-2xl overflow-hidden">
+            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-semibold text-foreground">Lançamento manual de item</h3>
+                <p class="form-subtitle-sm">Informe os dados mínimos para entrada manual no estoque.</p>
+              </div>
+
+              <button
+                type="button"
+                id="btnFecharModalLancamentoManual"
+                class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+              >
+                <i class="fas fa-times" aria-hidden="true"></i>
+              </button>
+            </div>
+
+            <form id="formLancamentoManualEstoque" class="px-6 py-6 space-y-4">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <label class="block form-label-sm text-foreground">Produto sistema *</label>
+
+                  <button
+                    type="button"
+                    id="btnNovoProdutoRapidoLancamentoManual"
+                    title="Novo produto"
+                    class="w-9 h-9 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 transition-all flex items-center justify-center shrink-0"
+                  >
+                    <i class="fas fa-box-open" aria-hidden="true"></i>
+                  </button>
+                </div>
+
+                <select
+                  id="manualProdutoSistema"
+                  class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
+                  required
+                >
+                  <option value="">Selecione...</option>
+                  ${gerarOpcoesProdutos()}
+                </select>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block form-label-sm text-foreground mb-2">Unidade de medida *</label>
+                  <input
+                    id="manualUnidadeMedida"
+                    type="text"
+                    maxlength="10"
+                    class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
+                    placeholder="Ex. UN"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label class="block form-label-sm text-foreground mb-2">Quantidade *</label>
+                  <input
+                    id="manualQuantidade"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
+                    placeholder="Ex. 1,0000"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div id="resumoLancamentoManual" class="rounded-2xl border border-border bg-white/60 p-4 space-y-2">
+                <div class="text-xs uppercase tracking-wide text-muted-foreground">Resumo</div>
+                <div class="form-subtitle-sm">Selecione um produto para visualizar os dados.</div>
+              </div>
+
+              <div class="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  id="btnCancelarLancamentoManual"
+                  class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  id="btnSalvarLancamentoManual"
+                  class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all"
+                >
+                  Salvar lançamento
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
+
+    const selectProduto = modal.querySelector('#manualProdutoSistema');
+    const inputUnidade = modal.querySelector('#manualUnidadeMedida');
+    const resumo = modal.querySelector('#resumoLancamentoManual');
+    const btnNovoProdutoRapido = modal.querySelector('#btnNovoProdutoRapidoLancamentoManual');
+
+    function atualizarSelectProdutos(produtoSelecionadoId = '') {
+      if (!selectProduto) return;
+
+      selectProduto.innerHTML = `
+        <option value="">Selecione...</option>
+        ${gerarOpcoesProdutos(produtosSistema)}
+      `;
+
+      if (produtoSelecionadoId) {
+        selectProduto.value = String(produtoSelecionadoId);
+      }
+    }
+
+    function atualizarResumo() {
+      const option = selectProduto?.selectedOptions?.[0];
+      const codigo = option?.dataset?.codigo || '';
+      const descricao = option?.dataset?.descricao || '';
+      const unidade = option?.dataset?.unidade || '';
+
+      if (inputUnidade && unidade && !inputUnidade.value.trim()) {
+        inputUnidade.value = unidade;
+      }
+
+      if (!selectProduto?.value) {
+        resumo.innerHTML = `
+          <div class="text-xs uppercase tracking-wide text-muted-foreground">Resumo</div>
+          <div class="form-subtitle-sm">Selecione um produto para visualizar os dados.</div>
+        `;
+        return;
+      }
+
+      resumo.innerHTML = `
+        <div class="text-xs uppercase tracking-wide text-muted-foreground">Resumo</div>
+        <div class="text-sm text-foreground"><strong>Código:</strong> ${escapeHtml(codigo)}</div>
+        <div class="text-sm text-foreground"><strong>Descrição:</strong> ${escapeHtml(descricao)}</div>
+        <div class="text-sm text-foreground"><strong>Unidade padrão:</strong> ${escapeHtml(unidade)}</div>
+      `;
+    }
+
+    overlay.addEventListener('click', () => fechar(null));
+    modal.querySelector('#btnFecharModalLancamentoManual')?.addEventListener('click', () => fechar(null));
+    modal.querySelector('#btnCancelarLancamentoManual')?.addEventListener('click', () => fechar(null));
+    selectProduto?.addEventListener('change', atualizarResumo);
+
+    btnNovoProdutoRapido?.addEventListener('click', async () => {
+      try {
+        btnNovoProdutoRapido.disabled = true;
+
+        const itemBase = {
+          _descricao: '',
+          _unidade: inputUnidade?.value || 'UN'
+        };
+
+
+        const novoProduto = await criarProdutoRapido(itemBase);
+        if (!novoProduto) return;
+
+
+        produtosSistema = await carregarProdutosSistema();
+
+        const novoId = String(novoProduto?.id ?? novoProduto?.ID ?? '');
+        const novaUnidade = String(novoProduto?.unidade ?? novoProduto?.UNIDADE ?? '');
+
+        atualizarSelectProdutos(novoId);
+
+        if (inputUnidade && novaUnidade) {
+          inputUnidade.value = novaUnidade;
+        }
+
+        atualizarResumo();
+      } catch (error) {
+        console.error('[Lançamento Manual] Erro ao cadastrar produto rápido:', error);
+        alert(error?.message || 'Erro ao cadastrar produto rápido.');
+      } finally {
+        btnNovoProdutoRapido.disabled = false;
+      }
+    });
+
+    modal.querySelector('#formLancamentoManualEstoque')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btnSalvar = modal.querySelector('#btnSalvarLancamentoManual');
+      const option = selectProduto?.selectedOptions?.[0];
+
+      const idproduto = String(selectProduto?.value || '').trim();
+      const unidade = String(inputUnidade?.value || '').trim().toUpperCase();
+      const quantidade = String(modal.querySelector('#manualQuantidade')?.value || '').trim();
+
+      if (!idproduto) {
+        alert('Selecione o produto do sistema.');
+        return;
+      }
+
+      if (!unidade) {
+        alert('Informe a unidade de medida.');
+        return;
+      }
+
+      if (!quantidade || parseDecimalBr(quantidade) <= 0) {
+        alert('Informe uma quantidade válida.');
+        return;
+      }
+
+      try {
+        btnSalvar.disabled = true;
+        btnSalvar.textContent = 'Salvando...';
+
+        const dadosLancamento = {
+          idproduto: Number(idproduto),
+          codprodutosistema: String(option?.dataset?.codigo || '').trim(),
+          descricaoprodutosistema: String(option?.dataset?.descricao || '').trim(),
+          unidade,
+          quantidade: parseDecimalBr(quantidade)
+        };
+
+
+        fechar(dadosLancamento);
+      } catch (error) {
+        console.error('[Lançamento Manual] Erro ao preparar lançamento manual:', error);
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = 'Salvar lançamento';
+        alert(error?.message || 'Erro ao preparar lançamento manual.');
+      }
+    });
+
+    atualizarResumo();
+  });
+}
+
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('#btnLancamentoManualEstoque');
+  if (!btn) return;
+
+  try {
+    const dados = await abrirModalLancamentoManualEstoque();
+    if (!dados) return;
+
+
+    const payload = {
+      usuarioRegistro: obterUsuarioLogado(),
+      origem: 'MANUAL',
+      itens: [
+        {
+          idproduto: dados.idproduto,
+          codprodutosistema: dados.codprodutosistema,
+          descricaoprodutosistema: dados.descricaoprodutosistema,
+          unidade: dados.unidade,
+          quantidade: dados.quantidade
+        }
+      ]
+    };
+
+    const url = apiUrl('/api/estoque/importacao-manual');
+
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+
+    const result = await response.json();
+
+
+    if (!response.ok || !result?.success) {
+      throw new Error(result?.message || 'Erro ao salvar lançamento manual.');
+    }
+
+    alert('Lançamento manual realizado com sucesso.');
+
+    if (typeof carregarControleEstoque === 'function') {
+      await carregarControleEstoque();
+    }
+
+    if (typeof carregarEstoque === 'function') {
+      await carregarEstoque();
+    }
+  } catch (error) {
+    console.error('[Lançamento Manual] Erro ao realizar lançamento manual:', error);
+    alert(error?.message || 'Erro ao realizar lançamento manual.');
+  }
+});
 
 // Editar Entrada de Notas 
 
@@ -13090,7 +13823,6 @@ function renderizarEstoqueCentroCusto(items = []) {
 
 }
 
-
 function vincularEventosLogsTransferencia() {
   document.querySelectorAll('.btnLogsTransferencia').forEach(btn => {
     if (btn.dataset.eventoVinculado === '1') return;
@@ -13881,6 +14613,7 @@ const PERFIL_FIELDS = [
   'excluir_agendamento_sala_reuniao',
   'reservar_carro',
   'aprovar_reserva_carro',
+  'aprovar_reserva_carro_gestor',
   'excluir_reserva_carro',
   'gestao_usuarios',
   'gestao_usuarios_cadastro',
@@ -14115,7 +14848,8 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
                     <label class="flex items-center gap-2"><input type="checkbox" id="agendar_sala_reuniao"> <span>Agendar sala de reunião</span></label>
                     <label class="flex items-center gap-2"><input type="checkbox" id="excluir_agendamento_sala_reuniao"> <span>Excluir agendamento de sala de reunião</span></label>
                     <label class="flex items-center gap-2"><input type="checkbox" id="reservar_carro"> <span>Reservar carro</span></label>
-                    <label class="flex items-center gap-2"><input type="checkbox" id="aprovar_reserva_carro"> <span>Aprovar reserva de carro</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="aprovar_reserva_carro"> <span>Aprovar reserva de carro (Frota)</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="aprovar_reserva_carro_gestor"> <span>Aprovar reserva de carro (Gestor)</span></label>
                     <label class="flex items-center gap-2"><input type="checkbox" id="excluir_reserva_carro"> <span>Excluir reserva de carro</span></label>
                   </div>
                 </div>
@@ -14420,12 +15154,138 @@ document.addEventListener('DOMContentLoaded', function() {
 
 let agendamentosCache = [];
 let filtroStatusAgendamento = 'TODOS';
+let filtroBuscaAgendamento = '';
+
+function normalizarTextoBusca(value) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+}
+
+function montarTextoPesquisaAgendamento(item) {
+  const campos = [
+    item?.id,
+    item?.usuariosolicitante,
+    item?.usuarioSolicitante,
+    item?.tipoveiculo,
+    item?.tipoVeiculo,
+    item?.datanecessaria,
+    item?.dataNecessaria,
+    formatarDataHoraBR(item?.datanecessaria ?? item?.dataNecessaria ?? ''),
+    item?.previsaodevolucao,
+    item?.previsaoDevolucao,
+    formatarDataHoraBR(item?.previsaodevolucao ?? item?.previsaoDevolucao ?? ''),
+    item?.destinos,
+    item?.statussolicitacao,
+    item?.statusSolicitacao,
+    item?.urgencia,
+    item?.observacoes
+  ];
+
+  return normalizarTextoBusca(campos.filter(v => v !== null && v !== undefined).join(' '));
+}
+
+function filtrarAgendamentosPorBusca(items, termo) {
+  if (!Array.isArray(items)) return [];
+  const busca = normalizarTextoBusca(termo);
+  if (!busca) return [...items];
+
+  return items.filter(item => montarTextoPesquisaAgendamento(item).includes(busca));
+}
+
+function atualizarEstadoBuscaAgendamentos() {
+  const input = document.getElementById('inputFiltroBuscaAgendamentos');
+  const btnLimpar = document.getElementById('btnLimparBuscaAgendamentos');
+
+  if (input && input.value !== filtroBuscaAgendamento) {
+    input.value = filtroBuscaAgendamento;
+  }
+
+  if (btnLimpar) {
+    btnLimpar.classList.toggle('hidden', !String(filtroBuscaAgendamento || '').trim());
+  }
+}
+
+function bindBuscaAgendamentos() {
+  const input = document.getElementById('inputFiltroBuscaAgendamentos');
+  const btnLimpar = document.getElementById('btnLimparBuscaAgendamentos');
+
+  if (input && input.dataset.bindBuscaAgendamento !== '1') {
+    input.dataset.bindBuscaAgendamento = '1';
+
+    input.addEventListener('input', () => {
+      filtroBuscaAgendamento = input.value || '';
+      atualizarEstadoBuscaAgendamentos();
+      renderTabelaAgendamentos();
+    });
+  }
+
+  if (btnLimpar && btnLimpar.dataset.bindBuscaAgendamento !== '1') {
+    btnLimpar.dataset.bindBuscaAgendamento = '1';
+
+    btnLimpar.addEventListener('click', () => {
+      filtroBuscaAgendamento = '';
+      atualizarEstadoBuscaAgendamentos();
+      renderTabelaAgendamentos();
+      input?.focus();
+    });
+  }
+
+  atualizarEstadoBuscaAgendamentos();
+}
 
 
-function usuarioEhCriadorReserva(item) {
+async function usuarioEhCriadorReserva(item) {
   const usuarioLogado = String(obterUsuarioLogado?.() ?? '').trim().toUpperCase();
-  const usuarioReserva = String(item?.usuariosolicitante ?? item?.usuario_solicitante ?? '').trim().toUpperCase();
-  return !!usuarioLogado && !!usuarioReserva && usuarioLogado === usuarioReserva;
+  const usuarioReserva = String(
+    item?.usuariosolicitante ??
+    item?.usuario_solicitante ??
+    item?.nome_colaborador ??
+    item?.nomecolaborador ??
+    ''
+  ).trim().toUpperCase();
+
+  if (!usuarioLogado || !usuarioReserva) return false;
+
+  const reservaFormulario =
+    usuarioReserva.includes('FORMULÁRIO') ||
+    usuarioReserva.includes('FORMULARIO');
+
+  if (!reservaFormulario) {
+    return usuarioLogado === usuarioReserva;
+  }
+
+  try {
+    const usuarioId = Number(obterUsuarioIdLogado?.() ?? obterUsuarioIdSessao?.() ?? 0);
+    const status = String(
+      item?.status_solicitacao ??
+      item?.statussolicitacao ??
+      'PENDENTE'
+    ).trim().toUpperCase();
+
+    if (!usuarioId) return false;
+
+    const APIBASE = obterApiBase?.();
+    if (!APIBASE) return false;
+
+    const resp = await fetch(
+      `${APIBASE}/api/permissoes/aprovar-reserva-carro/${encodeURIComponent(usuarioId)}/${encodeURIComponent(status)}`,
+      { method: 'GET' }
+    );
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json?.success) {
+      return false;
+    }
+
+    return Number(json?.item?.permissaovalida) === 1;
+  } catch (err) {
+    console.error('Erro ao validar usuário da reserva formulário:', err);
+    return false;
+  }
 }
 
 function usuarioPodeAprovarReservaCarro() {
@@ -14457,7 +15317,7 @@ function normalizarStatusAgendamento(status) {
 function ordemStatusAgendamento(status) {
   const s = normalizarStatusAgendamento(status);
 
-  if (s === 'PENDENTE') return 1;
+  if (String(s).includes('PENDENTE')) return 1;
   if (['AGUARDANDO_CONFIRMACAO', 'AGUARDANDO CONFIRMACAO', 'AGUARDANDO CONFIRMAÇÃO'].includes(s)) return 2;
   if (s === 'APROVADA') return 3;
   if (['RECUSADA', 'CANCELADA'].includes(s)) return 4;
@@ -14467,25 +15327,34 @@ function ordemStatusAgendamento(status) {
 }
 
 function filtrarAgendamentosPorStatus(items, filtro) {
+
   if (!Array.isArray(items)) return [];
   if (!filtro || filtro === 'TODOS') return [...items];
 
   return items.filter(item => {
-    const s = normalizarStatusAgendamento(item?.status_solicitacao);
+    const s = String(normalizarStatusAgendamento(item?.status_solicitacao) || '').toUpperCase();
+
+    if (filtro === 'PENDENTE') {
+      return s.includes('PENDENTE');
+    }
 
     if (filtro === 'AGUARDANDO_CONFIRMACAO') {
-      return ['AGUARDANDO_CONFIRMACAO', 'AGUARDANDO CONFIRMACAO', 'AGUARDANDO CONFIRMAÇÃO'].includes(s);
+      return [
+        'AGUARDANDO_CONFIRMACAO',
+        'AGUARDANDO CONFIRMACAO',
+        'AGUARDANDO CONFIRMAÇÃO'
+      ].includes(s);
     }
 
     if (filtro === 'RECUSADA') {
-      return ['RECUSADA', 'CANCELADA'].includes(s);
+      return ['RECUSADA', 'CANCELADA'].some(x => s.includes(x));
     }
 
     if (filtro === 'DEVOLVIDA') {
-      return ['DEVOLVIDA', 'DEVOLVIDO', 'CONCLUIDA', 'CONCLUÍDA'].includes(s);
+      return ['DEVOLVIDA', 'DEVOLVIDO', 'CONCLUIDA', 'CONCLUÍDA'].some(x => s.includes(x));
     }
 
-    return s === filtro;
+    return s === String(filtro).toUpperCase();
   });
 }
 
@@ -14587,8 +15456,8 @@ function abrirMenuAcoesAgendamentoPortal(idReserva, htmlAcoes, botaoId) {
   botao?.setAttribute('aria-expanded', 'true');
 }
 
-function toggleMenuAcoesAgendamentoPortal(idReserva, botaoId, htmlAcoesEscapado) {
-  const htmlAcoes = decodeURIComponent(htmlAcoesEscapado || '');
+function toggleMenuAcoesAgendamentoPortal(idReserva, botaoId) {
+  const htmlAcoes = menusAcoesAgendamentoCache[String(idReserva)] || '';
   abrirMenuAcoesAgendamentoPortal(idReserva, htmlAcoes, botaoId);
 }
 
@@ -14604,18 +15473,22 @@ document.addEventListener('click', (event) => {
 window.addEventListener('resize', removerMenuAcoesAgendamentoPortal);
 window.addEventListener('scroll', removerMenuAcoesAgendamentoPortal, true);
 
+const menusAcoesAgendamentoCache = {};
+
+
 function renderTabelaAgendamentos() {
   const tbody = document.getElementById('tbodyMeusAgendamentos');
   if (!tbody) return;
 
   removerMenuAcoesAgendamentoPortal();
 
-  const itemsFiltrados = filtrarAgendamentosPorStatus(agendamentosCache, filtroStatusAgendamento);
+  const itemsPorStatus = filtrarAgendamentosPorStatus(agendamentosCache, filtroStatusAgendamento);
+  const itemsFiltrados = filtrarAgendamentosPorBusca(itemsPorStatus, filtroBuscaAgendamento);
 
   if (!itemsFiltrados.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" class="px-4 py-6 form-subtitle-sm text-center">
+        <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
           Nenhum agendamento encontrado para o filtro selecionado.
         </td>
       </tr>
@@ -14623,9 +15496,13 @@ function renderTabelaAgendamentos() {
     return;
   }
 
+  Object.keys(menusAcoesAgendamentoCache).forEach(k => delete menusAcoesAgendamentoCache[k]);
+
   tbody.innerHTML = itemsFiltrados.map(item => {
     const id = Number(item.id) || 0;
     const podeEditar = podeEditarReserva(item);
+    const statusReserva = String(item?.status_solicitacao || item?.statussolicitacao || '').trim();
+    const statusReservaJs = JSON.stringify(statusReserva);
     const podeAprovarRecusar = podeAprovarOuRecusarReserva(item);
     const podeExcluirItem = podeExcluirReserva(item);
     const podeSolicitarDevolucao = podeSolicitarDevolucaoReserva(item);
@@ -14653,7 +15530,7 @@ function renderTabelaAgendamentos() {
       podeAprovarRecusar ? `
         <button
           type="button"
-          onclick="removerMenuAcoesAgendamentoPortal(); acaoAprovarReservaCarro(${id});"
+          onclick="removerMenuAcoesAgendamentoPortal(); acaoAprovarReservaCarroMenu(${id});"
           class="w-full px-4 py-3 text-left text-sm hover:bg-green-50 text-green-700 transition-all flex items-center gap-3">
           <i class="fas fa-check w-4"></i>
           <span>Aprovar reserva</span>
@@ -14662,7 +15539,7 @@ function renderTabelaAgendamentos() {
       podeAprovarRecusar ? `
         <button
           type="button"
-          onclick="removerMenuAcoesAgendamentoPortal(); acaoRecusarReservaCarro(${id});"
+          onclick="removerMenuAcoesAgendamentoPortal(); acaoRecusarReservaCarroMenu(${id});"
           class="w-full px-4 py-3 text-left text-sm hover:bg-amber-50 text-amber-700 transition-all flex items-center gap-3">
           <i class="fas fa-ban w-4"></i>
           <span>Recusar reserva</span>
@@ -14680,42 +15557,38 @@ function renderTabelaAgendamentos() {
       podeSolicitarDevolucao ? `
         <button
           type="button"
-          onclick="removerMenuAcoesAgendamentoPortal(); acaoSolicitarDevolucaoReservaCarro(${id})"
-          class="w-full px-4 py-3 text-left text-sm hover:bg-indigo-50 text-indigo-700 transition-all flex items-center gap-3"
-        >
+          onclick="removerMenuAcoesAgendamentoPortal(); acaoSolicitarDevolucaoReservaCarro(${id});"
+          class="w-full px-4 py-3 text-left text-sm hover:bg-indigo-50 text-indigo-700 transition-all flex items-center gap-3">
           <i class="fas fa-undo w-4"></i>
           <span>Fazer devolução</span>
         </button>
       ` : '',
-
       podeConfirmarDevolucao ? `
         <button
           type="button"
-          onclick="removerMenuAcoesAgendamentoPortal(); acaoConfirmarDevolucaoReservaCarro(${id})"
-          class="w-full px-4 py-3 text-left text-sm hover:bg-emerald-50 text-emerald-700 transition-all flex items-center gap-3"
-        >
+          onclick="removerMenuAcoesAgendamentoPortal(); acaoConfirmarDevolucaoReservaCarroMenu(${id});"
+          class="w-full px-4 py-3 text-left text-sm hover:bg-emerald-50 text-emerald-700 transition-all flex items-center gap-3">
           <i class="fas fa-clipboard-check w-4"></i>
           <span>Confirmar devolução</span>
         </button>
       ` : ''
-      
     ].filter(Boolean).join('');
 
-    const botaoId = `btnMenuAcoesAgendamento-${id}`;
-    const htmlAcoesEscapado = encodeURIComponent(htmlAcoes);
+    menusAcoesAgendamentoCache[String(id)] = htmlAcoes;
 
+    const botaoId = `btnMenuAcoesAgendamento-${id}`;
 
     return `
       <tr class="border-t border-border/70">
         <td class="px-4 py-3 font-semibold">#${id || '-'}</td>
-        <td class="px-4 py-3">${escapeHtml(item.usuario_solicitante || '-')}</td>
-        <td class="px-4 py-3">${escapeHtml(item.tipo_veiculo || '-')}</td>
-        <td class="px-4 py-3">${escapeHtml(formatarDataHoraBR(item.data_necessaria))}</td>
-        <td class="px-4 py-3">${escapeHtml(formatarDataHoraBR(item.previsao_devolucao))}</td>
+        <td class="px-4 py-3">${escapeHtml(item.usuario_solicitante || item.usuariosolicitante || '-')}</td>
+        <td class="px-4 py-3">${escapeHtml(item.tipo_veiculo || item.tipoveiculo || '-')}</td>
+        <td class="px-4 py-3">${escapeHtml(formatarDataHoraBR(item.data_necessaria || item.datanecessaria))}</td>
+        <td class="px-4 py-3">${escapeHtml(formatarDataHoraBR(item.previsao_devolucao || item.previsaodevolucao))}</td>
         <td class="px-4 py-3">${escapeHtml(item.destinos || '-')}</td>
         <td class="px-4 py-3">
-          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${classeStatusAgendamento(item.status_solicitacao)}">
-            ${escapeHtml(item.status_solicitacao || 'PENDENTE')}
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${classeStatusAgendamento(item.status_solicitacao || item.statussolicitacao)}">
+            ${escapeHtml(item.status_solicitacao || item.statussolicitacao || 'PENDENTE')}
           </span>
         </td>
         <td class="px-4 py-3">
@@ -14723,7 +15596,7 @@ function renderTabelaAgendamentos() {
             <button
               id="${botaoId}"
               type="button"
-              onclick="toggleMenuAcoesAgendamentoPortal(${id}, '${botaoId}', '${htmlAcoesEscapado}')"
+              onclick="toggleMenuAcoesAgendamentoPortal(${id}, '${botaoId}')"
               class="btn-menu-acoes-agendamento w-10 h-10 rounded-xl border border-border bg-white/70 text-foreground hover:bg-white transition-all flex items-center justify-center"
               title="Ações"
               aria-label="Abrir ações"
@@ -14743,6 +15616,7 @@ async function solicitarDevolucaoReservaCarro(idReserva, payload) {
 
   const usuario = obterUsuarioLogado?.();
   if (!usuario) throw new Error('Usuário logado não identificado.');
+
 
   const resp = await fetch(`${APIBASE}/api/reservas-carro/${encodeURIComponent(idReserva)}/devolucao`, {
     method: 'POST',
@@ -15439,7 +16313,7 @@ async function confirmarDevolucaoReservaCarro(idReserva) {
   return json;
 }
 
-async function acaoConfirmarDevolucaoReservaCarro(idReserva) {
+async function acaoConfirmarDevolucaoReservaCarro(idReserva, statusRecebido = '') {
   try {
     const APIBASE = obterApiBase();
     const usuarioId = sessionStorage.getItem('id');
@@ -15449,7 +16323,17 @@ async function acaoConfirmarDevolucaoReservaCarro(idReserva) {
       return;
     }
 
-    const resp = await fetch(`${APIBASE}/api/permissoes/aprovar-reserva-carro/${usuarioId}`);
+    const statusAtual = String(statusRecebido || '').trim().toUpperCase();
+
+    if (!statusAtual) {
+      alert('Status da reserva não informado.');
+      return;
+    }
+
+    const resp = await fetch(
+      `${APIBASE}/api/permissoes/aprovar-reserva-carro/${usuarioId}/${encodeURIComponent(statusAtual)}`
+    );
+
     const data = await resp.json();
 
     if (!resp.ok || !data?.success) {
@@ -15458,11 +16342,22 @@ async function acaoConfirmarDevolucaoReservaCarro(idReserva) {
     }
 
     if (Number(data?.item?.aprovarreservacarro || 0) !== 1) {
-      alert('Você não tem permissão para confirmar devoluções de reservas de carro.');
+      if (statusAtual === 'DEVOLUCAO_SOLICITADA') {
+        alert('Você não tem permissão para confirmar devoluções solicitadas.');
+      } else if (statusAtual === 'AGUARDANDO_DEVOLUCAO') {
+        alert('Você não tem permissão para confirmar devoluções nesta etapa.');
+      } else {
+        alert('Você não tem permissão para confirmar a devolução desta reserva.');
+      }
       return;
     }
 
-    await abrirModalConfirmacaoDevolucaoReservaCarro(idReserva);
+    if (statusAtual === 'AGUARDANDO_CONFIRMACAO') {
+      await abrirModalConfirmacaoDevolucaoReservaCarro(idReserva);
+      return;
+    }
+
+    alert('Esta reserva não está disponível para confirmação de devolução.');
   } catch (err) {
     alert(err?.message || 'Erro ao validar permissão.');
   }
@@ -15719,7 +16614,9 @@ async function abrirModalConfirmacaoDevolucaoReservaCarro(idReserva) {
 
 function atualizarCardsAgendamentos(items) {
   const total = items.length;
-  const pendente = items.filter(x => normalizarStatusAgendamento(x?.status_solicitacao) === 'PENDENTE').length;
+  const pendente = items.filter(x =>
+    normalizarStatusAgendamento(x?.status_solicitacao).includes('PENDENTE')
+  ).length;
   const aguardandoConfirmacao = items.filter(x =>
     ['AGUARDANDO_CONFIRMACAO', 'AGUARDANDO CONFIRMACAO', 'AGUARDANDO CONFIRMAÇÃO'].includes(normalizarStatusAgendamento(x?.status_solicitacao))
   ).length;
@@ -15843,12 +16740,12 @@ function podeEditarReserva(item) {
 
   const ehCriador = !!usuarioLogado && !!usuarioReserva && usuarioLogado === usuarioReserva;
 
-  return status === 'PENDENTE' && ehCriador;
+  return String(status || '').includes('PENDENTE') && ehCriador;
 }
 
 function podeAprovarOuRecusarReserva(item) {
   const status = String(item?.status_solicitacao || '').toUpperCase();
-  return status === 'PENDENTE';
+  return String(status || '').includes('PENDENTE');
 }
 
 function usuarioPodeExcluirReservaCarro() {
@@ -15864,11 +16761,12 @@ function podeExcluirReserva(item) {
   const ehMasterExclusao = usuarioPodeExcluirReservaCarro();
 
   if (ehCriador) {
-    return status === 'PENDENTE';
+    return String(status || '').includes('PENDENTE');
   }
 
   if (ehMasterExclusao) {
-    return ['PENDENTE', 'RECUSADA', 'CANCELADA'].includes(status);
+    const s = String(status || '').toUpperCase();
+    return ['PENDENTE', 'RECUSADA', 'CANCELADA'].some(x => s.includes(x));
   }
 
   return false;
@@ -15919,6 +16817,7 @@ async function buscarReservaCarroPorId(id) {
 async function salvarReservaCarro(payload, idEdicao = null) {
   const APIBASE = obterApiBase();
   if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
+    
 
   const isEdit = !!idEdicao;
   const url = isEdit
@@ -16001,9 +16900,10 @@ async function excluirReservaCarro(idReserva) {
 
 async function abrirModalReservaCarro(reserva = null) {
   removerModalReservaCarro();
+  
 
-  const isEdit = !!(reserva && (reserva.id || reserva.ID));
-  const idReserva = Number(reserva?.id ?? reserva?.ID ?? 0) || null;
+  const is_edit = !!(reserva && (reserva.id || reserva.ID));
+  const reserva_id = Number(reserva?.id ?? reserva?.ID ?? 0) || null;
 
   const overlay = document.createElement('div');
   overlay.id = 'carroModalOverlay';
@@ -16019,86 +16919,200 @@ async function abrirModalReservaCarro(reserva = null) {
 
   modal.innerHTML = `
     <div class="w-full h-full overflow-y-auto no-scrollbar">
-      <div class="min-h-full flex items-start justify-center p-4 md:p-8">
-        <div class="w-full max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="min-h-full flex items-start justify-center p-3 md:p-6">
+        <div class="w-full max-w-7xl mx-auto px-2 sm:px-4">
           <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
-            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+            <div class="px-5 py-4 border-b border-border flex items-start justify-between gap-4">
               <div>
                 <h3 id="carroModalTitle" class="text-lg font-semibold text-foreground">
-                  ${isEdit ? 'Editar solicitação de reserva de carro' : 'Solicitação de reserva de carro'}
+                  ${is_edit ? 'Editar solicitação de reserva de carro' : 'Solicitação de reserva de carro'}
                 </h3>
                 <p class="text-sm text-muted-foreground">
-                  ${isEdit ? 'Atualize os dados da reserva.' : 'Informe o tipo do veículo, período, destinos, urgência e observações.'}
+                  ${is_edit
+                    ? 'Atualize os dados da reserva e consulte a disponibilidade da frota.'
+                    : 'Preencha os dados da solicitação e veja os carros disponíveis ao lado.'}
                 </p>
               </div>
-              <button id="closeCarroModal" type="button" class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center" aria-label="Fechar" title="Fechar">
+
+              <button
+                id="closeCarroModal"
+                type="button"
+                class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+                aria-label="Fechar"
+                title="Fechar"
+              >
                 <i class="fas fa-times"></i>
               </button>
             </div>
 
-            <form id="carroForm" class="px-6 py-6 space-y-5">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <label for="carroTipoVeiculo" class="text-sm font-medium">Tipo de veículo</label>
-                  <select id="carroTipoVeiculo" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" required>
-                    <option value="" disabled>Selecione...</option>
-                    <option value="SEM PREFERÊNCIA">Sem preferência</option>
-                    <option value="ABERTO">Aberto</option>
-                    <option value="FECHADO">Fechado</option>
-                  </select>
+            <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.15fr)_minmax(380px,0.85fr)]">
+              <form id="carroForm" class="px-5 py-5 space-y-4 xl:border-r border-border">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div class="space-y-2">
+                    <label for="carroTipoVeiculo" class="text-sm font-medium">Tipo de veículo</label>
+                    <select
+                      id="carroTipoVeiculo"
+                      class="w-full rounded-xl border border-border bg-white/70 px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/30"
+                      required
+                    >
+                      <option value="" disabled>Selecione...</option>
+                      <option value="SEM PREFERÊNCIA">Sem preferência</option>
+                      <option value="ABERTO">Aberto</option>
+                      <option value="FECHADO">Fechado</option>
+                    </select>
+                  </div>
+
+                  <div class="space-y-2">
+                    <label for="carroUrgencia" class="text-sm font-medium">Grau de urgência</label>
+                    <select
+                      id="carroUrgencia"
+                      class="w-full rounded-xl border border-border bg-white/70 px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/30"
+                      required
+                    >
+                      <option value="" disabled>Selecione...</option>
+                      <option value="BAIXA">Baixa</option>
+                      <option value="MEDIA">Média</option>
+                      <option value="ALTA">Alta</option>
+                      <option value="URGENTE">Urgente</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div class="space-y-2">
+                    <label for="carroDataNecessaria" class="text-sm font-medium">Data e hora necessária</label>
+                    <input
+                      id="carroDataNecessaria"
+                      type="datetime-local"
+                      class="w-full rounded-xl border border-border bg-white/70 px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/30"
+                      required
+                    >
+                  </div>
+
+                  <div class="space-y-2">
+                    <label for="carroPrevisaoDevolucao" class="text-sm font-medium">Previsão de devolução</label>
+                    <input
+                      id="carroPrevisaoDevolucao"
+                      type="datetime-local"
+                      class="w-full rounded-xl border border-border bg-white/70 px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/30"
+                      required
+                    >
+                  </div>
+                </div>
+
+                <div id="carroResumoFrota" class="hidden rounded-2xl border border-border bg-white/50 px-4 py-3">
+                  <div class="flex flex-wrap items-center gap-2 text-xs">
+                    <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 border border-emerald-200">
+                      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span id="carroResumoDisponiveis">0 disponíveis</span>
+                    </span>
+
+                    <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 text-amber-700 px-3 py-1 border border-amber-200">
+                      <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                      <span id="carroResumoEmUso">0 indisponível</span>
+                    </span>
+
+                    <span class="inline-flex items-center gap-2 rounded-full bg-sky-50 text-sky-700 px-3 py-1 border border-sky-200">
+                      <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                      <span id="carroResumoSemVeiculo">0 sem veículo</span>
+                    </span>
+                  </div>
                 </div>
 
                 <div class="space-y-2">
-                  <label for="carroUrgencia" class="text-sm font-medium">Grau de urgência</label>
-                  <select id="carroUrgencia" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" required>
-                    <option value="" disabled>Selecione...</option>
-                    <option value="BAIXA">Baixa</option>
-                    <option value="MEDIA">Média</option>
-                    <option value="ALTA">Alta</option>
-                    <option value="URGENTE">Urgente</option>
-                  </select>
-                </div>
-              </div>
+                  <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <label class="text-sm font-medium">Destinos</label>
+                    <span id="carroDestinosCount" class="text-xs text-muted-foreground">0 selecionado(s)</span>
+                  </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <label for="carroDataNecessaria" class="text-sm font-medium">Data e hora necessária</label>
-                  <input id="carroDataNecessaria" type="datetime-local" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" required>
+                  <div
+                    id="carroDestinosBox"
+                    class="rounded-xl border border-border bg-white/50 p-3 max-h-52 overflow-auto no-scrollbar space-y-2"
+                  >
+                    <p id="carroDestinosLoading" class="text-sm text-muted-foreground">Carregando destinos...</p>
+                  </div>
                 </div>
 
                 <div class="space-y-2">
-                  <label for="carroPrevisaoDevolucao" class="text-sm font-medium">Previsão de devolução</label>
-                  <input id="carroPrevisaoDevolucao" type="datetime-local" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" required>
+                  <label for="carroObservacoes" class="text-sm font-medium">Finalizadade da reserva</label>
+                  <textarea
+                    id="carroObservacoes"
+                    rows="3"
+                    required
+                    class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                    placeholder="Informe a finalidade da reserva."
+                  ></textarea>
                 </div>
-              </div>
 
-              <div class="space-y-2">
+                <p id="carroFormErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
+
+                <div class="pt-1 flex flex-col sm:flex-row gap-3">
+                  <button
+                    id="btnSalvarReservaCarro"
+                    type="submit"
+                    class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all"
+                  >
+                    ${is_edit ? 'Salvar alterações' : 'Salvar'}
+                  </button>
+
+                  <button
+                    id="btnCancelarReservaCarro"
+                    type="button"
+                    class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+
+              <aside class="px-5 py-5 bg-white/20 space-y-4">
                 <div class="flex items-center justify-between gap-3 flex-wrap">
-                  <label class="text-sm font-medium">Destinos</label>
-                  <span id="carroDestinosCount" class="text-xs text-muted-foreground">0 selecionado(s)</span>
+                  <div>
+                    <h4 class="text-base font-semibold text-foreground">Frota e reservas ativas</h4>
+                    <p class="text-xs text-muted-foreground">
+                      Mostra veículos disponíveis, veículos ocupados e solicitações ainda sem veículo.
+                    </p>
+                  </div>
+
+                  <button
+                    id="btnAtualizarFrotaCarro"
+                    type="button"
+                    class="rounded-xl border border-border bg-white/60 px-3 py-2 text-sm font-medium hover:bg-white/80 transition-all"
+                  >
+                    Atualizar
+                  </button>
                 </div>
 
-                <div id="carroDestinosBox" class="rounded-xl border border-border bg-white/50 p-3 max-h-72 overflow-auto no-scrollbar space-y-2">
-                  <p id="carroDestinosLoading" class="text-sm text-muted-foreground">Carregando destinos...</p>
+                <div class="rounded-2xl border border-border bg-white/40 p-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                    <div class="rounded-xl bg-white/70 border border-border px-3 py-2">
+                      <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Disponíveis</div>
+                      <div id="carroQtdDisponiveis" class="text-lg font-semibold text-emerald-700">-</div>
+                    </div>
+
+                    <div class="rounded-xl bg-white/70 border border-border px-3 py-2">
+                      <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Indisponível</div>
+                      <div id="carroQtdEmUso" class="text-lg font-semibold text-amber-700">-</div>
+                    </div>
+
+                    <div class="rounded-xl bg-white/70 border border-border px-3 py-2">
+                      <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Sem veículo</div>
+                      <div id="carroQtdSemVeiculo" class="text-lg font-semibold text-sky-700">-</div>
+                    </div>
+
+                    <div class="rounded-xl bg-white/70 border border-border px-3 py-2">
+                      <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Total</div>
+                      <div id="carroQtdTotal" class="text-lg font-semibold text-foreground">-</div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div class="space-y-2">
-                <label for="carroObservacoes" class="text-sm font-medium">Observações</label>
-                <textarea id="carroObservacoes" rows="4" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="Informe detalhes da solicitação, motorista, carga, finalidade, etc."></textarea>
-              </div>
-
-              <p id="carroFormErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
-
-              <div class="pt-2 flex flex-col sm:flex-row gap-3">
-                <button id="btnSalvarReservaCarro" type="submit" class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
-                  ${isEdit ? 'Salvar alterações' : 'Salvar'}
-                </button>
-                <button id="btnCancelarReservaCarro" type="button" class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
-                  Cancelar
-                </button>
-              </div>
-            </form>
+                <div id="carroSolicitacoesSemVeiculoBox" class="space-y-3"></div>
+                <div id="carroFrotaBox" class="space-y-3 max-h-[52vh] overflow-auto no-scrollbar">
+                  <p class="text-sm text-muted-foreground">Carregando frota...</p>
+                </div>
+              </aside>
+            </div>
           </div>
         </div>
       </div>
@@ -16107,25 +17121,41 @@ async function abrirModalReservaCarro(reserva = null) {
 
   document.body.appendChild(modal);
 
-  const inputTipoVeiculo = document.getElementById('carroTipoVeiculo');
-  const inputUrgencia = document.getElementById('carroUrgencia');
-  const inputDataNecessaria = document.getElementById('carroDataNecessaria');
-  const inputPrevisaoDevolucao = document.getElementById('carroPrevisaoDevolucao');
-  const inputObservacoes = document.getElementById('carroObservacoes');
-  const destinosBox = document.getElementById('carroDestinosBox');
-  const destinosCount = document.getElementById('carroDestinosCount');
-  const destinosLoading = document.getElementById('carroDestinosLoading');
+  const input_tipo_veiculo = document.getElementById('carroTipoVeiculo');
+  const input_urgencia = document.getElementById('carroUrgencia');
+  const input_data_necessaria = document.getElementById('carroDataNecessaria');
+  const input_previsao_devolucao = document.getElementById('carroPrevisaoDevolucao');
+  const input_observacoes = document.getElementById('carroObservacoes');
+  const destinos_box = document.getElementById('carroDestinosBox');
+  const destinos_count = document.getElementById('carroDestinosCount');
+  const destinos_loading = document.getElementById('carroDestinosLoading');
+  const frota_box = document.getElementById('carroFrotaBox');
+  const solicitacoes_sem_veiculo_box = document.getElementById('carroSolicitacoesSemVeiculoBox');
   const form = document.getElementById('carroForm');
-  const btnSalvar = document.getElementById('btnSalvarReservaCarro');
+  const btn_salvar = document.getElementById('btnSalvarReservaCarro');
+  const btn_atualizar_frota = document.getElementById('btnAtualizarFrotaCarro');
+  const resumo_frota = document.getElementById('carroResumoFrota');
+  const resumo_disponiveis = document.getElementById('carroResumoDisponiveis');
+  const resumo_em_uso = document.getElementById('carroResumoEmUso');
+  const resumo_sem_veiculo = document.getElementById('carroResumoSemVeiculo');
+  const qtd_disponiveis = document.getElementById('carroQtdDisponiveis');
+  const qtd_em_uso = document.getElementById('carroQtdEmUso');
+  const qtd_sem_veiculo = document.getElementById('carroQtdSemVeiculo');
+  const qtd_total = document.getElementById('carroQtdTotal');
 
-  const selectedDestinos = new Set();
-  let destinosCache = [];
+  const selected_destinos = new Set();
+  let destinos_cache = [];
+  let frota_cache = [];
+  let solicitacoes_sem_veiculo_cache = [];
+  let carro_selecionado_id = String(
+    reserva?.veiculo_id ?? reserva?.carro_id ?? reserva?.veiculoId ?? ''
+  ).trim();
 
   function fechar() {
     removerModalReservaCarro();
   }
 
-  function setErro(msg) {
+  function set_erro(msg) {
     const el = document.getElementById('carroFormErro');
     if (!el) return;
 
@@ -16139,65 +17169,473 @@ async function abrirModalReservaCarro(reserva = null) {
     el.classList.remove('hidden');
   }
 
-  function setSalvarLoading(loading) {
-    if (!btnSalvar) return;
-    btnSalvar.disabled = loading;
-    btnSalvar.textContent = loading
-      ? (isEdit ? 'Salvando alterações...' : 'Salvando...')
-      : (isEdit ? 'Salvar alterações' : 'Salvar');
-    btnSalvar.classList.toggle('opacity-70', loading);
+  function set_salvar_loading(loading) {
+    if (!btn_salvar) return;
+
+    btn_salvar.disabled = !!loading;
+    btn_salvar.textContent = loading
+      ? (is_edit ? 'Salvando alterações...' : 'Salvando...')
+      : (is_edit ? 'Salvar alterações' : 'Salvar');
+
+    btn_salvar.classList.toggle('opacity-70', !!loading);
   }
 
-  function atualizarContador() {
-    if (destinosCount) {
-      destinosCount.textContent = `${selectedDestinos.size} selecionado(s)`;
+  function escape_safe(v) {
+    if (typeof escape_html === 'function') return escape_html(v ?? '');
+    return String(v ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function fmt_data_hora(valor) {
+    if (!valor) return '-';
+    try {
+      const d = new Date(valor);
+      if (Number.isNaN(d.getTime())) return String(valor);
+      return d.toLocaleString('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      });
+    } catch (_) {
+      return String(valor);
     }
   }
 
-  function renderDestinos() {
-    if (!destinosBox) return;
+  function is_data_atrasada(valor) {
+    if (!valor) return false;
+    try {
+      const data = new Date(valor);
+      if (Number.isNaN(data.getTime())) return false;
+      return data.getTime() < Date.now();
+    } catch (_) {
+      return false;
+    }
+  }
 
-    if (!Array.isArray(destinosCache) || !destinosCache.length) {
-      destinosBox.innerHTML = `<p class="text-sm text-muted-foreground">Nenhum destino encontrado.</p>`;
-      atualizarContador();
+  function get_classe_previsao_devolucao(valor) {
+    return is_data_atrasada(valor)
+      ? 'text-red-700 bg-red-50 border-red-200'
+      : 'text-blue-700 bg-blue-50 border-blue-200';
+  }
+
+  function get_texto_status_previsao(valor) {
+    return is_data_atrasada(valor) ? 'Devolução atrasada' : 'Devolução no prazo';
+  }
+
+  function atualizar_contador() {
+    if (destinos_count) {
+      destinos_count.textContent = `${selected_destinos.size} selecionado(s)`;
+    }
+  }
+
+  function carro_esta_disponivel(carro) {
+    const disponibilidade = String(carro?.disponibilidade ?? '').trim().toUpperCase();
+    return disponibilidade === 'DISPONIVEL';
+  }
+
+  function get_status_reserva_atual(carro) {
+    return String(
+      carro?.status_solicitacao_atual ??
+      carro?.status_reserva_atual ??
+      carro?.status_reserva ??
+      carro?.status_solicitacao ??
+      ''
+    ).trim().toUpperCase();
+  }
+
+  function get_timestamp_ordenacao_frota(carro) {
+    const valor =
+      carro?.data_reserva_atual ??
+      carro?.data_reserva ??
+      carro?.previsao_devolucao ??
+      '';
+
+    if (!valor) return Number.MAX_SAFE_INTEGER;
+
+    const d = new Date(valor);
+    if (Number.isNaN(d.getTime())) return Number.MAX_SAFE_INTEGER;
+
+    return d.getTime();
+  }
+
+  function atualizar_resumo_frota() {
+    const totalFrota = Array.isArray(frota_cache) ? frota_cache.length : 0;
+
+    const disponiveis = (frota_cache || []).filter((item) => {
+      return carro_esta_disponivel(item);
+    }).length;
+
+    const emUso = (frota_cache || []).filter((item) => {
+      return !carro_esta_disponivel(item);
+    }).length;
+
+    const semVeiculo = Array.isArray(solicitacoes_sem_veiculo_cache)
+      ? solicitacoes_sem_veiculo_cache.length
+      : 0;
+
+    if (qtd_disponiveis) qtd_disponiveis.textContent = String(disponiveis);
+    if (qtd_em_uso) qtd_em_uso.textContent = String(emUso);
+    if (qtd_sem_veiculo) qtd_sem_veiculo.textContent = String(semVeiculo);
+    if (qtd_total) qtd_total.textContent = String(totalFrota + semVeiculo);
+
+    if (resumo_disponiveis) resumo_disponiveis.textContent = `${disponiveis} disponíveis`;
+    if (resumo_em_uso) resumo_em_uso.textContent = `${emUso} indisponível`;
+    if (resumo_sem_veiculo) resumo_sem_veiculo.textContent = `${semVeiculo} sem veículo`;
+
+    resumo_frota?.classList.toggle('hidden', totalFrota + semVeiculo <= 0);
+  }
+
+  function render_destinos() {
+    if (!destinos_box) return;
+
+    if (!Array.isArray(destinos_cache) || !destinos_cache.length) {
+      destinos_box.innerHTML = `<p class="text-sm text-muted-foreground">Nenhum destino encontrado.</p>`;
+      atualizar_contador();
       return;
     }
 
-    destinosBox.innerHTML = destinosCache.map(item => {
+    destinos_box.innerHTML = destinos_cache.map((item) => {
       const id = String(item.id ?? item.ID ?? '').trim();
       const nome = String(item.nome ?? item.NOME ?? '').trim();
-      const checked = selectedDestinos.has(id) ? 'checked' : '';
+      const checked = selected_destinos.has(id) ? 'checked' : '';
 
       return `
         <label class="flex items-start gap-3 rounded-xl border border-border bg-white/60 hover:bg-white/80 transition-all px-3 py-2 cursor-pointer">
-          <input type="checkbox" class="mt-1 carro-destino-checkbox" data-id="${escapeHtml(id)}" ${checked}>
+          <input
+            type="checkbox"
+            class="mt-1 carro-destino-checkbox"
+            data-id="${escape_safe(id)}"
+            ${checked}
+          >
           <div class="min-w-0 flex-1">
-            <div class="text-sm font-semibold text-foreground truncate">${escapeHtml(nome || 'Sem nome')}</div>
-            <div class="text-xs text-muted-foreground">ID: ${escapeHtml(id)}</div>
+            <div class="text-sm font-semibold text-foreground truncate">${escape_safe(nome || 'Sem nome')}</div>
+            <div class="text-xs text-muted-foreground">ID: ${escape_safe(id)}</div>
           </div>
         </label>
       `;
     }).join('');
 
-    destinosBox.querySelectorAll('.carro-destino-checkbox').forEach(chk => {
+    destinos_box.querySelectorAll('.carro-destino-checkbox').forEach((chk) => {
       chk.addEventListener('change', () => {
-        const id = String(chk.getAttribute('data-id') || '');
+        const id = String(chk.getAttribute('data-id') || '').trim();
         if (!id) return;
 
-        if (chk.checked) selectedDestinos.add(id);
-        else selectedDestinos.delete(id);
+        if (chk.checked) selected_destinos.add(id);
+        else selected_destinos.delete(id);
 
-        atualizarContador();
+        atualizar_contador();
       });
     });
 
-    atualizarContador();
+    atualizar_contador();
   }
 
-  async function carregarDestinos() {
+  function get_tipo_frota(carro) {
+    return String(
+      carro?.tipo_veiculo ??
+      carro?.tipoVeiculo ??
+      carro?.tipo ??
+      carro?.categoria ??
+      ''
+    ).trim();
+  }
+
+  function get_nome_destinos(detalhe) {
+    if (!Array.isArray(detalhe?.destinos)) return '-';
+
+    const nomes = detalhe.destinos
+      .map((d) => String(d?.nome ?? d?.NOME ?? d?.descricao ?? '').trim())
+      .filter(Boolean);
+
+    return nomes.length ? nomes.join(', ') : '-';
+  }
+
+  function parse_api_date_sem_timezone(valor) {
+    if (!valor) return null;
+
+    if (valor instanceof Date) {
+      return Number.isNaN(valor.getTime()) ? null : valor;
+    }
+
+    const str = String(valor).trim();
+    if (!str) return null;
+
+    const match = str.match(
+      /^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?Z?$/
+    );
+
+    if (match) {
+      const [, ano, mes, dia, hora, minuto, segundo = '00'] = match;
+      return new Date(
+        Number(ano),
+        Number(mes) - 1,
+        Number(dia),
+        Number(hora),
+        Number(minuto),
+        Number(segundo)
+      );
+    }
+
+    const d = new Date(str);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function fmt_data_hora(valor) {
+    if (!valor) return '-';
+
+    try {
+      const d = parse_api_date_sem_timezone(valor);
+      if (!d) return String(valor);
+
+      return d.toLocaleString('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      });
+    } catch (_) {
+      return String(valor);
+    }
+  }
+
+  function is_data_atrasada(valor) {
+    if (!valor) return false;
+
+    try {
+      const data = parse_api_date_sem_timezone(valor);
+      if (!data) return false;
+      return data.getTime() < Date.now();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function get_timestamp_ordenacao_frota(carro) {
+    const valor =
+      carro?.data_reserva_atual ??
+      carro?.data_reserva ??
+      carro?.previsao_devolucao ??
+      '';
+
+    if (!valor) return Number.MAX_SAFE_INTEGER;
+
+    const d = parse_api_date_sem_timezone(valor);
+    if (!d) return Number.MAX_SAFE_INTEGER;
+
+    return d.getTime();
+  }
+
+  function render_solicitacoes_sem_veiculo() {
+    if (!solicitacoes_sem_veiculo_box) return;
+
+    if (!Array.isArray(solicitacoes_sem_veiculo_cache) || !solicitacoes_sem_veiculo_cache.length) {
+      solicitacoes_sem_veiculo_box.innerHTML = '';
+      return;
+    }
+
+    solicitacoes_sem_veiculo_box.innerHTML = `
+      <div class="rounded-2xl border border-sky-200 bg-sky-50/70 p-3 space-y-3">
+        <div>
+          <h5 class="text-sm font-semibold text-sky-800">Solicitações sem veículo</h5>
+          <p class="text-xs text-sky-700/90">
+            Reservas ativas que ainda não foram vinculadas a um carro.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          ${solicitacoes_sem_veiculo_cache.map((item) => {
+            const solicitante = String(
+              item?.solicitante ??
+              item?.nome_colaborador ??
+              item?.usuario_solicitante ??
+              '-'
+            ).trim();
+
+            const tipo = String(item?.tipo_veiculo ?? 'Não informado').trim() || 'Não informado';
+            const status = String(item?.status_solicitacao ?? '-').trim() || '-';
+            const dataNec = item?.data_necessaria ?? null;
+            const prevDev = item?.previsao_devolucao ?? null;
+
+            const destinos = Array.isArray(item?.destinos) ? item.destinos : [];
+
+            const destinosTexto = destinos.length
+              ? destinos
+                  .map((dest) => String(dest?.nome ?? '').trim())
+                  .filter(Boolean)
+                  .join(', ')
+              : 'Nenhum destino informado';
+
+            return `
+              <div class="rounded-xl border border-sky-200 bg-white/80 p-3 space-y-2">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="text-sm font-semibold text-foreground">${escape_safe(solicitante)}</div>
+                    <div class="text-xs text-muted-foreground">Tipo: ${escape_safe(tipo)}</div>
+                  </div>
+
+                  <span class="shrink-0 rounded-full border border-sky-200 bg-sky-100 text-sky-700 px-2.5 py-1 text-[11px] font-semibold">
+                    ${escape_safe(status)}
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                  <div class="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-2">
+                    <div class="uppercase tracking-wide text-muted-foreground">Data necessária</div>
+                    <div class="text-foreground font-medium">${escape_safe(fmt_data_hora(dataNec))}</div>
+                  </div>
+
+                  <div class="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-2">
+                    <div class="uppercase tracking-wide text-muted-foreground">Previsão devolução</div>
+                    <div class="text-foreground font-medium">${escape_safe(fmt_data_hora(prevDev))}</div>
+                  </div>
+
+                  <div class="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-2 md:col-span-2">
+                    <div class="uppercase tracking-wide text-muted-foreground">Destinos</div>
+                    <div class="text-foreground font-medium whitespace-pre-line">
+                      ${escape_safe(destinosTexto)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function render_frota() {
+    if (!frota_box) return;
+
+    const filtro_tipo = String(input_tipo_veiculo?.value || '').trim().toUpperCase();
+    let lista = Array.isArray(frota_cache) ? [...frota_cache] : [];
+
+    if (filtro_tipo && filtro_tipo !== 'SEM PREFERÊNCIA') {
+      lista = lista.filter((item) => {
+        const tipo = get_tipo_frota(item).toUpperCase();
+        return !tipo || tipo === filtro_tipo || tipo === 'SEM PREFERÊNCIA';
+      });
+    }
+
+    lista.sort((a, b) => {
+      const prioridadeA = carro_esta_disponivel(a) ? 1 : 0;
+      const prioridadeB = carro_esta_disponivel(b) ? 1 : 0;
+
+      if (prioridadeA !== prioridadeB) {
+        return prioridadeA - prioridadeB;
+      }
+
+      const dataA = get_timestamp_ordenacao_frota(a);
+      const dataB = get_timestamp_ordenacao_frota(b);
+
+      if (dataA !== dataB) {
+        return dataA - dataB;
+      }
+
+      const placaA = String(a?.placa || '').trim();
+      const placaB = String(b?.placa || '').trim();
+
+      return placaA.localeCompare(placaB, 'pt-BR');
+    });
+
+    if (!lista.length) {
+      frota_box.innerHTML = `
+        <div class="rounded-2xl border border-border bg-white/60 p-4">
+          <p class="text-sm text-muted-foreground">
+            Nenhum carro encontrado para o filtro/período informado.
+          </p>
+        </div>
+      `;
+      atualizar_resumo_frota();
+      return;
+    }
+
+    frota_box.innerHTML = lista.map((item) => {
+      const id = String(item?.id ?? '').trim();
+      const veiculoId = String(item?.veiculo_id ?? item?.id ?? '').trim();
+      const placa = String(item?.placa ?? 'Sem placa').trim();
+      const modelo = String(item?.modelo ?? 'Sem modelo').trim();
+      const marca = String(item?.marca ?? '').trim();
+      const tipo = get_tipo_frota(item) || 'Não informado';
+      const disponivel = carro_esta_disponivel(item);
+      const devolucao = item?.previsao_devolucao ?? '';
+      const data_reserva = item?.data_reserva_atual ?? '';
+      const reserva_id_atual = item?.reserva_id_atual ?? null;
+      const km_atual = item?.km_atual ?? '';
+      const selecionado = disponivel && carro_selecionado_id && String(carro_selecionado_id) === veiculoId;
+      const classePrevisao = get_classe_previsao_devolucao(devolucao);
+      const textoStatusPrevisao = get_texto_status_previsao(devolucao);
+      const solicitanteAtual = String(item?.solicitante_atual ?? '').trim();
+      const statusReservaAtual = get_status_reserva_atual(item);
+
+      return `
+        <div
+          class="rounded-2xl border ${selecionado ? 'border-primary ring-2 ring-primary/20' : 'border-border'} bg-white/70 p-3 space-y-2"
+          data-carro-card="${escape_safe(veiculoId || id)}"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-sm font-semibold text-foreground truncate">${escape_safe(placa)}</div>
+              <div class="text-xs text-muted-foreground truncate">${escape_safe(modelo)}${marca ? ` • ${escape_safe(marca)}` : ''}</div>
+              <div class="text-[11px] text-muted-foreground">Tipo: ${escape_safe(tipo)} • KM: ${escape_safe(km_atual || '-')}</div>
+            </div>
+
+            <span class="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+              disponivel
+                ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                : 'bg-amber-100 text-amber-700 border border-amber-200'
+            }">
+              ${disponivel ? 'DISPONÍVEL' : escape_safe(statusReservaAtual || 'EM USO')}
+            </span>
+          </div>
+
+          ${
+            disponivel
+              ? ``
+              : `
+                <button
+                  type="button"
+                  class="btn-detalhe-carro w-full text-left rounded-xl border border-border bg-white/60 px-3 py-2.5 hover:bg-white transition-all"
+                  data-id="${escape_safe(veiculoId)}"
+                  data-reserva-id-atual="${escape_safe(reserva_id_atual || '')}"
+                >
+                
+                  <div class="flex items-center justify-between gap-3 mt-2">
+                    <div class="min-w-0">
+                      <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Previsão devolução</div>
+                      <div class="text-sm font-medium ${is_data_atrasada(devolucao) ? 'text-red-700' : 'text-blue-700'}">
+                        ${escape_safe(fmt_data_hora(devolucao))}
+                      </div>
+                    </div>
+
+                    <span class="shrink-0 inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${classePrevisao}">
+                      ${escape_safe(textoStatusPrevisao)}
+                    </span>
+                  </div>
+
+                  <div class="mt-2 text-[11px] text-muted-foreground">
+                    Reserva: ${escape_safe(fmt_data_hora(data_reserva))}
+                  </div>
+                </button>
+
+                <div id="detalhe-carro-${escape_safe(veiculoId)}" class="hidden"></div>
+              `
+          }
+        </div>
+      `;
+    }).join('');
+
+    bind_eventos_frota();
+    atualizar_resumo_frota();
+  }
+
+  async function carregar_destinos() {
     try {
       const APIBASE = obterApiBase();
-      if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
+      if (!APIBASE) {
+        throw new Error('APIBASE não configurada na sessão.');
+      }
 
       const resp = await fetch(`${APIBASE}/api/local-trabalho`, { method: 'GET' });
       const json = await resp.json().catch(() => ({}));
@@ -16206,112 +17644,425 @@ async function abrirModalReservaCarro(reserva = null) {
         throw new Error(json?.message || `Erro ao listar destinos. Status ${resp.status}`);
       }
 
-      destinosCache = normalizarLista(json);
+      destinos_cache = typeof normalizarLista === 'function'
+        ? normalizarLista(json)
+        : (Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []));
 
-      const destinosExistentes = Array.isArray(reserva?.destinos)
+      const destinos_existentes = Array.isArray(reserva?.destinos)
         ? reserva.destinos
         : [];
 
-      destinosExistentes.forEach(dest => {
+      destinos_existentes.forEach((dest) => {
         const id = String(dest?.id ?? dest?.ID ?? '').trim();
-        if (id) selectedDestinos.add(id);
+        if (id) selected_destinos.add(id);
       });
 
-      renderDestinos();
+      render_destinos();
     } catch (err) {
-      destinosBox.innerHTML = `<p class="text-sm text-destructive whitespace-pre-line">${escapeHtml(err?.message || 'Erro ao carregar destinos.')}</p>`;
+      destinos_box.innerHTML = `
+        <p class="text-sm text-destructive whitespace-pre-line">
+          ${escape_safe(err?.message || 'Erro ao carregar destinos.')}
+        </p>
+      `;
     } finally {
-      destinosLoading?.remove();
+      destinos_loading?.remove();
     }
+  }
+
+  async function carregar_frota() {
+    try {
+      const APIBASE = obterApiBase();
+      if (!APIBASE) {
+        throw new Error('APIBASE não configurada na sessão.');
+      }
+
+      const inicio = input_data_necessaria?.value || '';
+      const fim = input_previsao_devolucao?.value || '';
+      const tipo = input_tipo_veiculo?.value || '';
+      const usuarioLogado = String(obterUsuarioLogado?.() || '').trim();
+
+      frota_box.innerHTML = `<p class="text-sm text-muted-foreground">Carregando frota...</p>`;
+      if (solicitacoes_sem_veiculo_box) {
+        solicitacoes_sem_veiculo_box.innerHTML = '';
+      }
+
+      const params = new URLSearchParams();
+      if (inicio) params.set('inicio', inicio);
+      if (fim) params.set('fim', fim);
+      if (tipo && tipo !== 'SEM PREFERÊNCIA') params.set('tipo_veiculo', tipo);
+      if (usuarioLogado) params.set('usuario_logado', usuarioLogado);
+
+      const url = `${APIBASE}/api/frota-carros-disponibilidade?${params.toString()}`;
+
+
+      const resp = await fetch(url, { method: 'GET' });
+      const json = await resp.json().catch(() => ({}));
+
+
+      if (!resp.ok) {
+        throw new Error(json?.message || `Erro ao carregar frota. Status ${resp.status}`);
+      }
+
+      frota_cache = Array.isArray(json?.items)
+        ? json.items.map((item) => ({
+            id: item?.id ?? null,
+            veiculo_id: item?.veiculo_id ?? item?.id ?? null,
+            placa: item?.placa ?? '',
+            modelo: item?.modelo ?? '',
+            marca: item?.marca ?? '',
+            cor: item?.cor ?? '',
+            ano: item?.ano ?? null,
+            km_atual: item?.km_atual ?? null,
+            status_veiculo: item?.status_veiculo ?? '',
+            ativo: item?.ativo ?? 0,
+            tipo_veiculo: item?.tipo_veiculo ?? '',
+            disponibilidade: String(item?.disponibilidade ?? '').trim().toUpperCase(),
+            previsao_devolucao: item?.previsao_devolucao ?? null,
+            reserva_id_atual: item?.reserva_id_atual ?? null,
+            status_solicitacao_atual: item?.status_solicitacao_atual ?? null,
+            usuario_solicitante: item?.usuario_solicitante ?? null,
+            nome_colaborador: item?.nome_colaborador ?? null,
+            solicitante_atual: item?.solicitante_atual ?? null,
+            data_reserva_atual: item?.data_reserva_atual ?? null
+          }))
+        : [];
+
+      solicitacoes_sem_veiculo_cache = Array.isArray(json?.solicitacoes_sem_veiculo)
+        ? json.solicitacoes_sem_veiculo.map((item) => ({
+            id: item?.id ?? null,
+            usuario_solicitante: item?.usuario_solicitante ?? null,
+            nome_colaborador: item?.nome_colaborador ?? null,
+            solicitante: item?.solicitante ?? item?.nome_colaborador ?? item?.usuario_solicitante ?? null,
+            tipo_veiculo: item?.tipo_veiculo ?? '',
+            status_solicitacao: item?.status_solicitacao ?? '',
+            data_necessaria: item?.data_necessaria ?? null,
+            previsao_devolucao: item?.previsao_devolucao ?? null,
+            observacoes: item?.observacoes ?? null,
+            data_solicitacao: item?.data_solicitacao ?? null,
+            destinos: Array.isArray(item?.destinos)
+              ? item.destinos.map((dest) => ({
+                  id: dest?.id ?? null,
+                  nome: dest?.nome ?? ''
+                }))
+              : []
+          }))
+        : [];
+
+
+      render_solicitacoes_sem_veiculo();
+      render_frota();
+      atualizar_resumo_frota();
+    } catch (err) {
+      console.error('[FROTA] erro:', err);
+      frota_cache = [];
+      solicitacoes_sem_veiculo_cache = [];
+
+      frota_box.innerHTML = `
+        <div class="rounded-2xl border border-border bg-white/60 p-4">
+          <p class="text-sm text-destructive whitespace-pre-line">
+            ${escape_safe(err?.message || 'Erro ao carregar frota.')}
+          </p>
+        </div>
+      `;
+
+      if (solicitacoes_sem_veiculo_box) {
+        solicitacoes_sem_veiculo_box.innerHTML = '';
+      }
+
+      atualizar_resumo_frota();
+    }
+  }
+
+  function frotabox_inner_loading() {
+    frota_box.innerHTML = `<p class="text-sm text-muted-foreground">Carregando frota...</p>`;
+  }
+
+  async function buscar_detalhe_reserva_ativa_carro(carro_id) {
+    const APIBASE = obterApiBase();
+    if (!APIBASE) {
+      throw new Error('APIBASE não configurada na sessão.');
+    }
+
+    const resp = await fetch(`${APIBASE}/api/frota-carros/${encodeURIComponent(carro_id)}/reserva-ativa`, {
+      method: 'GET'
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok) {
+      throw new Error(json?.message || `Erro ao buscar detalhes da reserva ativa. Status ${resp.status}`);
+    }
+
+    return json?.data || json;
+  }
+
+  function marcar_carro_selecionado() {
+    document.querySelectorAll('[data-carro-card]').forEach((card) => {
+      const id = String(card.getAttribute('data-carro-card') || '').trim();
+      const ativo = !!(carro_selecionado_id && id === carro_selecionado_id);
+
+      card.classList.toggle('border-primary', ativo);
+      card.classList.toggle('ring-2', ativo);
+      card.classList.toggle('ring-primary/20', ativo);
+
+      if (!ativo) card.classList.remove('border-primary');
+
+      const btn = card.querySelector('.btn-selecionar-carro');
+      if (btn) {
+        btn.textContent = ativo ? 'Carro selecionado' : 'Selecionar este carro';
+      }
+    });
+  }
+
+  function bind_eventos_frota() {
+    document.querySelectorAll('.btn-selecionar-carro').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = String(btn.getAttribute('data-id') || '').trim();
+        if (!id) return;
+
+        carro_selecionado_id = id;
+        marcar_carro_selecionado();
+      });
+    });
+
+    document.querySelectorAll('.btn-detalhe-carro').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const veiculoId = String(btn.getAttribute('data-id') || '').trim();
+        if (!veiculoId) return;
+
+        const box = document.getElementById(`detalhe-carro-${veiculoId}`);
+        if (!box) return;
+
+        if (!box.classList.contains('hidden')) {
+          box.classList.add('hidden');
+          box.innerHTML = '';
+          return;
+        }
+
+        document.querySelectorAll('[id^="detalhe-carro-"]').forEach((el) => {
+          if (el !== box) {
+            el.classList.add('hidden');
+            el.innerHTML = '';
+          }
+        });
+
+        box.classList.remove('hidden');
+        box.innerHTML = `
+          <div class="rounded-xl border border-border bg-slate-50/80 px-3 py-3">
+            <p class="text-sm text-muted-foreground">Carregando detalhes da reserva...</p>
+          </div>
+        `;
+
+        try {
+          const detalhe = await buscar_detalhe_reserva_ativa_carro(veiculoId);
+
+          const solicitante = String(
+            detalhe?.solicitante ??
+            detalhe?.usuario_solicitante ??
+            detalhe?.nome_colaborador ??
+            '-'
+          ).trim() || '-';
+
+          const data_reserva = detalhe?.data_reserva ?? detalhe?.data_solicitacao ?? '';
+          const previsao = detalhe?.previsao_devolucao ?? '';
+          const destinos = get_nome_destinos(detalhe);
+
+          box.innerHTML = `
+            <div class="rounded-xl border border-border bg-slate-50/80 px-3 py-3 space-y-3">
+              <div>
+                <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Solicitante</div>
+                <div class="text-sm font-medium text-foreground">${escape_safe(solicitante)}</div>
+              </div>
+
+              <div>
+                <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Data da reserva</div>
+                <div class="text-sm text-foreground">${escape_safe(fmt_data_hora(data_reserva))}</div>
+              </div>
+
+              <div>
+                <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Previsão de devolução</div>
+                <div class="text-sm text-foreground">${escape_safe(fmt_data_hora(previsao))}</div>
+              </div>
+
+              <div>
+                <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Destinos</div>
+                <div class="text-sm text-foreground whitespace-pre-line">${escape_safe(destinos)}</div>
+              </div>
+            </div>
+          `;
+        } catch (err) {
+          box.innerHTML = `
+            <div class="rounded-xl border border-border bg-white/70 px-3 py-3">
+              <p class="text-sm text-destructive whitespace-pre-line">
+                ${escape_safe(err?.message || 'Erro ao carregar detalhes da reserva.')}
+              </p>
+            </div>
+          `;
+        }
+      });
+    });
+
+    marcar_carro_selecionado();
   }
 
   overlay.addEventListener('click', fechar);
   document.getElementById('closeCarroModal')?.addEventListener('click', fechar);
   document.getElementById('btnCancelarReservaCarro')?.addEventListener('click', fechar);
+  btn_atualizar_frota?.addEventListener('click', carregar_frota);
 
-  if (isEdit) {
-    inputTipoVeiculo.value = String(reserva?.tipo_veiculo ?? reserva?.tipoVeiculo ?? '').trim();
-    inputUrgencia.value = String(reserva?.urgencia ?? '').trim();
-    inputDataNecessaria.value = String(reserva?.data_necessaria ?? reserva?.dataNecessaria ?? '').slice(0, 16);
-    inputPrevisaoDevolucao.value = String(reserva?.previsao_devolucao ?? reserva?.previsaoDevolucao ?? '').slice(0, 16);
-    inputObservacoes.value = String(reserva?.observacoes ?? '').trim();
+  if (is_edit) {
+    if (input_tipo_veiculo) {
+      input_tipo_veiculo.value = String(
+        reserva?.tipo_veiculo ??
+        reserva?.tipoVeiculo ??
+        ''
+      ).trim();
+    }
+
+    if (input_urgencia) {
+      input_urgencia.value = String(reserva?.urgencia ?? '').trim();
+    }
+
+    if (input_data_necessaria) {
+      input_data_necessaria.value = String(
+        reserva?.data_necessaria ??
+        reserva?.dataNecessaria ??
+        ''
+      ).slice(0, 16);
+    }
+
+    if (input_previsao_devolucao) {
+      input_previsao_devolucao.value = String(
+        reserva?.previsao_devolucao ??
+        reserva?.previsaoDevolucao ??
+        ''
+      ).slice(0, 16);
+    }
+
+    if (input_observacoes) {
+      input_observacoes.value = String(reserva?.observacoes ?? '').trim();
+    }
   } else {
     const agora = todayDateTimeLocalPlus(10);
     const depois = todayDateTimeLocalPlus(130);
 
-    if (inputDataNecessaria) {
-      inputDataNecessaria.min = todayDateTimeLocalPlus(0);
-      inputDataNecessaria.value = agora;
+    if (input_data_necessaria) {
+      input_data_necessaria.min = todayDateTimeLocalPlus(0);
+      input_data_necessaria.value = agora;
     }
 
-    if (inputPrevisaoDevolucao) {
-      inputPrevisaoDevolucao.min = agora;
-      inputPrevisaoDevolucao.value = depois;
+    if (input_previsao_devolucao) {
+      input_previsao_devolucao.min = agora;
+      input_previsao_devolucao.value = depois;
     }
   }
 
-  inputDataNecessaria?.addEventListener('change', () => {
-    if (!inputPrevisaoDevolucao) return;
+  input_data_necessaria?.addEventListener('change', () => {
+    if (!input_previsao_devolucao) return;
 
-    inputPrevisaoDevolucao.min = inputDataNecessaria.value || todayDateTimeLocalPlus(0);
+    input_previsao_devolucao.min = input_data_necessaria.value || todayDateTimeLocalPlus(0);
 
     if (
-      inputPrevisaoDevolucao.value &&
-      inputDataNecessaria.value &&
-      inputPrevisaoDevolucao.value <= inputDataNecessaria.value
+      input_previsao_devolucao.value &&
+      input_data_necessaria.value &&
+      input_previsao_devolucao.value <= input_data_necessaria.value
     ) {
-      inputPrevisaoDevolucao.value = inputDataNecessaria.value;
+      input_previsao_devolucao.value = input_data_necessaria.value;
     }
+
+    carregar_frota();
   });
+
+  input_previsao_devolucao?.addEventListener('change', carregar_frota);
+  input_tipo_veiculo?.addEventListener('change', carregar_frota);
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    setErro('');
+    set_erro('');
 
     if (!form.reportValidity()) return;
 
-    const tipoVeiculo = document.getElementById('carroTipoVeiculo')?.value?.trim();
+    const tipo_veiculo = document.getElementById('carroTipoVeiculo')?.value?.trim();
     const urgencia = document.getElementById('carroUrgencia')?.value?.trim();
-    const dataNecessaria = document.getElementById('carroDataNecessaria')?.value;
-    const previsaoDevolucao = document.getElementById('carroPrevisaoDevolucao')?.value;
+    const data_necessaria = document.getElementById('carroDataNecessaria')?.value;
+    const previsao_devolucao = document.getElementById('carroPrevisaoDevolucao')?.value;
     const observacoes = document.getElementById('carroObservacoes')?.value?.trim() || '';
-    const destinos = Array.from(selectedDestinos.values());
-    const usuario = obterUsuarioLogado?.();
+    const destinos = Array.from(selected_destinos.values());
+    const usuario_solicitante = obterUsuarioLogado?.();
 
-    if (!tipoVeiculo) return setErro('Selecione o tipo de veículo.');
-    if (!urgencia) return setErro('Selecione o grau de urgência.');
-    if (!dataNecessaria) return setErro('Informe a data e hora necessária.');
-    if (!previsaoDevolucao) return setErro('Informe a previsão de devolução.');
-    if (previsaoDevolucao <= dataNecessaria) return setErro('A previsão de devolução deve ser maior que a data e hora necessária.');
-    if (!destinos.length) return setErro('Selecione pelo menos um destino.');
-    if (!usuario) return setErro('Usuário logado não identificado.');
+    if (!tipo_veiculo) return set_erro('Selecione o tipo de veículo.');
+    if (!urgencia) return set_erro('Selecione o grau de urgência.');
+    if (!data_necessaria) return set_erro('Informe a data e hora necessária.');
+    if (!previsao_devolucao) return set_erro('Informe a previsão de devolução.');
+    if (previsao_devolucao <= data_necessaria) {
+      return set_erro('A previsão de devolução deve ser maior que a data e hora necessária.');
+    }
+    if (!destinos.length) return set_erro('Selecione pelo menos um destino.');
+    if (!usuario_solicitante) return set_erro('Usuário logado não identificado.');
 
     try {
-      setSalvarLoading(true);
+      set_salvar_loading(true);
+
+      const dados_solicitante = await buscar_dados_solicitante_reserva_carro(usuario_solicitante);
+
+      const aceite_termo = await abrir_modal_termo_responsabilidade_carro({
+        nome: dados_solicitante?.nome || usuario_solicitante,
+        matricula: dados_solicitante?.matricula || '',
+        cpf: dados_solicitante?.cpf || '',
+        cnh: dados_solicitante?.cnh || '',
+        categoria_cnh: dados_solicitante?.categoria_cnh || '',
+        validade_cnh: dados_solicitante?.validade_cnh || ''
+      });
+
+      if (!aceite_termo?.aceito) {
+        return set_erro('É necessário ler e aceitar o termo para concluir a solicitação.');
+      }
 
       const payload = {
-        tipoVeiculo,
-        dataNecessaria,
-        previsaoDevolucao,
+        tipo_veiculo,
+        data_necessaria,
+        previsao_devolucao,
         destinos,
         observacoes,
         urgencia,
-        usuarioSolicitante: usuario
+        usuario_solicitante,
+        termo_aceito: 1,
+        foto_aceite_termo: aceite_termo.foto_aceite_termo,
+        termo_versao: aceite_termo.termo_versao || '2026-04',
+        nome_colaborador: dados_solicitante?.nome || usuario_solicitante,
+        matricula_colaborador: dados_solicitante?.matricula || '',
+        cpf_colaborador: dados_solicitante?.cpf || '',
+        cnh_colaborador: dados_solicitante?.cnh || '',
+        categoria_cnh: dados_solicitante?.categoria_cnh || '',
+        validade_cnh: dados_solicitante?.validade_cnh || ''
       };
 
-      const json = await salvarReservaCarro(payload, idReserva);
+      if (carro_selecionado_id) {
+        payload.veiculo_id = Number(carro_selecionado_id) || carro_selecionado_id;
+      }
+
+      const json = await salvar_reserva_carro(payload, reserva_id);
 
       fechar();
       await carregarMeusAgendamentos();
-      alert(json?.message || (isEdit ? 'Reserva atualizada com sucesso.' : 'Solicitação de reserva de carro salva com sucesso.'));
+
+      alert(
+        json?.message ||
+        (is_edit
+          ? 'Reserva atualizada com sucesso.'
+          : 'Solicitação de reserva de carro salva com sucesso.')
+      );
     } catch (err) {
-      setErro(err?.message || 'Erro ao salvar a solicitação.');
+      set_erro(err?.message || 'Erro ao salvar a solicitação.');
     } finally {
-      setSalvarLoading(false);
+      set_salvar_loading(false);
     }
   });
 
-  await carregarDestinos();
+  await Promise.all([
+    carregar_destinos(),
+    carregar_frota()
+  ]);
 }
 
 function abrirModalRecusaReservaCarro(idReserva) {
@@ -16485,6 +18236,8 @@ async function carregarMeusAgendamentos() {
 
     atualizarCardsAgendamentos(agendamentosCache);
     bindCardsFiltroAgendamento();
+    bindBuscaAgendamentos();
+    atualizarEstadoBuscaAgendamentos();
 
     if (!agendamentosCache.length) {
       tbody.innerHTML = `
@@ -16525,7 +18278,13 @@ async function editarReservaCarro(idReserva) {
   }
 }
 
-async function acaoAprovarReservaCarro(idReserva) {
+function removerModalAprovacaoGestorReservaCarro() {
+  document.getElementById('aprovacaoGestorReservaOverlay')?.remove();
+  document.getElementById('aprovacaoGestorReservaModal')?.remove();
+}
+
+async function acaoAprovarReservaCarro(idReserva, statusRecebido = '') {
+
   try {
     const APIBASE = obterApiBase();
     const usuarioId = sessionStorage.getItem('id');
@@ -16535,7 +18294,17 @@ async function acaoAprovarReservaCarro(idReserva) {
       return;
     }
 
-    const resp = await fetch(`${APIBASE}/api/permissoes/aprovar-reserva-carro/${usuarioId}`);
+    const statusAtual = String(statusRecebido || '').trim().toUpperCase();
+
+    if (!statusAtual) {
+      alert('Status da reserva não informado.');
+      return;
+    }
+
+    const resp = await fetch(
+      `${APIBASE}/api/permissoes/aprovar-reserva-carro/${usuarioId}/${encodeURIComponent(statusAtual)}`
+    );
+
     const data = await resp.json();
 
     if (!resp.ok || !data?.success) {
@@ -16543,15 +18312,281 @@ async function acaoAprovarReservaCarro(idReserva) {
       return;
     }
 
-    if (Number(data?.item?.aprovarreservacarro || 0) !== 1) {
-      alert('Você não tem permissão para aprovar reservas de carro.');
+    if (Number(data?.item?.permissaovalida || 0) !== 1) {
+      if (statusAtual === 'PENDENTE GESTOR') {
+        alert('Você não tem permissão para aprovar reservas de carro como gestor.');
+      } else {
+        alert('Você não tem permissão para aprovar reservas de carro na etapa da frota.');
+      }
       return;
     }
 
-    await abrirModalAprovacaoReservaCarro(idReserva);
+    if (statusAtual === 'PENDENTE GESTOR') {
+      const reserva = await buscarReservaCarroPorId(idReserva);
+      await abrirModalAprovacaoGestorReservaCarro(idReserva, reserva);
+      return;
+    }
+
+    if (statusAtual === 'PENDENTE FROTA' || statusAtual === 'PENDENTE') {
+      await abrirModalAprovacaoReservaCarro(idReserva);
+      return;
+    }
+
+    alert('Esta reserva não está pendente para aprovação.');
   } catch (err) {
     alert(err?.message || 'Erro ao validar permissão.');
   }
+}
+
+async function abrirModalAprovacaoGestorReservaCarro(idReserva, reservaParam = null) {
+  removerModalAprovacaoGestorReservaCarro();
+
+  const reserva = reservaParam || await buscarReservaCarroPorId(idReserva);
+  const status = String(reserva?.status_solicitacao || '').trim().toUpperCase();
+
+  if (status !== 'PENDENTE GESTOR') {
+    throw new Error('Esta reserva não está com status PENDENTE GESTOR.');
+  }
+
+  const overlay = document.createElement('div');
+  overlay.id = 'aprovacaoGestorReservaOverlay';
+  overlay.className = 'fixed inset-0 bg-black/30 backdrop-blur-sm z-[230]';
+  document.body.appendChild(overlay);
+
+  const modal = document.createElement('div');
+  modal.id = 'aprovacaoGestorReservaModal';
+  modal.className = 'fixed inset-0 z-[240]';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  const destinosHtml = Array.isArray(reserva?.destinos) && reserva.destinos.length
+    ? reserva.destinos.map(dest => {
+        const nome = dest?.nome || dest?.NOME || dest?.localtrabalho || '-';
+        return `
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-border bg-white/80">
+            ${escapeHtml(nome)}
+          </span>
+        `;
+      }).join('')
+    : `<span class="text-sm text-muted-foreground">Nenhum destino informado.</span>`;
+
+  const checklistTermo = [
+    ['Nome do colaborador', reserva?.nome_colaborador || reserva?.nomeColaborador || reserva?.usuariosolicitante || '-'],
+    ['Matrícula', reserva?.matricula_colaborador || reserva?.matriculaColaborador || '-'],
+    ['CPF', reserva?.cpf_colaborador || reserva?.cpfColaborador || '-'],
+    ['CNH', reserva?.cnh_colaborador || reserva?.cnhColaborador || '-'],
+    ['Categoria CNH', reserva?.categoria_cnh || reserva?.categoriaCnh || '-'],
+    ['Validade CNH', formatarTextoDataHora((reserva?.validade_cnh || reserva?.validadeCnh || '')).replace(' ', ' às ') || '-'],
+    ['Termo aceito', Number(reserva?.termo_aceito || reserva?.termoAceito || 0) === 1 ? 'Sim' : 'Não'],
+    ['Data do aceite', formatarTextoDataHora(reserva?.data_aceite_termo || reserva?.dataAceiteTermo || '-')],
+    ['Versão do termo', reserva?.termo_versao || reserva?.termoVersao || '-']
+  ];
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-y-auto no-scrollbar">
+      <div class="min-h-full flex items-start justify-center p-4 md:p-8">
+        <div class="w-full max-w-5xl mx-auto px-4 sm:px-6">
+          <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
+            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-semibold text-foreground">Aprovação do gestor</h3>
+                <p class="text-sm text-muted-foreground">
+                  Revise os dados da solicitação e a aceitação do termo antes de aprovar.
+                </p>
+              </div>
+              <button id="closeAprovacaoGestorReservaModal" type="button" class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center" aria-label="Fechar" title="Fechar">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div class="px-6 py-6 space-y-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="rounded-xl border border-border bg-white/60 p-4">
+                  <div class="text-xs text-muted-foreground">Reserva</div>
+                  <div class="mt-1 font-semibold">#${escapeHtml(reserva?.id || '-')}</div>
+                </div>
+
+                <div class="rounded-xl border border-border bg-white/60 p-4">
+                  <div class="text-xs text-muted-foreground">Solicitante</div>
+                  <div class="mt-1 font-semibold">${escapeHtml(reserva?.usuario_solicitante || '-')}</div>
+                </div>
+
+                <div class="rounded-xl border border-border bg-white/60 p-4">
+                  <div class="text-xs text-muted-foreground">Tipo de veículo</div>
+                  <div class="mt-1 font-semibold">${escapeHtml(reserva?.tipo_veiculo || '-')}</div>
+                </div>
+
+                <div class="rounded-xl border border-border bg-white/60 p-4">
+                  <div class="text-xs text-muted-foreground">Urgência</div>
+                  <div class="mt-1 font-semibold">${escapeHtml(reserva?.urgencia || '-')}</div>
+                </div>
+
+                <div class="rounded-xl border border-border bg-white/60 p-4">
+                  <div class="text-xs text-muted-foreground">Data necessária</div>
+                  <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(reserva?.data_necessaria || reserva?.dataNecessaria || '-'))}</div>
+                </div>
+
+                <div class="rounded-xl border border-border bg-white/60 p-4">
+                  <div class="text-xs text-muted-foreground">Previsão de devolução</div>
+                  <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(reserva?.previsao_devolucao || reserva?.previsaoDevolucao || '-'))}</div>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-white/50 p-5 space-y-3">
+                <div>
+                  <div class="text-sm font-semibold text-foreground">Destinos</div>
+                  <div class="text-xs text-muted-foreground">Locais informados na solicitação.</div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  ${destinosHtml}
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-white/50 p-5 space-y-3">
+                <div>
+                  <div class="text-sm font-semibold text-foreground">Observações da solicitação</div>
+                  <div class="text-xs text-muted-foreground">Informações preenchidas pelo solicitante.</div>
+                </div>
+                <div class="rounded-xl border border-border bg-white/70 p-4 text-sm whitespace-pre-line">
+                  ${escapeHtml(reserva?.observacoes || '-')}
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-white/50 p-5 space-y-4">
+                <div>
+                  <div class="text-sm font-semibold text-foreground">Dados do termo aceito</div>
+                  <div class="text-xs text-muted-foreground">Dados capturados no momento do aceite da solicitação.</div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  ${checklistTermo.map(([label, valor]) => `
+                    <div class="rounded-xl border border-border bg-white/70 px-4 py-3">
+                      <div class="text-xs text-muted-foreground">${escapeHtml(label)}</div>
+                      <div class="mt-1 text-sm font-medium text-foreground">${escapeHtml(valor || '-')}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-white/50 p-5 space-y-4">
+                <div>
+                  <div class="text-sm font-semibold text-foreground">Foto do aceite do termo</div>
+                  <div class="text-xs text-muted-foreground">Imagem registrada no momento da aceitação.</div>
+                </div>
+
+                ${
+                  String(reserva?.foto_aceite_termo || reserva?.fotoAceiteTermo || '').trim()
+                    ? `
+                      <a href="${escapeHtml(reserva?.foto_aceite_termo || reserva?.fotoAceiteTermo)}" target="_blank" rel="noopener noreferrer" class="block">
+                        <img
+                          src="${escapeHtml(reserva?.foto_aceite_termo || reserva?.fotoAceiteTermo)}"
+                          alt="Foto do aceite do termo"
+                          class="w-full max-h-[420px] object-contain rounded-xl border border-border bg-slate-100"
+                        >
+                      </a>
+                    `
+                    : `
+                      <div class="rounded-xl border border-border bg-white/70 p-4 text-sm text-amber-700">
+                        Nenhuma foto de aceite foi encontrada nesta reserva.
+                      </div>
+                    `
+                }
+              </div>
+
+              <p id="aprovacaoGestorReservaErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
+
+              <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                <button id="btnConfirmarAprovacaoGestorReserva" type="button" class="sm:flex-1 rounded-xl bg-green-600 text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+                  Aprovar solicitação
+                </button>
+                <button id="btnCancelarAprovacaoGestorReserva" type="button" class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  function fechar() {
+    removerModalAprovacaoGestorReservaCarro();
+  }
+
+  function setErro(msg) {
+    const el = document.getElementById('aprovacaoGestorReservaErro');
+    if (!el) return;
+
+    if (!msg) {
+      el.textContent = '';
+      el.classList.add('hidden');
+      return;
+    }
+
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function setLoading(loading) {
+    const btn = document.getElementById('btnConfirmarAprovacaoGestorReserva');
+    if (!btn) return;
+    btn.disabled = !!loading;
+    btn.textContent = loading ? 'Aprovando...' : 'Aprovar solicitação';
+    btn.classList.toggle('opacity-70', !!loading);
+  }
+
+  overlay.addEventListener('click', fechar);
+  document.getElementById('closeAprovacaoGestorReservaModal')?.addEventListener('click', fechar);
+  document.getElementById('btnCancelarAprovacaoGestorReserva')?.addEventListener('click', fechar);
+
+  document.getElementById('btnConfirmarAprovacaoGestorReserva')?.addEventListener('click', async () => {
+    try {
+      setErro('');
+
+      if (Number(reserva?.termo_aceito || reserva?.termoAceito || 0) !== 1) {
+        return setErro('Esta reserva ainda não possui termo aceito.');
+      }
+
+      setLoading(true);
+      const json = await aprovarReservaGestorCarro(idReserva);
+      fechar();
+      await carregarMeusAgendamentos();
+      alert(json?.message || 'Reserva aprovada pelo gestor com sucesso.');
+    } catch (err) {
+      setErro(err?.message || 'Erro ao aprovar solicitação do gestor.');
+    } finally {
+      setLoading(false);
+    }
+  });
+}
+
+async function aprovarReservaGestorCarro(idReserva) {
+  const APIBASE = obterApiBase();
+  if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
+
+  const usuario = obterUsuarioLogado?.();
+  if (!usuario) throw new Error('Usuário logado não identificado.');
+
+  const resp = await fetch(`${APIBASE}/api/reservas-carro/${encodeURIComponent(idReserva)}/aprovar-gestor`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      usuarioAprovacaoGestor: usuario
+    })
+  });
+
+  const json = await resp.json().catch(() => ({}));
+
+  if (!resp.ok || !json?.success) {
+    throw new Error(json?.message || 'Erro ao aprovar reserva pelo gestor.');
+  }
+
+  return json;
 }
 
 async function aprovarReservaCarro(idReserva, payload = {}) {
@@ -16561,7 +18596,21 @@ async function aprovarReservaCarro(idReserva, payload = {}) {
   const usuario = obterUsuarioLogado?.() || '';
   if (!usuario) throw new Error('Usuário logado não identificado.');
 
-  const resp = await fetch(`${APIBASE}/api/reservas-carro/${encodeURIComponent(idReserva)}/aprovar`, {
+  const nomeColaborador = String(
+    payload?.nome_colaborador ||
+    payload?.usuario_solicitante ||
+    payload?.nome_completo ||
+    ''
+  );
+
+  const ehFormulario = nomeColaborador.toUpperCase().includes('FORMULÁRIO')
+    || nomeColaborador.toUpperCase().includes('FORMULARIO');
+
+  const rotaAprovacao = ehFormulario
+    ? `/api/reservas-carro-formulario/${encodeURIComponent(idReserva)}/aprovar`
+    : `/api/reservas-carro/${encodeURIComponent(idReserva)}/aprovar`;
+
+  const resp = await fetch(`${APIBASE}${rotaAprovacao}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -16579,7 +18628,6 @@ async function aprovarReservaCarro(idReserva, payload = {}) {
   return json;
 }
 
-
 async function listarVeiculosDisponiveisReserva(idReserva) {
   const APIBASE = obterApiBase();
   if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
@@ -16593,7 +18641,6 @@ async function listarVeiculosDisponiveisReserva(idReserva) {
 
   return json;
 }
-
 
 function removerModalAprovacaoReservaCarro() {
   document.getElementById('aprovacaoReservaOverlay')?.remove();
@@ -16614,17 +18661,137 @@ function classeDisponibilidadeVeiculo(status) {
   return 'bg-slate-100 text-slate-700 border border-slate-200';
 }
 
+function normalizarCategoriasCnh(valor) {
+  const bruto = String(valor ?? '').trim().toUpperCase();
+  if (!bruto) return [];
+
+  const partes = bruto
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const categorias = [];
+
+  partes.forEach((parte) => {
+    if (parte.includes(' ')) {
+      parte.split(/\s+/).map((s) => s.trim()).filter(Boolean).forEach((item) => categorias.push(item));
+      return;
+    }
+    categorias.push(parte);
+  });
+
+  return [...new Set(categorias)];
+}
+
+function descreverCategoriaCnh(categoria) {
+  const c = String(categoria ?? '').trim().toUpperCase();
+
+  const mapa = {
+    A: 'Categoria A - Motocicletas, motonetas e triciclos',
+    B: 'Categoria B - Automóveis e utilitários de até 3.500 kg',
+    C: 'Categoria C - Veículos de carga acima de 3.500 kg',
+    D: 'Categoria D - Veículos para transporte de passageiros',
+    E: 'Categoria E - Combinações de veículos / carretas',
+    AB: 'Categoria AB - Motocicletas e automóveis',
+    AC: 'Categoria AC - Motocicletas e veículos de carga',
+    AD: 'Categoria AD - Motocicletas e transporte de passageiros',
+    AE: 'Categoria AE - Motocicletas e combinações de veículos'
+  };
+
+  return mapa[c] || `Categoria ${c}`;
+}
+
+function analisarValidadeCnh(valor) {
+  const texto = String(valor ?? '').trim();
+  if (!texto) {
+    return {
+      possuiData: false,
+      diasRestantes: null,
+      status: 'SEM_DATA',
+      label: 'Não informada',
+      classe: 'bg-slate-100 text-slate-700 border-slate-200'
+    };
+  }
+
+  const data = new Date(`${texto.slice(0, 10)}T12:00:00`);
+  if (Number.isNaN(data.getTime())) {
+    return {
+      possuiData: false,
+      diasRestantes: null,
+      status: 'INVALIDA',
+      label: texto,
+      classe: 'bg-slate-100 text-slate-700 border-slate-200'
+    };
+  }
+
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  const base = new Date(data);
+  base.setHours(0, 0, 0, 0);
+
+  const diffMs = base.getTime() - hoje.getTime();
+  const diasRestantes = Math.ceil(diffMs / 86400000);
+
+  if (diasRestantes < 0) {
+    return {
+      possuiData: true,
+      diasRestantes,
+      status: 'VENCIDA',
+      label: `Vencida há ${Math.abs(diasRestantes)} dia(s)`,
+      classe: 'bg-red-100 text-red-700 border-red-200'
+    };
+  }
+
+  if (diasRestantes <= 5) {
+    return {
+      possuiData: true,
+      diasRestantes,
+      status: 'CRITICA',
+      label: `Vence em ${diasRestantes} dia(s)`,
+      classe: 'bg-red-100 text-red-700 border-red-200'
+    };
+  }
+
+  if (diasRestantes <= 30) {
+    return {
+      possuiData: true,
+      diasRestantes,
+      status: 'ATENCAO',
+      label: `Vence em ${diasRestantes} dia(s)`,
+      classe: 'bg-orange-100 text-orange-700 border-orange-200'
+    };
+  }
+
+  return {
+    possuiData: true,
+    diasRestantes,
+    status: 'OK',
+    label: `Válida por mais ${diasRestantes} dia(s)`,
+    classe: 'bg-emerald-100 text-emerald-700 border-emerald-200'
+  };
+}
 
 async function abrirModalAprovacaoReservaCarro(idReserva) {
-
   removerModalAprovacaoReservaCarro();
 
   const mobile = isMobileDevice();
+  const fotos = {
+    frente: '',
+    traseira: '',
+    lateralEsquerda: '',
+    lateralDireita: '',
+    painel: ''
+  };
+
+  let reserva = null;
+  let veiculos = [];
+  let veiculoSelecionado = null;
+  let streamCamera = null;
 
   const overlay = document.createElement('div');
   overlay.id = 'aprovacaoReservaOverlay';
   overlay.className = 'fixed inset-0 bg-black/30 backdrop-blur-sm z-[230]';
-  document.body.appendChild(overlay);
 
   const modal = document.createElement('div');
   modal.id = 'aprovacaoReservaModal';
@@ -16632,159 +18799,300 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
   modal.setAttribute('role', 'dialog');
   modal.setAttribute('aria-modal', 'true');
 
+  function montarCampoFotoMobile(label, tipo) {
+    const mapa = {
+      frente: ['previewFotoFrente', 'placeholderFotoFrente', 'nomeFotoFrente', 'inputFotoFrente'],
+      traseira: ['previewFotoTraseira', 'placeholderFotoTraseira', 'nomeFotoTraseira', 'inputFotoTraseira'],
+      lateralEsquerda: ['previewFotoLateralEsquerda', 'placeholderFotoLateralEsquerda', 'nomeFotoLateralEsquerda', 'inputFotoLateralEsquerda'],
+      lateralDireita: ['previewFotoLateralDireita', 'placeholderFotoLateralDireita', 'nomeFotoLateralDireita', 'inputFotoLateralDireita'],
+      painel: ['previewFotoPainel', 'placeholderFotoPainel', 'nomeFotoPainel', 'inputFotoPainel']
+    };
+
+    const [imgId, placeholderId, nomeId, inputId] = mapa[tipo] || [];
+
+    return `
+      <label class="rounded-xl border border-border bg-white/70 p-3 space-y-3 cursor-pointer block">
+        <div class="flex items-center justify-between gap-2">
+          <div class="text-sm font-semibold text-foreground">${escapeHtml(label)}</div>
+          <span class="text-xs text-muted-foreground">Toque para anexar</span>
+        </div>
+
+        <div class="rounded-lg border border-dashed border-border bg-slate-50 overflow-hidden h-[130px] flex items-center justify-center">
+          <img id="${imgId}" alt="${escapeHtml(label)}" class="hidden w-full h-full object-cover">
+          <div id="${placeholderId}" class="text-xs text-muted-foreground px-3 text-center">
+            Nenhuma foto enviada
+          </div>
+        </div>
+
+        <div id="${nomeId}" class="text-[11px] text-muted-foreground truncate">
+          Aguardando imagem
+        </div>
+
+        <input id="${inputId}" type="file" accept="image/*" capture="environment" class="hidden">
+      </label>
+    `;
+  }
+
+  function montarCardFotoDesktopCompacto(label, tipo) {
+    const mapa = {
+      frente: ['previewFotoFrente', 'placeholderFotoFrente', 'nomeFotoFrente'],
+      traseira: ['previewFotoTraseira', 'placeholderFotoTraseira', 'nomeFotoTraseira'],
+      lateralEsquerda: ['previewFotoLateralEsquerda', 'placeholderFotoLateralEsquerda', 'nomeFotoLateralEsquerda'],
+      lateralDireita: ['previewFotoLateralDireita', 'placeholderFotoLateralDireita', 'nomeFotoLateralDireita'],
+      painel: ['previewFotoPainel', 'placeholderFotoPainel', 'nomeFotoPainel']
+    };
+
+    const [imgId, placeholderId, nomeId] = mapa[tipo] || [];
+
+    return `
+      <div class="rounded-xl border border-border bg-white/70 p-3 space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <div class="text-sm font-semibold text-foreground">${escapeHtml(label)}</div>
+          <button
+            type="button"
+            class="btnCapturarFoto inline-flex items-center justify-center rounded-lg border border-border bg-white px-3 py-2 text-xs font-medium hover:bg-slate-50 transition-all"
+            data-tipo="${escapeHtml(tipo)}"
+          >
+            Capturar
+          </button>
+        </div>
+
+        <div class="rounded-lg border border-dashed border-border bg-slate-50 overflow-hidden h-[120px] md:h-[130px] flex items-center justify-center">
+          <img id="${imgId}" alt="${escapeHtml(label)}" class="hidden w-full h-full object-cover">
+          <div id="${placeholderId}" class="text-xs text-muted-foreground px-3 text-center">
+            Nenhuma foto capturada
+          </div>
+        </div>
+
+        <div id="${nomeId}" class="text-[11px] text-muted-foreground truncate">
+          Aguardando captura
+        </div>
+      </div>
+    `;
+  }
+
+  const fotosHtml = mobile
+    ? `
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        ${montarCampoFotoMobile('Frente', 'frente')}
+        ${montarCampoFotoMobile('Traseira', 'traseira')}
+        ${montarCampoFotoMobile('Lateral esquerda', 'lateralEsquerda')}
+        ${montarCampoFotoMobile('Lateral direita', 'lateralDireita')}
+        <div class="sm:col-span-2">
+          ${montarCampoFotoMobile('Painel', 'painel')}
+        </div>
+      </div>
+    `
+    : `
+      <div class="space-y-4">
+        <div class="rounded-xl border border-border bg-white/60 p-3">
+          <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
+            <div>
+              <div class="text-sm font-semibold text-foreground">Câmera ao vivo</div>
+              <div class="text-xs text-muted-foreground">
+                Use a câmera apenas para capturar as imagens abaixo.
+              </div>
+            </div>
+
+            <button
+              id="btnIniciarCameraReserva"
+              type="button"
+              class="rounded-xl border border-border bg-white/80 px-3 py-2 text-sm font-medium hover:bg-white transition-all"
+            >
+              Iniciar câmera
+            </button>
+          </div>
+
+          <div class="rounded-xl border border-border bg-black/90 overflow-hidden">
+            <video
+              id="cameraPreviewReserva"
+              autoplay
+              playsinline
+              muted
+              webkit-playsinline
+              class="w-full h-[140px] md:h-[150px] object-cover bg-black"
+            ></video>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          ${montarCardFotoDesktopCompacto('Frente', 'frente')}
+          ${montarCardFotoDesktopCompacto('Traseira', 'traseira')}
+          ${montarCardFotoDesktopCompacto('Lateral esquerda', 'lateralEsquerda')}
+          ${montarCardFotoDesktopCompacto('Lateral direita', 'lateralDireita')}
+          ${montarCardFotoDesktopCompacto('Painel', 'painel')}
+        </div>
+      </div>
+
+      <canvas id="canvasCapturaReserva" class="hidden"></canvas>
+    `;
+
   modal.innerHTML = `
     <div class="w-full h-full overflow-y-auto no-scrollbar">
-      <div class="min-h-full flex items-start justify-center p-4 md:p-8">
-        <div class="w-full max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="min-h-full flex items-start justify-center p-3 md:p-6">
+        <div class="w-full max-w-5xl mx-auto px-2 sm:px-4">
           <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
-            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+            <div class="px-5 py-4 border-b border-border flex items-start justify-between gap-4">
               <div>
-                <h3 class="text-lg font-semibold text-foreground">Aprovar agendamento</h3>
-                <p class="text-sm text-muted-foreground">
-                  Selecione o veículo, preencha o checklist e ${
-                    mobile
-                      ? 'anexe as fotos obrigatórias usando a câmera do celular.'
-                      : 'tire as fotos obrigatórias pela câmera.'
-                  }
+                <h3 class="text-base md:text-lg font-semibold text-foreground">Aprovar agendamento</h3>
+                <p class="text-xs md:text-sm text-muted-foreground">
+                  Selecione o veículo, valide a saída e registre as fotos obrigatórias.
                 </p>
               </div>
-              <button id="closeAprovacaoReservaModal" type="button" class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center" aria-label="Fechar" title="Fechar">
+
+              <button
+                id="closeAprovacaoReservaModal"
+                type="button"
+                class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+                aria-label="Fechar"
+                title="Fechar"
+              >
                 <i class="fas fa-times"></i>
               </button>
             </div>
 
-            <form id="formAprovacaoReservaCarro" class="px-6 py-6 space-y-5">
-              <div id="resumoAprovacaoReserva" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+            <form id="formAprovacaoReservaCarro" class="px-5 py-4 space-y-4">
+              <div id="resumoAprovacaoReserva" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3"></div>
 
-              <div class="space-y-2">
+              <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-3">
                 <div class="flex items-center justify-between gap-3 flex-wrap">
-                  <label class="text-sm font-medium">Veículos disponíveis</label>
+                  <div>
+                    <div class="text-sm font-semibold text-foreground">Veículos disponíveis</div>
+                    <div class="text-xs text-muted-foreground">Selecione apenas veículo com status DISPONIVEL.</div>
+                  </div>
                   <span id="veiculosDisponiveisCount" class="text-xs text-muted-foreground">Carregando...</span>
                 </div>
 
-                <div id="veiculosDisponiveisBox" class="rounded-xl border border-border bg-white/50 p-3 max-h-80 overflow-auto no-scrollbar space-y-3">
-                  <p class="text-sm text-muted-foreground">Carregando veículos...</p>
+                <div id="veiculosDisponiveisBox" class="grid grid-cols-1 lg:grid-cols-2 gap-3 max-h-[280px] overflow-auto no-scrollbar pr-1">
+                  <div class="rounded-xl border border-border bg-white/70 p-4 text-sm text-muted-foreground">
+                    Carregando veículos...
+                  </div>
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <label for="kmSaidaReservaCarro" class="text-sm font-medium">KM de saída</label>
-                  <input id="kmSaidaReservaCarro" type="number" min="0" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30" placeholder="Informe a quilometragem">
-                </div>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-3">
+                  <div class="text-sm font-semibold text-foreground">Saída do veículo</div>
 
-                <div class="space-y-2">
-                  <label for="nivelCombustivelReservaCarro" class="text-sm font-medium">Nível de combustível</label>
-                  <select id="nivelCombustivelReservaCarro" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30">
-                    <option value="">Selecione...</option>
-                    <option value="VAZIO">Vazio</option>
-                    <option value="1/4">1/4</option>
-                    <option value="1/2">1/2</option>
-                    <option value="3/4">3/4</option>
-                    <option value="CHEIO">Cheio</option>
-                  </select>
-                </div>
-              </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="space-y-2">
+                      <label for="kmAtualVeiculoReservaCarro" class="text-sm font-medium">KM atual do veículo</label>
+                      <input
+                        id="kmAtualVeiculoReservaCarro"
+                        type="text"
+                        class="w-full rounded-xl border border-border bg-slate-100 px-4 py-3 outline-none"
+                        placeholder="Selecione um veículo"
+                        readonly
+                      >
+                    </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-4 py-3 cursor-pointer">
-                  <input id="chkDocumento" type="checkbox">
-                  <span class="text-sm">Documento do veículo OK</span>
-                </label>
+                    <div class="space-y-2">
+                      <label for="kmSaidaReservaCarro" class="text-sm font-medium">KM de saída</label>
+                      <input
+                        id="kmSaidaReservaCarro"
+                        type="number"
+                        min="0"
+                        class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                        placeholder="Informe a quilometragem"
+                      >
+                    </div>
 
-                <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-4 py-3 cursor-pointer">
-                  <input id="chkPneu" type="checkbox">
-                  <span class="text-sm">Pneus OK</span>
-                </label>
-
-                <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-4 py-3 cursor-pointer">
-                  <input id="chkLataria" type="checkbox">
-                  <span class="text-sm">Lataria OK</span>
-                </label>
-
-                <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-4 py-3 cursor-pointer">
-                  <input id="chkLuzes" type="checkbox">
-                  <span class="text-sm">Luzes OK</span>
-                </label>
-
-                <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-4 py-3 cursor-pointer">
-                  <input id="chkLimpeza" type="checkbox">
-                  <span class="text-sm">Limpeza OK</span>
-                </label>
-
-                <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-4 py-3 cursor-pointer">
-                  <input id="chkCombustivel" type="checkbox">
-                  <span class="text-sm">Combustível conferido</span>
-                </label>
-              </div>
-
-              <div class="space-y-2">
-                <label for="observacaoChecklistReservaCarro" class="text-sm font-medium">Observações do checklist</label>
-                <textarea id="observacaoChecklistReservaCarro" rows="4" class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30 resize-none" placeholder="Descreva avarias, observações da saída, acessórios, etc."></textarea>
-              </div>
-
-              <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-4">
-                <div class="flex items-center justify-between gap-3 flex-wrap">
-                  <div>
-                    <div class="text-sm font-semibold text-foreground">Fotos obrigatórias</div>
-                    <div class="text-xs text-muted-foreground">
-                      ${mobile
-                        ? 'No celular, toque em cada campo para abrir a câmera como se fosse um anexo.'
-                        : 'No computador, use a câmera ao vivo para tirar as fotos.'}
+                    <div class="space-y-2 sm:col-span-2">
+                      <label for="nivelCombustivelReservaCarro" class="text-sm font-medium">Nível de combustível</label>
+                      <select
+                        id="nivelCombustivelReservaCarro"
+                        class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+                      >
+                        <option value="">Selecione...</option>
+                        <option value="VAZIO">Vazio</option>
+                        <option value="1/4">1/4</option>
+                        <option value="1/2">1/2</option>
+                        <option value="3/4">3/4</option>
+                        <option value="CHEIO">Cheio</option>
+                      </select>
                     </div>
                   </div>
 
-                  ${mobile ? '' : `
-                    <button id="btnIniciarCameraReserva" type="button" class="rounded-xl border border-border bg-white/70 px-4 py-2 text-sm font-medium hover:bg-white transition-all">
-                      Iniciar câmera
-                    </button>
-                  `}
+                  <p class="text-xs text-muted-foreground">
+                    O KM de saída não pode ser menor que o KM atual do veículo selecionado.
+                  </p>
                 </div>
 
-                ${mobile ? `
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${montarCampoFotoMobile('Frente', 'frente')}
-                    ${montarCampoFotoMobile('Traseira', 'traseira')}
-                    ${montarCampoFotoMobile('Lateral esquerda', 'lateralEsquerda')}
-                    ${montarCampoFotoMobile('Lateral direita', 'lateralDireita')}
-                    <div class="md:col-span-2">
-                      ${montarCampoFotoMobile('Painel de instrumentos', 'painel')}
-                    </div>
-                  </div>
-                ` : `
-                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div class="rounded-xl border border-border bg-black/80 overflow-hidden">
-                      <video
-                        id="cameraPreviewReserva"
-                        autoplay
-                        playsinline
-                        muted
-                        webkit-playsinline
-                        class="w-full h-[320px] object-cover rounded-xl bg-black"
-                      ></video>
-                    </div>
+                <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-3">
+                  <div class="text-sm font-semibold text-foreground">Checklist de saída</div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      ${montarCardFotoDesktop('Frente', 'frente')}
-                      ${montarCardFotoDesktop('Traseira', 'traseira')}
-                      ${montarCardFotoDesktop('Lateral esquerda', 'lateralEsquerda')}
-                      ${montarCardFotoDesktop('Lateral direita', 'lateralDireita')}
-                      <div class="sm:col-span-2">
-                        ${montarCardFotoDesktop('Painel de instrumentos', 'painel')}
-                      </div>
-                    </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-3 py-2.5 cursor-pointer">
+                      <input id="chkDocumento" type="checkbox">
+                      <span class="text-sm">Documento OK</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-3 py-2.5 cursor-pointer">
+                      <input id="chkPneu" type="checkbox">
+                      <span class="text-sm">Pneus OK</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-3 py-2.5 cursor-pointer">
+                      <input id="chkLataria" type="checkbox">
+                      <span class="text-sm">Lataria OK</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-3 py-2.5 cursor-pointer">
+                      <input id="chkLuzes" type="checkbox">
+                      <span class="text-sm">Luzes OK</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-3 py-2.5 cursor-pointer">
+                      <input id="chkLimpeza" type="checkbox">
+                      <span class="text-sm">Limpeza OK</span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 px-3 py-2.5 cursor-pointer">
+                      <input id="chkCombustivel" type="checkbox">
+                      <span class="text-sm">Combustível conferido</span>
+                    </label>
                   </div>
-                  <canvas id="canvasCapturaReserva" class="hidden"></canvas>
-                `}
+
+                  <div class="space-y-2">
+                    <label for="observacaoChecklistReservaCarro" class="text-sm font-medium">Observações</label>
+                    <textarea
+                      id="observacaoChecklistReservaCarro"
+                      rows="3"
+                      class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                      placeholder="Avarias, acessórios, ressalvas, observações gerais..."
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-3">
+                <div>
+                  <div class="text-sm font-semibold text-foreground">Fotos obrigatórias</div>
+                  <div class="text-xs text-muted-foreground">
+                    ${mobile
+                      ? 'No celular, toque em cada campo para abrir a câmera ou anexar a imagem.'
+                      : 'Capture as 5 imagens obrigatórias do veículo usando os quadros abaixo.'}
+                  </div>
+                </div>
+
+                ${fotosHtml}
               </div>
 
               <p id="aprovacaoReservaErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
 
-              <div class="pt-2 flex flex-col sm:flex-row gap-3">
-                <button id="btnConfirmarAprovacaoReserva" type="submit" class="sm:flex-1 rounded-xl bg-green-600 text-white px-4 py-3 font-medium hover:opacity-90 transition-all">
+              <div class="pt-1 flex flex-col sm:flex-row gap-3">
+                <button
+                  id="btnConfirmarAprovacaoReserva"
+                  type="submit"
+                  class="sm:flex-1 rounded-xl bg-green-600 text-white px-4 py-3 font-medium hover:opacity-90 transition-all"
+                >
                   Confirmar aprovação
                 </button>
-                <button id="btnCancelarAprovacaoReserva" type="button" class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all">
+                <button
+                  id="btnCancelarAprovacaoReserva"
+                  type="button"
+                  class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all"
+                >
                   Cancelar
                 </button>
               </div>
@@ -16795,29 +19103,59 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
     </div>
   `;
 
+  document.body.appendChild(overlay);
   document.body.appendChild(modal);
 
-  const form = document.getElementById('formAprovacaoReservaCarro');
-  const btnConfirmar = document.getElementById('btnConfirmarAprovacaoReserva');
-  const boxVeiculos = document.getElementById('veiculosDisponiveisBox');
-  const resumo = document.getElementById('resumoAprovacaoReserva');
-  const countEl = document.getElementById('veiculosDisponiveisCount');
-  const video = document.getElementById('cameraPreviewReserva');
-  const canvas = document.getElementById('canvasCapturaReserva');
-  const btnIniciarCamera = document.getElementById('btnIniciarCameraReserva');
+  const $ = (id) => document.getElementById(id);
 
-  let reserva = null;
-  let veiculos = [];
-  let veiculoSelecionado = null;
-  let streamCamera = null;
+  const form = $('formAprovacaoReservaCarro');
+  const btnConfirmar = $('btnConfirmarAprovacaoReserva');
+  const boxVeiculos = $('veiculosDisponiveisBox');
+  const resumo = $('resumoAprovacaoReserva');
+  const countEl = $('veiculosDisponiveisCount');
+  const video = $('cameraPreviewReserva');
+  const canvas = $('canvasCapturaReserva');
+  const btnIniciarCamera = $('btnIniciarCameraReserva');
+  const inputKmAtual = $('kmAtualVeiculoReservaCarro');
+  const inputKmSaida = $('kmSaidaReservaCarro');
 
-  const fotos = {
-    frente: '',
-    traseira: '',
-    lateralEsquerda: '',
-    lateralDireita: '',
-    painel: ''
+  const getReservaCampo = (...keys) => {
+    for (const k of keys) {
+      const valor = reserva?.[k];
+      if (valor !== undefined && valor !== null && valor !== '') return valor;
+    }
+    return undefined;
   };
+
+  const getVeiculoCampo = (veiculo, ...keys) => {
+    for (const k of keys) {
+      const valor = veiculo?.[k];
+      if (valor !== undefined && valor !== null && valor !== '') return valor;
+    }
+    return undefined;
+  };
+
+  function normalizarStatusVeiculo(valor) {
+    return String(valor || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, '_');
+  }
+
+  function veiculoEstaDisponivel(veiculo) {
+    const status = getVeiculoCampo(
+      veiculo,
+      'status_veiculo',
+      'statusveiculo',
+      'statusVeiculo',
+      'disponibilidade',
+      'STATUS_VEICULO'
+    );
+
+    return normalizarStatusVeiculo(status) === 'DISPONIVEL';
+  }
 
   function fechar() {
     pararCamera();
@@ -16825,83 +19163,258 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
   }
 
   function setErro(msg) {
-    const el = document.getElementById('aprovacaoReservaErro');
+    const el = $('aprovacaoReservaErro');
     if (!el) return;
-
     if (!msg) {
       el.textContent = '';
       el.classList.add('hidden');
       return;
     }
-
     el.textContent = msg;
     el.classList.remove('hidden');
   }
 
   function setLoading(loading) {
     if (!btnConfirmar) return;
-    btnConfirmar.disabled = loading;
+    btnConfirmar.disabled = !!loading;
     btnConfirmar.textContent = loading ? 'Aprovando...' : 'Confirmar aprovação';
-    btnConfirmar.classList.toggle('opacity-70', loading);
+    btnConfirmar.classList.toggle('opacity-70', !!loading);
   }
 
   function renderResumo() {
     if (!resumo || !reserva) return;
 
+    const idReservaTexto = getReservaCampo('id', 'ID') ?? '-';
+    const usuarioTexto = getReservaCampo('usuariosolicitante', 'usuarioSolicitante', 'usuario_solicitante') ?? '-';
+    const tipoTexto = getReservaCampo('tipoveiculo', 'tipoVeiculo', 'tipo_veiculo') ?? '-';
+    const urgenciaTexto = getReservaCampo('urgencia') ?? '-';
+    const dataNecessariaTexto = getReservaCampo('datanecessaria', 'dataNecessaria', 'data_necessaria') ?? '-';
+    const previsaoDevolucaoTexto = getReservaCampo('previsaodevolucao', 'previsaoDevolucao', 'previsao_devolucao') ?? '-';
+
+    const termoAceito = Number(getReservaCampo('termoaceito', 'termoAceito', 'termo_aceito') || 0) === 1;
+    const dataAceite = getReservaCampo('dataaceitetermo', 'dataAceiteTermo', 'data_aceite_termo') ?? '-';
+    const termoVersao = getReservaCampo('termoversao', 'termoVersao', 'termo_versao') ?? '-';
+    const nomeColaborador = getReservaCampo('nomecolaborador', 'nomeColaborador', 'nome_colaborador') ?? usuarioTexto;
+    const matriculaColaborador = getReservaCampo('matriculacolaborador', 'matriculaColaborador', 'matricula_colaborador') ?? '-';
+    const cpfColaborador = getReservaCampo('cpfcolaborador', 'cpfColaborador', 'cpf_colaborador') ?? '-';
+    const cnhColaborador = getReservaCampo('cnhcolaborador', 'cnhColaborador', 'cnh_colaborador') ?? '-';
+    const categoriaCnhBruta = getReservaCampo('categoriacnh', 'categoriaCnh', 'categoria_cnh') ?? '';
+    const validadeCnh = getReservaCampo('validadecnh', 'validadeCnh', 'validade_cnh') ?? '';
+
+    const categorias = normalizarCategoriasCnh(categoriaCnhBruta);
+    const categoriasHtml = categorias.length
+      ? categorias.map((cat) => `
+          <div class="rounded-lg border border-border bg-white/80 px-3 py-2">
+            <div class="text-xs font-semibold text-foreground">${escapeHtml(cat)}</div>
+            <div class="text-[11px] text-muted-foreground">${escapeHtml(descreverCategoriaCnh(cat))}</div>
+          </div>
+        `).join('')
+      : `<div class="text-sm text-muted-foreground">Categoria não informada.</div>`;
+
+    const validadeInfo = analisarValidadeCnh(validadeCnh);
+
     resumo.innerHTML = `
       <div class="rounded-xl border border-border bg-white/60 p-4">
         <div class="text-xs text-muted-foreground">Reserva</div>
-        <div class="mt-1 font-semibold">#${escapeHtml(reserva.id || '-')}</div>
+        <div class="mt-1 font-semibold">${escapeHtml(idReservaTexto)}</div>
       </div>
+
       <div class="rounded-xl border border-border bg-white/60 p-4">
+        <div class="text-xs text-muted-foreground">Solicitante</div>
+        <div class="mt-1 font-semibold">${escapeHtml(usuarioTexto)}</div>
+      </div>
+
+      <div class="rounded-xl border border-border bg-white/60 p-4">
+        <div class="text-xs text-muted-foreground">Tipo solicitado</div>
+        <div class="mt-1 font-semibold">${escapeHtml(tipoTexto)}</div>
+      </div>
+
+      <div class="rounded-xl border border-border bg-white/60 p-4">
+        <div class="text-xs text-muted-foreground">Urgência</div>
+        <div class="mt-1 font-semibold">${escapeHtml(urgenciaTexto)}</div>
+      </div>
+
+      <div class="rounded-xl border border-border bg-white/60 p-4 sm:col-span-2">
         <div class="text-xs text-muted-foreground">Data necessária</div>
-        <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(reserva.dataNecessaria || ''))}</div>
+        <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(dataNecessariaTexto))}</div>
       </div>
-      <div class="rounded-xl border border-border bg-white/60 p-4">
+
+      <div class="rounded-xl border border-border bg-white/60 p-4 sm:col-span-2">
         <div class="text-xs text-muted-foreground">Previsão de devolução</div>
-        <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(reserva.previsaoDevolucao || ''))}</div>
+        <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(previsaoDevolucaoTexto))}</div>
+      </div>
+
+      <div class="rounded-xl border ${termoAceito ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'} p-4 sm:col-span-2 xl:col-span-4">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <div class="text-sm font-semibold text-foreground">Aceite do termo</div>
+            <div class="text-xs text-muted-foreground">Dados gravados na solicitação de reserva.</div>
+          </div>
+
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${termoAceito ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-red-100 text-red-700 border-red-200'}">
+            ${termoAceito ? 'Termo aceito' : 'Termo não aceito'}
+          </span>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 text-sm">
+          <div class="rounded-lg border border-border bg-white/80 px-3 py-3">
+            <div class="text-xs text-muted-foreground">Colaborador</div>
+            <div class="mt-1 font-semibold">${escapeHtml(nomeColaborador)}</div>
+          </div>
+
+          <div class="rounded-lg border border-border bg-white/80 px-3 py-3">
+            <div class="text-xs text-muted-foreground">Matrícula</div>
+            <div class="mt-1 font-semibold">${escapeHtml(matriculaColaborador)}</div>
+          </div>
+
+          <div class="rounded-lg border border-border bg-white/80 px-3 py-3">
+            <div class="text-xs text-muted-foreground">CPF</div>
+            <div class="mt-1 font-semibold">${escapeHtml(cpfColaborador)}</div>
+          </div>
+
+          <div class="rounded-lg border border-border bg-white/80 px-3 py-3">
+            <div class="text-xs text-muted-foreground">Versão do termo</div>
+            <div class="mt-1 font-semibold">${escapeHtml(termoVersao)}</div>
+          </div>
+
+          <div class="rounded-lg border border-border bg-white/80 px-3 py-3 md:col-span-2 xl:col-span-4">
+            <div class="text-xs text-muted-foreground">Data do aceite</div>
+            <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(dataAceite))}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-border bg-white/60 p-4 sm:col-span-2 xl:col-span-4">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <div class="text-sm font-semibold text-foreground">CNH do colaborador</div>
+            <div class="text-xs text-muted-foreground">Validação visual da categoria e da validade antes da aprovação.</div>
+          </div>
+
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${validadeInfo.classe}">
+            ${escapeHtml(validadeInfo.label)}
+          </span>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="rounded-lg border border-border bg-white/80 px-4 py-3">
+            <div class="text-xs text-muted-foreground">Número da CNH</div>
+            <div class="mt-1 font-semibold">${escapeHtml(cnhColaborador || '-')}</div>
+          </div>
+
+          <div class="rounded-lg border border-border bg-white/80 px-4 py-3">
+            <div class="text-xs text-muted-foreground">Validade</div>
+            <div class="mt-2 flex items-center gap-2 flex-wrap">
+              <span class="font-semibold">${escapeHtml(validadeCnh ? String(validadeCnh).slice(0, 10).split('-').reverse().join('/') : '-')}</span>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${validadeInfo.classe}">
+                ${escapeHtml(validadeInfo.label)}
+              </span>
+            </div>
+          </div>
+
+          <div class="rounded-lg border border-border bg-white/80 px-4 py-3">
+            <div class="text-xs text-muted-foreground">Categorias recebidas</div>
+            <div class="mt-1 font-semibold">${escapeHtml(categoriaCnhBruta || '-')}</div>
+          </div>
+
+          <div class="rounded-lg border border-border bg-white/80 px-4 py-3 lg:col-span-3">
+            <div class="text-xs text-muted-foreground mb-2">Categorias identificadas</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+              ${categoriasHtml}
+            </div>
+          </div>
+        </div>
       </div>
     `;
+  }
+
+  function obterKmAtualVeiculo(veiculo) {
+    const valor = getVeiculoCampo(veiculo, 'kmatual', 'kmAtual', 'km_atual', 'quilometragemAtual');
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? numero : 0;
+  }
+
+  function atualizarCamposVeiculoSelecionado() {
+    if (!inputKmAtual) return;
+
+    if (!veiculoSelecionado) {
+      inputKmAtual.value = '';
+      inputKmSaida?.removeAttribute('min');
+      return;
+    }
+
+    const kmAtual = obterKmAtualVeiculo(veiculoSelecionado);
+    inputKmAtual.value = String(kmAtual);
+    inputKmSaida?.setAttribute('min', String(kmAtual));
   }
 
   function renderVeiculos() {
     if (!boxVeiculos) return;
 
     if (!Array.isArray(veiculos) || !veiculos.length) {
-      boxVeiculos.innerHTML = `<p class="text-sm text-muted-foreground">Nenhum veículo encontrado.</p>`;
-      if (countEl) countEl.textContent = '0 veículo(s)';
+      boxVeiculos.innerHTML = `
+        <div class="rounded-xl border border-border bg-white/70 p-4 text-sm text-muted-foreground">
+          Nenhum veículo disponível para esta reserva.
+        </div>
+      `;
+      if (countEl) countEl.textContent = '0 disponíveis';
       return;
     }
 
-    if (countEl) countEl.textContent = `${veiculos.length} veículo(s)`;
+    const veiculosDisponiveis = veiculos.filter(veiculoEstaDisponivel);
+    if (countEl) countEl.textContent = `${veiculosDisponiveis.length} disponível(is)`;
 
-    boxVeiculos.innerHTML = veiculos.map(item => {
-      const id = Number(item.id || 0);
-      const selecionado = veiculoSelecionado === id;
-      const disponibilidade = String(item.disponibilidade || '').toUpperCase();
-      const podeSelecionar = disponibilidade === 'DISPONIVEL';
+    boxVeiculos.innerHTML = veiculos.map((item) => {
+      const id = getVeiculoCampo(item, 'id', 'ID');
+      const modelo = getVeiculoCampo(item, 'modelo', 'MODELO') ?? '-';
+      const placa = getVeiculoCampo(item, 'placa', 'PLACA') ?? '-';
+      const marca = getVeiculoCampo(item, 'marca', 'MARCA') ?? '-';
+      const cor = getVeiculoCampo(item, 'cor', 'COR') ?? '-';
+      const kmAtual = getVeiculoCampo(item, 'kmatual', 'kmAtual', 'km_atual') ?? '-';
+      const disponibilidade = getVeiculoCampo(item, 'status_veiculo', 'statusveiculo', 'statusVeiculo', 'disponibilidade', 'STATUS_VEICULO') ?? 'INDEFINIDO';
+      const previsaoRetorno = getVeiculoCampo(item, 'previsaoretorno', 'previsaoRetorno', 'previsao_retorno');
+
+      const disponivel = veiculoEstaDisponivel(item);
+      const checked = disponivel && Number(id) === Number(getVeiculoCampo(veiculoSelecionado, 'id', 'ID')) ? 'checked' : '';
+      const disabled = !disponivel ? 'disabled' : '';
 
       return `
-        <label class="block rounded-xl border ${selecionado ? 'border-primary ring-2 ring-primary/20' : 'border-border'} bg-white/60 p-4 ${podeSelecionar ? 'cursor-pointer hover:bg-white/80' : 'opacity-80'} transition-all">
+        <label class="rounded-xl border ${disponivel ? 'border-border bg-white/70 hover:bg-white cursor-pointer' : 'border-slate-200 bg-slate-100/80 opacity-70 cursor-not-allowed'} transition-all p-4">
           <div class="flex items-start gap-3">
-            <input type="radio" name="veiculoAprovacaoReserva" value="${escapeHtml(id)}" ${selecionado ? 'checked' : ''} ${podeSelecionar ? '' : 'disabled'} class="mt-1">
+            <input
+              type="radio"
+              name="veiculoAprovacaoReserva"
+              value="${escapeHtml(id)}"
+              class="mt-1"
+              ${checked}
+              ${disabled}
+            >
+
             <div class="min-w-0 flex-1 space-y-2">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <div class="text-sm font-semibold text-foreground">
-                  ${escapeHtml(item.modelo || '-')} - ${escapeHtml(item.placa || '-')}
-                </div>
+              <div class="flex items-center justify-between gap-3 flex-wrap">
+                <div class="font-semibold text-foreground">${escapeHtml(modelo)}</div>
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${classeDisponibilidadeVeiculo(disponibilidade)}">
-                  ${escapeHtml(disponibilidade || '-')}
+                  ${escapeHtml(disponibilidade)}
                 </span>
               </div>
+
+              <div class="text-sm text-muted-foreground">${escapeHtml(placa)}</div>
+
               <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
-                <div>Marca: ${escapeHtml(item.marca || '-')}</div>
-                <div>Cor: ${escapeHtml(item.cor || '-')}</div>
-                <div>KM atual: ${escapeHtml(item.km_atual ?? '-')}</div>
+                <div>Marca: ${escapeHtml(marca)}</div>
+                <div>Cor: ${escapeHtml(cor)}</div>
+                <div>KM atual: ${escapeHtml(kmAtual)}</div>
               </div>
-              ${item.previsao_retorno ? `
+
+              ${previsaoRetorno ? `
                 <div class="text-xs text-amber-700">
-                  Previsão de retorno: <span class="font-semibold">${escapeHtml(formatarTextoDataHora(item.previsao_retorno))}</span>
+                  Previsão de retorno: <span class="font-semibold">${escapeHtml(formatarTextoDataHora(previsaoRetorno))}</span>
+                </div>
+              ` : ''}
+
+              ${!disponivel ? `
+                <div class="text-xs text-red-600 font-medium">
+                  Este veículo não pode ser selecionado porque está com status ${escapeHtml(disponibilidade)}.
                 </div>
               ` : ''}
             </div>
@@ -16910,10 +19423,19 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
       `;
     }).join('');
 
-    boxVeiculos.querySelectorAll('input[name="veiculoAprovacaoReserva"]').forEach(radio => {
+    boxVeiculos.querySelectorAll('input[name="veiculoAprovacaoReserva"]:not(:disabled)').forEach((radio) => {
       radio.addEventListener('change', () => {
-        veiculoSelecionado = Number(radio.value || 0) || null;
-        renderVeiculos();
+        const idSelecionado = Number(radio.value || 0);
+        const candidato = veiculos.find((v) => Number(getVeiculoCampo(v, 'id', 'ID')) === idSelecionado) || null;
+
+        if (!candidato || !veiculoEstaDisponivel(candidato)) {
+          veiculoSelecionado = null;
+          atualizarCamposVeiculoSelecionado();
+          return setErro('Selecione apenas veículo com status DISPONIVEL.');
+        }
+
+        veiculoSelecionado = candidato;
+        atualizarCamposVeiculoSelecionado();
       });
     });
   }
@@ -16927,10 +19449,13 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
       painel: ['previewFotoPainel', 'placeholderFotoPainel', 'nomeFotoPainel']
     };
 
-    const [imgId, placeholderId, nomeId] = mapa[tipo] || [];
-    const img = document.getElementById(imgId);
-    const placeholder = document.getElementById(placeholderId);
-    const nomeEl = document.getElementById(nomeId);
+    const ids = mapa[tipo];
+    if (!ids) return;
+
+    const [imgId, placeholderId, nomeId] = ids;
+    const img = $(imgId);
+    const placeholder = $(placeholderId);
+    const nomeEl = $(nomeId);
 
     if (img) {
       img.src = dataUrl;
@@ -16954,36 +19479,10 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
     pararCamera();
 
     const tentativas = [
-      {
-        video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      },
-      {
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      },
-      {
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      },
-      {
-        video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        },
-        audio: false
-      }
+      { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+      { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+      { video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+      { video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false }
     ];
 
     let ultimoErro = null;
@@ -17013,7 +19512,7 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
 
   function pararCamera() {
     if (streamCamera) {
-      streamCamera.getTracks().forEach(track => track.stop());
+      streamCamera.getTracks().forEach((track) => track.stop());
       streamCamera = null;
     }
 
@@ -17038,7 +19537,6 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
     ctx.drawImage(video, 0, 0, largura, altura);
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-
     fotos[tipo] = dataUrl;
     atualizarPreviewFoto(tipo, dataUrl, 'Foto capturada na câmera');
   }
@@ -17062,8 +19560,7 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
       painel: 'inputFotoPainel'
     };
 
-    const inputId = mapa[tipo];
-    const input = document.getElementById(inputId);
+    const input = $(mapa[tipo]);
     if (!input) return;
 
     input.addEventListener('change', async () => {
@@ -17079,7 +19576,7 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
 
         const base64 = await fileToBase64(file);
         fotos[tipo] = base64;
-        atualizarPreviewFoto(tipo, base64, file.name || 'Imagem capturada');
+        atualizarPreviewFoto(tipo, base64, file.name || 'Imagem anexada');
       } catch (err) {
         setErro(err?.message || 'Erro ao processar foto.');
       }
@@ -17087,21 +19584,32 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
   }
 
   async function carregarDados() {
-    try {
-      const json = await listarVeiculosDisponiveisReserva(idReserva);
-      reserva = json?.reserva || null;
-      veiculos = Array.isArray(json?.items) ? json.items : [];
-      renderResumo();
+    const [reservaItem, jsonVeiculos] = await Promise.all([
+      buscarReservaCarroPorId(idReserva),
+      listarVeiculosDisponiveisReserva(idReserva)
+    ]);
+
+    reserva = reservaItem || null;
+    veiculos = Array.isArray(jsonVeiculos?.items)
+      ? jsonVeiculos.items
+      : Array.isArray(jsonVeiculos)
+        ? jsonVeiculos
+        : [];
+
+    renderResumo();
+    renderVeiculos();
+
+    const disponiveis = veiculos.filter(veiculoEstaDisponivel);
+    if (disponiveis.length === 1) {
+      veiculoSelecionado = disponiveis[0];
       renderVeiculos();
-    } catch (err) {
-      boxVeiculos.innerHTML = `<p class="text-sm text-destructive whitespace-pre-line">${escapeHtml(err?.message || 'Erro ao carregar veículos.')}</p>`;
-      if (countEl) countEl.textContent = 'Erro ao carregar';
+      atualizarCamposVeiculoSelecionado();
     }
   }
 
   overlay.addEventListener('click', fechar);
-  document.getElementById('closeAprovacaoReservaModal')?.addEventListener('click', fechar);
-  document.getElementById('btnCancelarAprovacaoReserva')?.addEventListener('click', fechar);
+  $('closeAprovacaoReservaModal')?.addEventListener('click', fechar);
+  $('btnCancelarAprovacaoReserva')?.addEventListener('click', fechar);
 
   if (mobile) {
     ['frente', 'traseira', 'lateralEsquerda', 'lateralDireita', 'painel'].forEach(bindInputFoto);
@@ -17116,7 +19624,7 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
       }
     });
 
-    modal.querySelectorAll('.btnCapturarFoto').forEach(btn => {
+    modal.querySelectorAll('.btnCapturarFoto').forEach((btn) => {
       btn.addEventListener('click', async () => {
         try {
           setErro('');
@@ -17134,41 +19642,107 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
     });
   }
 
+  inputKmSaida?.addEventListener('input', () => {
+    if (!veiculoSelecionado) return;
+
+    const kmAtual = obterKmAtualVeiculo(veiculoSelecionado);
+    const kmSaidaNumero = Number(inputKmSaida.value || 0);
+
+    if (!Number.isNaN(kmSaidaNumero) && kmSaidaNumero < kmAtual) {
+      inputKmSaida.setCustomValidity(`O KM de saída não pode ser menor que ${kmAtual}.`);
+    } else {
+      inputKmSaida.setCustomValidity('');
+    }
+  });
+
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     setErro('');
 
-    if (!veiculoSelecionado) {
-      return setErro('Selecione um veículo disponível.');
-    }
-
-    if (!validarFotosObrigatorias()) {
-      return setErro('É obrigatório informar as 5 fotos do veículo antes de aprovar.');
-    }
-
-    const payload = {
-      veiculoId: veiculoSelecionado,
-      kmSaida: document.getElementById('kmSaidaReservaCarro')?.value || null,
-      nivelCombustivelSaida: document.getElementById('nivelCombustivelReservaCarro')?.value || '',
-      checklistSaida: {
-        documentoOk: !!document.getElementById('chkDocumento')?.checked,
-        pneuOk: !!document.getElementById('chkPneu')?.checked,
-        latariaOk: !!document.getElementById('chkLataria')?.checked,
-        luzesOk: !!document.getElementById('chkLuzes')?.checked,
-        limpezaOk: !!document.getElementById('chkLimpeza')?.checked,
-        combustivelConferido: !!document.getElementById('chkCombustivel')?.checked,
-        observacoes: document.getElementById('observacaoChecklistReservaCarro')?.value?.trim() || ''
-      },
-      fotoFrente: fotos.frente,
-      fotoTraseira: fotos.traseira,
-      fotoLateralEsquerda: fotos.lateralEsquerda,
-      fotoLateralDireita: fotos.lateralDireita,
-      fotoPainel: fotos.painel
-    };
-
     try {
+      if (!veiculoSelecionado) {
+        return setErro('Selecione um veículo para aprovar a reserva.');
+      }
+
+      if (!veiculoEstaDisponivel(veiculoSelecionado)) {
+        return setErro('Somente veículos com status DISPONIVEL podem ser selecionados.');
+      }
+
+      const validadeCnh = getReservaCampo('validadecnh', 'validadeCnh', 'validade_cnh') ?? '';
+      const validadeInfo = analisarValidadeCnh(validadeCnh);
+
+      if (validadeInfo.status === 'VENCIDA') {
+        alert(`A CNH do colaborador está vencida (${validadeInfo.label}). Não é possível aprovar esta reserva.`);
+        return setErro('A CNH do colaborador está vencida. A aprovação foi bloqueada.');
+      }
+
+      const kmSaida = $('kmSaidaReservaCarro')?.value;
+      const nivelCombustivelSaida = $('nivelCombustivelReservaCarro')?.value;
+
+      if (!kmSaida) {
+        return setErro('Informe o KM de saída.');
+      }
+
+      const kmAtualVeiculo = obterKmAtualVeiculo(veiculoSelecionado);
+      const kmSaidaNumero = Number(kmSaida);
+
+      if (Number.isNaN(kmSaidaNumero)) {
+        return setErro('Informe um KM de saída válido.');
+      }
+
+      if (kmSaidaNumero < kmAtualVeiculo) {
+        return setErro(`O KM de saída não pode ser menor que o KM atual do veículo (${kmAtualVeiculo}).`);
+      }
+
+      if (!nivelCombustivelSaida) {
+        return setErro('Selecione o nível de combustível.');
+      }
+
+      if (!validarFotosObrigatorias()) {
+        return setErro('É obrigatório informar as 5 fotos do veículo.');
+      }
+
+      const nomeColaborador = getReservaCampo(
+        'nomecolaborador',
+        'nomeColaborador',
+        'nome_colaborador'
+      ) || getReservaCampo(
+        'usuariosolicitante',
+        'usuarioSolicitante',
+        'usuario_solicitante'
+      ) || '';
+
+      const origemSolicitacao = getReservaCampo(
+        'origemsolicitacao',
+        'origemSolicitacao',
+        'origem_solicitacao'
+      ) || '';
+
+      const payload = {
+        nome_colaborador: nomeColaborador,
+        origem_solicitacao: origemSolicitacao,
+        veiculoId: Number(getVeiculoCampo(veiculoSelecionado, 'id', 'ID')),
+        kmSaida: kmSaidaNumero,
+        nivelCombustivelSaida,
+        checklistSaida: {
+          documentoOk: !!$('chkDocumento')?.checked,
+          pneuOk: !!$('chkPneu')?.checked,
+          latariaOk: !!$('chkLataria')?.checked,
+          luzesOk: !!$('chkLuzes')?.checked,
+          limpezaOk: !!$('chkLimpeza')?.checked,
+          combustivelConferido: !!$('chkCombustivel')?.checked,
+          observacoes: $('observacaoChecklistReservaCarro')?.value?.trim() || ''
+        },
+        fotoFrente: fotos.frente,
+        fotoTraseira: fotos.traseira,
+        fotoLateralEsquerda: fotos.lateralEsquerda,
+        fotoLateralDireita: fotos.lateralDireita,
+        fotoPainel: fotos.painel
+      };
+
       setLoading(true);
       const json = await aprovarReservaCarro(idReserva, payload);
+
       fechar();
       await carregarMeusAgendamentos();
       alert(json?.message || 'Reserva aprovada com sucesso.');
@@ -17179,7 +19753,12 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
     }
   });
 
-  await carregarDados();
+  try {
+    await carregarDados();
+  } catch (err) {
+    console.error('[Reserva Carro] Erro ao carregar dados do modal de aprovação:', err);
+    setErro(err?.message || 'Erro ao carregar dados da aprovação.');
+  }
 }
 
 function validarAmbienteCamera() {
@@ -17210,7 +19789,26 @@ function fileToBase64(file) {
   });
 }
 
-async function acaoRecusarReservaCarro(idReserva) {
+function acaoConfirmarDevolucaoReservaCarroMenu(idReserva) {
+  const item = agendamentosCache.find(x => Number(x?.id) === Number(idReserva));
+  const status = String(item?.status_solicitacao || item?.statussolicitacao || '').trim();
+  return acaoConfirmarDevolucaoReservaCarro(idReserva, status);
+}
+
+
+function acaoAprovarReservaCarroMenu(idReserva) {
+  const item = agendamentosCache.find(x => Number(x?.id) === Number(idReserva));
+  const status = String(item?.status_solicitacao || item?.statussolicitacao || '').trim();
+  return acaoAprovarReservaCarro(idReserva, status);
+}
+
+function acaoRecusarReservaCarroMenu(idReserva) {
+  const item = agendamentosCache.find(x => Number(x?.id) === Number(idReserva));
+  const status = String(item?.status_solicitacao || item?.statussolicitacao || '').trim();
+  return acaoRecusarReservaCarro(idReserva, status);
+}
+
+async function acaoRecusarReservaCarro(idReserva, statusRecebido = '') {
   try {
     const APIBASE = obterApiBase();
     const usuarioId = sessionStorage.getItem('id');
@@ -17220,7 +19818,17 @@ async function acaoRecusarReservaCarro(idReserva) {
       return;
     }
 
-    const resp = await fetch(`${APIBASE}/api/permissoes/aprovar-reserva-carro/${usuarioId}`);
+    const statusAtual = String(statusRecebido || '').trim().toUpperCase();
+
+    if (!statusAtual) {
+      alert('Status da reserva não informado.');
+      return;
+    }
+
+    const resp = await fetch(
+      `${APIBASE}/api/permissoes/aprovar-reserva-carro/${usuarioId}/${encodeURIComponent(statusAtual)}`
+    );
+
     const data = await resp.json();
 
     if (!resp.ok || !data?.success) {
@@ -17228,17 +19836,20 @@ async function acaoRecusarReservaCarro(idReserva) {
       return;
     }
 
-    if (Number(data?.item?.aprovarreservacarro || 0) !== 1) {
-      alert('Você não tem permissão para recusar reservas de carro.');
+    if (Number(data?.item?.permissaovalida || 0) !== 1) {
+      if (statusAtual === 'PENDENTE GESTOR') {
+        alert('Você não tem permissão para recusar reservas de carro na etapa do gestor.');
+      } else {
+        alert('Você não tem permissão para recusar reservas de carro na etapa da frota.');
+      }
       return;
     }
 
-    await abrirModalRecusaReservaCarro(idReserva);
+    await abrirModalRecusaReservaCarro(idReserva, statusAtual);
   } catch (err) {
     alert(err?.message || 'Erro ao validar permissão.');
   }
 }
-
 
 async function abrirDetalhesAgendamento(idReserva) {
   try {
@@ -17260,17 +19871,19 @@ async function abrirDetalhesAgendamento(idReserva) {
     const item = json.item || {};
     const destinos = Array.isArray(item.destinos) ? item.destinos : [];
 
-    const checklistSaida = item.checklist_saida && typeof item.checklist_saida === 'object'
-      ? item.checklist_saida
-      : item.checklistsaida && typeof item.checklistsaida === 'object'
-        ? item.checklistsaida
-        : {};
+    const checklistSaida =
+      item.checklist_saida && typeof item.checklist_saida === 'object'
+        ? item.checklist_saida
+        : item.checklistsaida && typeof item.checklistsaida === 'object'
+          ? item.checklistsaida
+          : {};
 
-    const checklistDevolucao = item.checklist_devolucao && typeof item.checklist_devolucao === 'object'
-      ? item.checklist_devolucao
-      : item.checklistdevolucao && typeof item.checklistdevolucao === 'object'
-        ? item.checklistdevolucao
-        : {};
+    const checklistDevolucao =
+      item.checklist_devolucao && typeof item.checklist_devolucao === 'object'
+        ? item.checklist_devolucao
+        : item.checklistdevolucao && typeof item.checklistdevolucao === 'object'
+          ? item.checklistdevolucao
+          : {};
 
     const statusAtual = String(item.status_solicitacao || item.statussolicitacao || '')
       .trim()
@@ -17294,6 +19907,30 @@ async function abrirDetalhesAgendamento(idReserva) {
       'CONCLUÍDA'
     ].includes(statusAtual);
 
+    const termoAceito = Number(item.termo_aceito ?? item.termoaceito ?? 0) === 1;
+    const dataAceiteTermo = item.data_aceite_termo || item.dataaceitetermo || null;
+    const fotoAceiteTermo = item.foto_aceite_termo || item.fotoaceitetermo || '';
+    const termoVersao = item.termo_versao || item.termoversao || '-';
+
+    const nomeColaborador = item.nome_colaborador || item.nomecolaborador || '-';
+    const matriculaColaborador = item.matricula_colaborador || item.matriculacolaborador || '-';
+    const cpfColaborador = item.cpf_colaborador || item.cpfcolaborador || '-';
+    const cnhColaborador = item.cnh_colaborador || item.cnhcolaborador || '-';
+    const categoriaCnh = item.categoria_cnh || item.categoriacnh || '-';
+    const validadeCnh = item.validade_cnh || item.validadecnh || null;
+
+    const aprovadorGestor =
+      item.aprovador_gestor ||
+      item.usuario_aprovacao_gestor ||
+      item.usuariogestoraprovacao ||
+      '-';
+
+    const dataAprovacaoGestor =
+      item.data_aprovacao_gestor ||
+      item.data_gestor_aprovacao ||
+      item.datagestoraprovacao ||
+      null;
+
     const fotos = [
       { label: 'Frente', value: item.foto_frente || item.fotofrente },
       { label: 'Traseira', value: item.foto_traseira || item.fototraseira },
@@ -17311,26 +19948,59 @@ async function abrirDetalhesAgendamento(idReserva) {
     ].filter(f => !!String(f.value || '').trim());
 
     const checklistItensSaida = [
-      { label: 'Documento do veículo', value: checklistSaida.documentoOk },
+      { label: 'Documento', value: checklistSaida.documentoOk },
       { label: 'Pneus', value: checklistSaida.pneuOk },
       { label: 'Lataria', value: checklistSaida.latariaOk },
       { label: 'Luzes', value: checklistSaida.luzesOk },
       { label: 'Limpeza', value: checklistSaida.limpezaOk },
-      { label: 'Combustível conferido', value: checklistSaida.combustivelConferido }
+      { label: 'Combustível', value: checklistSaida.combustivelConferido }
     ];
 
     const checklistItensDevolucao = [
-      { label: 'Documento do veículo devolvido', value: checklistDevolucao.documentoOk },
-      { label: 'Pneus conferidos', value: checklistDevolucao.pneuOk },
-      { label: 'Lataria sem novas avarias', value: checklistDevolucao.latariaOk },
-      { label: 'Luzes conferidas', value: checklistDevolucao.luzesOk },
-      { label: 'Limpeza conferida', value: checklistDevolucao.limpezaOk },
-      { label: 'Combustível conferido', value: checklistDevolucao.combustivelConferido }
+      { label: 'Documento', value: checklistDevolucao.documentoOk },
+      { label: 'Pneus', value: checklistDevolucao.pneuOk },
+      { label: 'Lataria', value: checklistDevolucao.latariaOk },
+      { label: 'Luzes', value: checklistDevolucao.luzesOk },
+      { label: 'Limpeza', value: checklistDevolucao.limpezaOk },
+      { label: 'Combustível', value: checklistDevolucao.combustivelConferido }
     ];
+
+    const formatarDataBR = (value) => {
+      if (!value) return '-';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return String(value);
+      return d.toLocaleDateString('pt-BR');
+    };
+
+    const infoItem = (label, valor, extraClass = '') => `
+      <div class="rounded-2xl border border-border/70 bg-white/70 px-4 py-3 ${extraClass}">
+        <div class="text-[11px] uppercase tracking-wide text-muted-foreground">${escapeHtml(label)}</div>
+        <div class="mt-1 text-sm font-medium text-foreground leading-snug break-words">${escapeHtml(valor ?? '-')}</div>
+      </div>
+    `;
+
+    const badgeBoolean = (value) => `
+      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+        value
+          ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+          : 'bg-rose-100 text-rose-700 border border-rose-200'
+      }">
+        ${value ? 'OK' : 'Não'}
+      </span>
+    `;
+
+    const secaoTitulo = (titulo, subtitulo = '') => `
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-sm font-semibold text-foreground">${escapeHtml(titulo)}</div>
+          ${subtitulo ? `<div class="text-[12px] text-muted-foreground mt-0.5">${escapeHtml(subtitulo)}</div>` : ''}
+        </div>
+      </div>
+    `;
 
     const overlay = document.createElement('div');
     overlay.id = 'detalhesAgendamentoOverlay';
-    overlay.className = 'fixed inset-0 bg-black/30 backdrop-blur-sm z-[190]';
+    overlay.className = 'fixed inset-0 bg-black/25 backdrop-blur-sm z-[190]';
     document.body.appendChild(overlay);
 
     const modal = document.createElement('div');
@@ -17338,304 +20008,288 @@ async function abrirDetalhesAgendamento(idReserva) {
     modal.className = 'fixed inset-0 z-[200]';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'tituloDetalhesAgendamento');
 
     modal.innerHTML = `
       <div class="w-full h-full overflow-y-auto no-scrollbar">
-        <div class="min-h-full flex items-start justify-center p-4 md:p-8">
-          <div class="w-full max-w-5xl mx-auto px-4 sm:px-6">
-            <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
-              <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
-                <div>
-                  <h3 class="text-lg font-semibold text-foreground">Detalhes do agendamento #${escapeHtml(item.id ?? '-')}</h3>
-                  <p class="text-sm text-muted-foreground">Informações da sua solicitação de veículo.</p>
+        <div class="min-h-full flex items-start justify-center p-3 md:p-6">
+          <div class="w-full max-w-6xl mx-auto">
+            <div class="glass rounded-[28px] shadow-2xl border border-border/70 overflow-hidden bg-[rgba(255,255,255,0.72)] backdrop-blur-xl">
+              <div class="px-5 md:px-6 py-4 border-b border-border/70 flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                  <h3 id="tituloDetalhesAgendamento" class="text-base md:text-lg font-semibold text-foreground tracking-tight">
+                    Reserva #${escapeHtml(item.id ?? '-')}
+                  </h3>
+                  <p class="text-[12px] md:text-sm text-muted-foreground mt-1">
+                    Visualização compacta da solicitação, aceite do termo e andamento da reserva.
+                  </p>
                 </div>
+
                 <button
                   id="closeDetalhesAgendamento"
                   type="button"
-                  class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+                  class="shrink-0 w-10 h-10 rounded-2xl bg-white/80 border border-border/80 hover:bg-white transition-all flex items-center justify-center"
                   aria-label="Fechar"
                   title="Fechar"
                 >
-                  <i class="fas fa-times"></i>
+                  <i class="fas fa-times text-sm"></i>
                 </button>
               </div>
 
-              <div class="px-6 py-6 space-y-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div class="rounded-xl border border-border bg-white/60 p-4">
-                    <div class="text-xs text-muted-foreground">Tipo de veículo</div>
-                    <div class="mt-1 font-semibold">${escapeHtml(item.tipo_veiculo || item.tipoveiculo || '-')}</div>
-                  </div>
-
-                  <div class="rounded-xl border border-border bg-white/60 p-4">
-                    <div class="text-xs text-muted-foreground">Status</div>
-                    <div class="mt-2">
-                      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${classeStatusAgendamento(item.status_solicitacao || item.statussolicitacao)}">
+              <div class="px-5 md:px-6 py-5 space-y-4">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  ${infoItem('Tipo', item.tipo_veiculo || item.tipoveiculo || '-')}
+                  <div class="rounded-2xl border border-border/70 bg-white/70 px-4 py-3">
+                    <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Status</div>
+                    <div class="mt-1">
+                      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${classeStatusAgendamento(item.status_solicitacao || item.statussolicitacao)}">
                         ${escapeHtml(item.status_solicitacao || item.statussolicitacao || 'PENDENTE')}
                       </span>
                     </div>
                   </div>
-
-                  <div class="rounded-xl border border-border bg-white/60 p-4">
-                    <div class="text-xs text-muted-foreground">Data necessária</div>
-                    <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(item.data_necessaria || item.datanecessaria))}</div>
-                  </div>
-
-                  <div class="rounded-xl border border-border bg-white/60 p-4">
-                    <div class="text-xs text-muted-foreground">Previsão de devolução</div>
-                    <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(item.previsao_devolucao || item.previsaodevolucao))}</div>
-                  </div>
-
-                  <div class="rounded-xl border border-border bg-white/60 p-4">
-                    <div class="text-xs text-muted-foreground">Urgência</div>
-                    <div class="mt-1 font-semibold">${escapeHtml(item.urgencia || '-')}</div>
-                  </div>
-
-                  <div class="rounded-xl border border-border bg-white/60 p-4">
-                    <div class="text-xs text-muted-foreground">Solicitante</div>
-                    <div class="mt-1 font-semibold">${escapeHtml(item.usuario_solicitante || item.usuariosolicitante || '-')}</div>
-                  </div>
+                  ${infoItem('Necessária em', formatarTextoDataHora(item.data_necessaria || item.datanecessaria))}
+                  ${infoItem('Prev. devolução', formatarTextoDataHora(item.previsao_devolucao || item.previsaodevolucao))}
+                  ${infoItem('Urgência', item.urgencia || '-', 'col-span-2 lg:col-span-1')}
+                  ${infoItem('Solicitante', item.usuario_solicitante || item.usuariosolicitante || '-', 'col-span-2 lg:col-span-3')}
                 </div>
 
-                <div class="rounded-xl border border-border bg-white/60 p-4">
-                  <div class="text-xs text-muted-foreground">Destinos</div>
-                  <div class="mt-2 space-y-2">
+                <div class="rounded-[24px] border border-border/70 bg-white/60 p-4 space-y-3">
+                  ${secaoTitulo('Destinos')}
+                  <div class="flex flex-wrap gap-2">
                     ${
                       destinos.length
                         ? destinos.map(dest => `
-                          <div class="rounded-lg border border-border bg-white/70 px-3 py-2 text-sm">
-                            ${escapeHtml(dest.nome || dest.NOME || '-')}
-                          </div>
-                        `).join('')
-                        : `<div class="text-sm text-muted-foreground">Nenhum destino informado.</div>`
+                            <span class="inline-flex items-center rounded-full border border-border/70 bg-white/80 px-3 py-1.5 text-[12px] text-foreground">
+                              ${escapeHtml(dest.nome || dest.NOME || '-')}
+                            </span>
+                          `).join('')
+                        : `<span class="text-sm text-muted-foreground">Nenhum destino informado.</span>`
                     }
                   </div>
                 </div>
 
-                <div class="rounded-xl border border-border bg-white/60 p-4">
-                  <div class="text-xs text-muted-foreground">Observações</div>
-                  <div class="mt-2 text-sm whitespace-pre-line">${escapeHtml(item.observacoes || '-')}</div>
+                <div class="rounded-[24px] border border-border/70 bg-white/60 p-4 space-y-3">
+                  ${secaoTitulo('Observações')}
+                  <div class="text-sm text-foreground/90 whitespace-pre-line leading-6">
+                    ${escapeHtml(item.observacoes || '-')}
+                  </div>
+                </div>
+
+                <div class="rounded-[24px] border border-border/70 bg-white/60 p-4 space-y-4">
+                  ${secaoTitulo('Aceite do termo', 'Dados capturados no momento do aceite.')}
+                  
+                  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="rounded-2xl border border-border/70 bg-white/75 px-4 py-3">
+                      <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Status do termo</div>
+                      <div class="mt-1">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                          termoAceito
+                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                            : 'bg-rose-100 text-rose-700 border border-rose-200'
+                        }">
+                          ${termoAceito ? 'Aceito' : 'Não aceito'}
+                        </span>
+                      </div>
+                    </div>
+
+                    ${infoItem('Aceite em', formatarTextoDataHora(dataAceiteTermo))}
+                    ${infoItem('Versão', termoVersao)}
+                    ${infoItem('Colaborador', nomeColaborador)}
+                    ${infoItem('Matrícula', matriculaColaborador || '-')}
+                    ${infoItem('CPF', cpfColaborador || '-')}
+                    ${infoItem('CNH', cnhColaborador || '-')}
+                    ${infoItem('Categoria CNH', categoriaCnh || '-')}
+                    ${infoItem('Validade CNH', formatarDataBR(validadeCnh), 'col-span-2 lg:col-span-1')}
+                    ${infoItem('Aprovador gestor', aprovadorGestor || '-', 'col-span-2 lg:col-span-2')}
+                    ${infoItem('Aprovação gestor', formatarTextoDataHora(dataAprovacaoGestor), 'col-span-2 lg:col-span-1')}
+                  </div>
+
+                  ${
+                    fotoAceiteTermo
+                      ? `
+                        <div class="rounded-[22px] border border-border/70 bg-white/75 p-3">
+                          <div class="flex items-center justify-between gap-3 mb-3">
+                            <div class="text-sm font-medium text-foreground">Foto do aceite</div>
+                            <a
+                              href="${escapeHtml(fotoAceiteTermo)}"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="text-[12px] text-primary hover:underline"
+                            >
+                              Abrir imagem
+                            </a>
+                          </div>
+
+                          <a href="${escapeHtml(fotoAceiteTermo)}" target="_blank" rel="noopener noreferrer" class="block">
+                            <img
+                              src="${escapeHtml(fotoAceiteTermo)}"
+                              alt="Foto do aceite do termo"
+                              class="w-full max-h-[320px] object-contain rounded-[18px] border border-border/70 bg-slate-50"
+                            />
+                          </a>
+                        </div>
+                      `
+                      : `
+                        <div class="rounded-[22px] border border-border/70 bg-white/75 p-4 text-sm text-muted-foreground">
+                          Nenhuma foto de aceite disponível.
+                        </div>
+                      `
+                  }
                 </div>
 
                 ${item.motivo_recusa || item.motivorecusa ? `
-                  <div class="rounded-xl border border-red-200 bg-red-50/80 p-4">
-                    <div class="text-xs text-red-700">Motivo da recusa</div>
-                    <div class="mt-2 text-sm whitespace-pre-line text-red-800">${escapeHtml(item.motivo_recusa || item.motivorecusa)}</div>
-                  </div>
-                ` : ''}
-
-                ${mostrarBlocoVeiculo ? `
-                  <div class="rounded-2xl border border-border bg-white/60 p-5 space-y-4">
-                    <div>
-                      <div class="text-sm font-semibold text-foreground">Veículo utilizado</div>
-                      <div class="text-xs text-muted-foreground">Dados do veículo associado à reserva.</div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">Modelo</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.veiculo_modelo || item.veiculomodelo || '-')}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">Placa</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.veiculo_placa || item.veiculoplaca || '-')}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">Marca</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.veiculo_marca || item.veiculomarca || '-')}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">Cor</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.veiculo_cor || item.veiculocor || '-')}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">KM na saída</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.km_saida ?? item.kmsaida ?? '-')}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">Combustível na saída</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.nivel_combustivel_saida || item.nivelcombustivelsaida || '-')}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4 md:col-span-2 lg:col-span-3">
-                        <div class="text-xs text-muted-foreground">Aprovado por</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.usuario_aprovacao || item.usuarioaprovacao || '-')}</div>
-                        <div class="mt-1 text-sm text-muted-foreground">${escapeHtml(formatarTextoDataHora(item.data_aprovacao || item.dataaprovacao))}</div>
-                      </div>
+                  <div class="rounded-[24px] border border-rose-200 bg-rose-50/90 p-4 space-y-2">
+                    <div class="text-sm font-semibold text-rose-800">Motivo da recusa</div>
+                    <div class="text-sm whitespace-pre-line text-rose-700 leading-6">
+                      ${escapeHtml(item.motivo_recusa || item.motivorecusa)}
                     </div>
                   </div>
                 ` : ''}
 
                 ${mostrarBlocoVeiculo ? `
-                  <div class="rounded-2xl border border-border bg-white/60 p-5 space-y-4">
-                    <div>
-                      <div class="text-sm font-semibold text-foreground">Checklist de saída</div>
-                      <div class="text-xs text-muted-foreground">Conferência realizada no momento da aprovação.</div>
-                    </div>
+                  <div class="rounded-[24px] border border-border/70 bg-white/60 p-4 space-y-4">
+                    ${secaoTitulo('Veículo utilizado', 'Dados associados após a aprovação.')}
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                      ${infoItem('Modelo', item.veiculo_modelo || item.veiculomodelo || '-')}
+                      ${infoItem('Placa', item.veiculo_placa || item.veiculoplaca || '-')}
+                      ${infoItem('Marca', item.veiculo_marca || item.veiculomarca || '-')}
+                      ${infoItem('Cor', item.veiculo_cor || item.veiculocor || '-')}
+                      ${infoItem('KM saída', item.km_saida ?? item.kmsaida ?? '-', 'col-span-2 lg:col-span-1')}
+                      ${infoItem('Combustível saída', item.nivel_combustivel_saida || item.nivelcombustivelsaida || '-', 'col-span-2 lg:col-span-1')}
+                      ${infoItem('Aprovado por', item.usuario_aprovacao || item.usuarioaprovacao || '-', 'col-span-2 lg:col-span-1')}
+                      ${infoItem('Data aprovação', formatarTextoDataHora(item.data_aprovacao || item.dataaprovacao), 'col-span-2 lg:col-span-1')}
+                    </div>
+                  </div>
+                ` : ''}
+
+                ${mostrarBlocoVeiculo ? `
+                  <div class="rounded-[24px] border border-border/70 bg-white/60 p-4 space-y-4">
+                    ${secaoTitulo('Checklist de saída')}
+
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
                       ${checklistItensSaida.map(itemChecklist => `
-                        <div class="rounded-xl border border-border bg-white/70 px-4 py-3 flex items-center justify-between gap-3">
-                          <span class="text-sm">${escapeHtml(itemChecklist.label)}</span>
-                          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                            itemChecklist.value ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'
-                          }">
-                            ${itemChecklist.value ? 'OK' : 'Não'}
-                          </span>
+                        <div class="rounded-2xl border border-border/70 bg-white/75 px-4 py-3 flex items-center justify-between gap-3">
+                          <span class="text-sm text-foreground">${escapeHtml(itemChecklist.label)}</span>
+                          ${badgeBoolean(itemChecklist.value)}
                         </div>
                       `).join('')}
                     </div>
 
-                    <div class="rounded-xl border border-border bg-white/70 p-4">
-                      <div class="text-xs text-muted-foreground">Observações do checklist</div>
-                      <div class="mt-2 text-sm whitespace-pre-line">${escapeHtml(checklistSaida.observacoes || '-')}</div>
+                    <div class="rounded-2xl border border-border/70 bg-white/75 px-4 py-3">
+                      <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Observações do checklist</div>
+                      <div class="mt-1 text-sm text-foreground/90 whitespace-pre-line leading-6">
+                        ${escapeHtml(checklistSaida.observacoes || '-')}
+                      </div>
                     </div>
                   </div>
                 ` : ''}
 
                 ${mostrarBlocoVeiculo ? `
-                  <div class="rounded-2xl border border-border bg-white/60 p-5 space-y-4">
-                    <div>
-                      <div class="text-sm font-semibold text-foreground">Fotos do veículo</div>
-                      <div class="text-xs text-muted-foreground">Imagens capturadas no momento da aprovação.</div>
-                    </div>
+                  <div class="rounded-[24px] border border-border/70 bg-white/60 p-4 space-y-4">
+                    ${secaoTitulo('Fotos do veículo', 'Imagens registradas na aprovação.')}
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
                       ${
                         fotos.length
                           ? fotos.map(foto => `
-                            <div class="rounded-xl border border-border bg-white/70 p-3 space-y-2">
-                              <div class="text-sm font-medium">${escapeHtml(foto.label)}</div>
-                              <a href="${escapeHtml(foto.value)}" target="_blank" rel="noopener noreferrer" class="block">
-                                <img
-                                  src="${escapeHtml(foto.value)}"
-                                  alt="${escapeHtml(foto.label)}"
-                                  class="w-full h-52 object-cover rounded-lg border border-border bg-slate-100 hover:opacity-95 transition-all"
-                                />
-                              </a>
-                            </div>
-                          `).join('')
+                              <div class="rounded-[20px] border border-border/70 bg-white/75 p-3 space-y-2">
+                                <div class="text-[12px] font-medium text-foreground">${escapeHtml(foto.label)}</div>
+                                <a href="${escapeHtml(foto.value)}" target="_blank" rel="noopener noreferrer" class="block">
+                                  <img
+                                    src="${escapeHtml(foto.value)}"
+                                    alt="${escapeHtml(foto.label)}"
+                                    class="w-full h-40 object-cover rounded-[16px] border border-border/70 bg-slate-100"
+                                  />
+                                </a>
+                              </div>
+                            `).join('')
                           : `
-                            <div class="md:col-span-2 lg:col-span-3 rounded-xl border border-border bg-white/70 p-4 text-sm text-muted-foreground">
-                              Nenhuma foto disponível.
-                            </div>
-                          `
+                              <div class="col-span-2 lg:col-span-3 rounded-2xl border border-border/70 bg-white/75 p-4 text-sm text-muted-foreground">
+                                Nenhuma foto disponível.
+                              </div>
+                            `
                       }
                     </div>
                   </div>
                 ` : ''}
 
                 ${mostrarBlocoDevolucao ? `
-                  <div class="rounded-2xl border border-border bg-white/60 p-5 space-y-4">
-                    <div>
-                      <div class="text-sm font-semibold text-foreground">Dados da devolução</div>
-                      <div class="text-xs text-muted-foreground">Informações registradas no retorno e na confirmação da devolução.</div>
-                    </div>
+                  <div class="rounded-[24px] border border-border/70 bg-white/60 p-4 space-y-4">
+                    ${secaoTitulo('Dados da devolução', 'Informações registradas no retorno.')}
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">Usuário da devolução</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.usuario_devolucao || item.usuariodevolucao || '-')}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">Data da devolução</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(item.data_devolucao || item.datadevolucao))}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">KM na devolução</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.km_devolucao ?? item.kmdevolucao ?? '-')}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">Combustível na devolução</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.nivel_combustivel_devolucao || item.nivelcombustiveldevolucao || '-')}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">Confirmado por</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(item.usuario_confirmacao_devolucao || item.usuarioconfirmacaodevolucao || '-')}</div>
-                      </div>
-
-                      <div class="rounded-xl border border-border bg-white/70 p-4">
-                        <div class="text-xs text-muted-foreground">Data da confirmação</div>
-                        <div class="mt-1 font-semibold">${escapeHtml(formatarTextoDataHora(item.data_confirmacao_devolucao || item.dataconfirmacaodevolucao))}</div>
-                      </div>
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                      ${infoItem('Usuário devolução', item.usuario_devolucao || item.usuariodevolucao || '-')}
+                      ${infoItem('Data devolução', formatarTextoDataHora(item.data_devolucao || item.datadevolucao))}
+                      ${infoItem('KM devolução', item.km_devolucao ?? item.kmdevolucao ?? '-')}
+                      ${infoItem('Combustível devolução', item.nivel_combustivel_devolucao || item.nivelcombustiveldevolucao || '-')}
+                      ${infoItem('Confirmado por', item.usuario_confirmacao_devolucao || item.usuarioconfirmacaodevolucao || '-')}
+                      ${infoItem('Data confirmação', formatarTextoDataHora(item.data_confirmacao_devolucao || item.dataconfirmacaodevolucao))}
                     </div>
                   </div>
+                ` : ''}
 
-                  <div class="rounded-2xl border border-border bg-white/60 p-5 space-y-4">
-                    <div>
-                      <div class="text-sm font-semibold text-foreground">Checklist da devolução</div>
-                      <div class="text-xs text-muted-foreground">Conferência informada no momento da devolução.</div>
-                    </div>
+                ${mostrarBlocoDevolucao ? `
+                  <div class="rounded-[24px] border border-border/70 bg-white/60 p-4 space-y-4">
+                    ${secaoTitulo('Checklist da devolução')}
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
                       ${checklistItensDevolucao.map(itemChecklist => `
-                        <div class="rounded-xl border border-border bg-white/70 px-4 py-3 flex items-center justify-between gap-3">
-                          <span class="text-sm">${escapeHtml(itemChecklist.label)}</span>
-                          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                            itemChecklist.value ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'
-                          }">
-                            ${itemChecklist.value ? 'OK' : 'Não'}
-                          </span>
+                        <div class="rounded-2xl border border-border/70 bg-white/75 px-4 py-3 flex items-center justify-between gap-3">
+                          <span class="text-sm text-foreground">${escapeHtml(itemChecklist.label)}</span>
+                          ${badgeBoolean(itemChecklist.value)}
                         </div>
                       `).join('')}
                     </div>
 
-                    <div class="rounded-xl border border-border bg-white/70 p-4">
-                      <div class="text-xs text-muted-foreground">Observações da devolução</div>
-                      <div class="mt-2 text-sm whitespace-pre-line">${escapeHtml(
-                        checklistDevolucao.observacoes ||
-                        item.observacoes_devolucao ||
-                        item.observacoesdevolucao ||
-                        '-'
-                      )}</div>
+                    <div class="rounded-2xl border border-border/70 bg-white/75 px-4 py-3">
+                      <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Observações da devolução</div>
+                      <div class="mt-1 text-sm text-foreground/90 whitespace-pre-line leading-6">
+                        ${escapeHtml(
+                          checklistDevolucao.observacoes ||
+                          item.observacoes_devolucao ||
+                          item.observacoesdevolucao ||
+                          '-'
+                        )}
+                      </div>
                     </div>
                   </div>
+                ` : ''}
 
-                  <div class="rounded-2xl border border-border bg-white/60 p-5 space-y-4">
-                    <div>
-                      <div class="text-sm font-semibold text-foreground">Fotos da devolução</div>
-                      <div class="text-xs text-muted-foreground">Imagens enviadas no momento da devolução.</div>
-                    </div>
+                ${mostrarBlocoDevolucao ? `
+                  <div class="rounded-[24px] border border-border/70 bg-white/60 p-4 space-y-4">
+                    ${secaoTitulo('Fotos da devolução')}
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
                       ${
                         fotosDevolucao.length
                           ? fotosDevolucao.map(foto => `
-                            <div class="rounded-xl border border-border bg-white/70 p-3 space-y-2">
-                              <div class="text-sm font-medium">${escapeHtml(foto.label)}</div>
-                              <a href="${escapeHtml(foto.value)}" target="_blank" rel="noopener noreferrer" class="block">
-                                <img
-                                  src="${escapeHtml(foto.value)}"
-                                  alt="${escapeHtml(foto.label)}"
-                                  class="w-full h-52 object-cover rounded-lg border border-border bg-slate-100 hover:opacity-95 transition-all"
-                                />
-                              </a>
-                            </div>
-                          `).join('')
+                              <div class="rounded-[20px] border border-border/70 bg-white/75 p-3 space-y-2">
+                                <div class="text-[12px] font-medium text-foreground">${escapeHtml(foto.label)}</div>
+                                <a href="${escapeHtml(foto.value)}" target="_blank" rel="noopener noreferrer" class="block">
+                                  <img
+                                    src="${escapeHtml(foto.value)}"
+                                    alt="${escapeHtml(foto.label)}"
+                                    class="w-full h-40 object-cover rounded-[16px] border border-border/70 bg-slate-100"
+                                  />
+                                </a>
+                              </div>
+                            `).join('')
                           : `
-                            <div class="md:col-span-2 lg:col-span-3 rounded-xl border border-border bg-white/70 p-4 text-sm text-muted-foreground">
-                              Nenhuma foto de devolução disponível.
-                            </div>
-                          `
+                              <div class="col-span-2 lg:col-span-3 rounded-2xl border border-border/70 bg-white/75 p-4 text-sm text-muted-foreground">
+                                Nenhuma foto de devolução disponível.
+                              </div>
+                            `
                       }
                     </div>
                   </div>
                 ` : ''}
 
-                <div class="pt-2 flex justify-end">
+                <div class="pt-1 flex justify-end">
                   <button
                     id="btnFecharDetalhesAgendamento"
                     type="button"
-                    class="rounded-xl border border-border bg-white/70 px-4 py-3 font-medium hover:bg-white transition-all"
+                    class="rounded-2xl border border-border/80 bg-white/80 px-4 py-2.5 text-sm font-medium hover:bg-white transition-all"
                   >
                     Fechar
                   </button>
@@ -17684,7 +20338,7 @@ async function acaoGerenciarVeiculos() {
       return;
     }
 
-    const resp = await fetch(`${APIBASE}/api/permissoes/aprovar-reserva-carro/${usuarioId}`);
+    const resp = await fetch(`${APIBASE}/api/permissoes/aprovar-reserva-carro/${usuarioId}/${encodeURIComponent('PENDENTE FROTA')}`);
     const data = await resp.json();
 
     if (!resp.ok || !data?.success) {
@@ -17818,6 +20472,484 @@ function montarCampoFotoMobile(label, tipo) {
   `;
 }
 
+function escape_html(valor) {
+  return String(valor ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function formatar_data_br(valor) {
+  if (!valor) return '';
+  const data = new Date(valor);
+  if (Number.isNaN(data.getTime())) return String(valor);
+  return data.toLocaleDateString('pt-BR');
+}
+
+async function file_to_base64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function buscar_dados_solicitante_reserva_carro(usuario_solicitante) {
+  const APIBASE = obterApiBase();
+  if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
+  if (!usuario_solicitante) throw new Error('Usuário logado não identificado.');
+
+  const resp = await fetch(
+    `${APIBASE}/api/reservas-carro/solicitante/${encodeURIComponent(usuario_solicitante)}`,
+    { method: 'GET' }
+  );
+
+  const json = await resp.json().catch(() => ({}));
+
+  if (!resp.ok) {
+    throw new Error(json?.message || `Erro ao buscar dados do solicitante. Status ${resp.status}`);
+  }
+
+  return json?.item || {};
+}
+
+async function salvar_reserva_carro(payload, reserva_id = null) {
+  const APIBASE = obterApiBase();
+  if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
+
+  const is_edit = !!reserva_id;
+  const url = is_edit
+    ? `${APIBASE}/api/reservas-carro/${reserva_id}`
+    : `${APIBASE}/api/reservas-carro`;
+
+  const payloadFinal = {
+    tipo_veiculo: payload?.tipo_veiculo,
+    data_necessaria: payload?.data_necessaria,
+    previsao_devolucao: payload?.previsao_devolucao,
+    destinos: Array.isArray(payload?.destinos) ? payload.destinos : [],
+    observacoes: payload?.observacoes || '',
+    urgencia: payload?.urgencia,
+    usuario_solicitante: payload?.usuario_solicitante,
+    termo_aceito: Number(payload?.termo_aceito) === 1 ? 1 : 0,
+    foto_aceite_termo: payload?.foto_aceite_termo || '',
+    termo_versao: payload?.termo_versao || '2026-04',
+    nome_colaborador: payload?.nome_colaborador || payload?.usuario_solicitante || '',
+    matricula_colaborador: payload?.matricula_colaborador || ''
+  };
+
+  const resp = await fetch(url, {
+    method: is_edit ? 'PUT' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payloadFinal)
+  });
+
+  const json = await resp.json().catch(() => ({}));
+
+  if (!resp.ok) {
+    throw new Error(json?.message || `Erro ao salvar reserva. Status ${resp.status}`);
+  }
+
+  return json;
+}
+
+async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
+  return new Promise((resolve) => {
+    let stream_camera = null;
+    let foto_aceite_termo = '';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'termoReservaCarroOverlay';
+    overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[190]';
+
+    const modal = document.createElement('div');
+    modal.id = 'termoReservaCarroModal';
+    modal.className = 'fixed inset-0 z-[200]';
+
+    modal.innerHTML = `
+      <div class="w-full h-full overflow-y-auto no-scrollbar">
+        <div class="min-h-full flex items-start justify-center p-4 md:p-8">
+          <div class="w-full max-w-4xl mx-auto">
+            <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden bg-white">
+              <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-foreground">Termo de responsabilidade</h3>
+                  <p class="text-sm text-muted-foreground">
+                    Leia o termo abaixo, tire a foto no momento do aceite e confirme para concluir a solicitação.
+                  </p>
+                </div>
+
+                <button
+                  id="closeTermoReservaCarro"
+                  type="button"
+                  class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+                  aria-label="Fechar"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+
+              <div class="px-6 py-6 space-y-5">
+                <div class="rounded-2xl border border-border bg-white/60 p-5 max-h-[55vh] overflow-auto no-scrollbar text-sm leading-6 text-foreground">
+                  <h4 class="text-base font-semibold mb-4">TERMO DE RESPONSABILIDADE – USO DE VEÍCULO</h4>
+
+                  <p><strong>1. Identificação</strong></p>
+                  <p>Colaborador: ${escape_html(dados.nome || '')}</p>
+
+                  <br>
+                  <p><strong>2. Declaração</strong></p>
+                  <p>Pelo presente Termo, declaro, para todos os fins, que ao me credenciar como condutor de veículo ou motocicleta da Sociedade Franciosi, comprometo-me a cumprir integralmente as seguintes condições:</p>
+
+                  <br>
+                  <p><strong>3. Responsabilidades do Condutor</strong></p>
+                  <p><strong>1. Legislação e Normas Internas</strong><br> Cumprir rigorosamente o Código de Trânsito Brasileiro (CTB), legislação complementar e normas internas da empresa, assumindo total responsabilidade por infrações ou condutas inadequadas.</p>
+                  <p><strong>2. Multas, Danos e Acidentes</strong><br> Responsabilizar-me pelo pagamento de multas, danos materiais ou pessoais causados a terceiros por dolo ou culpa, autorizando desde já o desconto em folha, inclusive valores de franquia de seguro.</p>
+                  <p><strong>3. Guarda e Estacionamento do Veículo</strong><br> Garantir que o veículo seja estacionado nas dependências da empresa ao término da jornada, até às 17h30. Situações excepcionais devem ser previamente autorizadas pelo gestor imediato ou registradas via sistema pela gestão de frotas.</p>
+                  <p><strong>4. Documentação Obrigatória</strong><br> Dirigir sempre portando CNH válida e compatível com o veículo, documentos pessoais, funcionais e do veículo, conforme exigido pelo CTB.</p>
+                  <p><strong>5. Condições do Veículo</strong><br> Verificar diariamente as condições de uso e segurança do veículo, incluindo itens como pneus, freios, combustível, sistema elétrico, entre outros, mantendo-o em perfeito estado até devolução.</p>
+                  <p><strong>6. Procedimentos em Caso de Acidente</strong><br> Não retirar o veículo do local (exceto para socorro); acionar autoridades competentes; comunicar imediatamente a empresa; não realizar acordos com terceiros; coletar informações e testemunhas.</p>
+                  <p><strong>6.1. Reconhecimento de Culpa de Terceiros</strong><br> Obter Termo de Compromisso assinado pelo envolvido, quando aplicável.</p>
+                  <p><strong>7. Conservação e Responsabilidade</strong><br> Zelar pelo veículo sob sua guarda, comunicando qualquer irregularidade à gestão de frotas.</p>
+                  <p><strong>8. Conduta do Condutor</strong><br> Não dirigir sob efeito de álcool ou substâncias ilícitas; não utilizar o veículo para fins particulares; não transportar pessoas não autorizadas; respeitar rotas e finalidades definidas.</p>
+                  <p><strong>9. Situação da CNH</strong><br> Comunicar imediatamente qualquer suspensão, cassação ou irregularidade na CNH.</p>
+
+                  <br>
+                  <p><strong>4. Devolução do Veículo</strong><br> A responsabilidade do condutor permanece ativa até a devolução formal da chave à gestão de frotas; a vistoria de devolução deverá ser realizada pelo condutor, com registro fotográfico no sistema; a conferência e validação da vistoria são de responsabilidade da gestão de frotas, também via registro fotográfico.</p>
+
+                  <br>
+                  <p><strong>5. Validade do Termo e Liberação do Veículo</strong><br> A reserva do veículo não garante sua disponibilidade no dia solicitado; este termo somente terá validade após aprovação do setor de logística; a validade se inicia exclusivamente com a liberação das chaves pela gestão de frotas.</p>
+
+                  <br>
+                  <p><strong>6. Proteção de Dados – LGPD</strong><br> Ao assinar este termo, o colaborador declara estar ciente de que seus dados pessoais serão tratados pela Sociedade Franciosi, em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), exclusivamente para fins administrativos, operacionais e de segurança, podendo ser compartilhados com terceiros quando necessário para cumprimento de obrigações legais ou contratuais.</p>
+
+                  <br>
+                  <p><strong>7. Disposições Finais</strong><br> O presente termo permanecerá vigente durante todo o período em que o veículo estiver sob responsabilidade do condutor, encerrando-se somente após a devolução formal e validação pela gestão de frotas.</p>
+                </div>
+
+                <div class="space-y-4">
+                  <label class="flex items-start gap-3 rounded-xl border border-border bg-white/60 px-4 py-3 cursor-pointer">
+                    <input id="aceiteTermoReservaCarro" type="checkbox" class="mt-1">
+                    <span class="text-sm text-foreground">
+                      Declaro que li e aceito integralmente o termo de responsabilidade acima.
+                    </span>
+                  </label>
+
+                  <div class="rounded-2xl border border-border bg-white/60 p-4 space-y-3">
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                      <div>
+                        <h4 class="text-sm font-semibold text-foreground">Foto obrigatória no momento do aceite</h4>
+                        <p class="text-xs text-muted-foreground">
+                          A foto deve ser tirada agora pela câmera do dispositivo. Não é permitido enviar arquivo da galeria ou do computador.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div id="cameraIndisponivelBox" class="hidden rounded-xl border border-amber-300 bg-amber-50 text-amber-800 px-4 py-3 text-sm whitespace-pre-line"></div>
+
+                    <div class="rounded-2xl overflow-hidden border border-border bg-black/90 relative">
+                      <video
+                        id="videoAceiteTermoReservaCarro"
+                        class="w-full max-h-80 object-contain bg-black"
+                        autoplay
+                        playsinline
+                        muted
+                      ></video>
+
+                      <canvas id="canvasAceiteTermoReservaCarro" class="hidden"></canvas>
+
+                      <img
+                        id="imgPreviewFotoAceiteTermoReservaCarro"
+                        alt="Foto capturada no aceite"
+                        class="hidden w-full max-h-80 object-contain bg-black"
+                      >
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3">
+                      <button
+                        id="btnIniciarCameraAceite"
+                        type="button"
+                        class="sm:flex-1 rounded-xl border border-border bg-white/80 px-4 py-3 font-medium hover:bg-white transition-all"
+                      >
+                        Iniciar câmera
+                      </button>
+
+                      <button
+                        id="btnCapturarFotoAceite"
+                        type="button"
+                        class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all"
+                        disabled
+                      >
+                        Tirar foto
+                      </button>
+
+                      <button
+                        id="btnRefazerFotoAceite"
+                        type="button"
+                        class="sm:flex-1 rounded-xl border border-border bg-white/80 px-4 py-3 font-medium hover:bg-white transition-all hidden"
+                      >
+                        Refazer foto
+                      </button>
+                    </div>
+
+                    <p id="statusCameraAceite" class="text-xs text-muted-foreground">
+                      Clique em "Iniciar câmera" para registrar a foto do aceite.
+                    </p>
+                  </div>
+
+                  <p id="erroTermoReservaCarro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                  <button
+                    id="confirmarTermoReservaCarro"
+                    type="button"
+                    class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all"
+                  >
+                    Aceitar e continuar
+                  </button>
+
+                  <button
+                    id="cancelarTermoReservaCarro"
+                    type="button"
+                    class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    async function parar_camera() {
+      try {
+        if (stream_camera) {
+          stream_camera.getTracks().forEach((track) => track.stop());
+        }
+      } catch {}
+      stream_camera = null;
+    }
+
+    async function fechar(resultado = null) {
+      await parar_camera();
+      overlay.remove();
+      modal.remove();
+      resolve(resultado);
+    }
+
+    function set_erro(msg) {
+      const el = document.getElementById('erroTermoReservaCarro');
+      if (!el) return;
+      el.textContent = msg || '';
+      el.classList.toggle('hidden', !msg);
+    }
+
+    function set_status_camera(msg) {
+      const el = document.getElementById('statusCameraAceite');
+      if (!el) return;
+      el.textContent = msg || '';
+    }
+
+    function set_camera_indisponivel(msg = '') {
+      const el = document.getElementById('cameraIndisponivelBox');
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.toggle('hidden', !msg);
+    }
+
+    async function iniciar_camera() {
+      const video = document.getElementById('videoAceiteTermoReservaCarro');
+      const img = document.getElementById('imgPreviewFotoAceiteTermoReservaCarro');
+      const btn_capturar = document.getElementById('btnCapturarFotoAceite');
+      const btn_refazer = document.getElementById('btnRefazerFotoAceite');
+
+      set_erro('');
+      set_camera_indisponivel('');
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        set_camera_indisponivel(
+          'Este dispositivo ou navegador não permite acesso à câmera por este recurso.\nFaça a solicitação usando um celular com câmera.'
+        );
+        set_status_camera('Câmera indisponível neste dispositivo.');
+        return;
+      }
+
+      try {
+        await parar_camera();
+
+        foto_aceite_termo = '';
+
+        if (img) {
+          img.src = '';
+          img.classList.add('hidden');
+        }
+
+        if (video) {
+          video.classList.remove('hidden');
+        }
+
+        if (btn_refazer) {
+          btn_refazer.classList.add('hidden');
+        }
+
+        stream_camera = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+
+        if (video) {
+          video.srcObject = stream_camera;
+          await video.play().catch(() => {});
+        }
+
+        if (btn_capturar) {
+          btn_capturar.disabled = false;
+        }
+
+        set_status_camera('Câmera pronta. Posicione o rosto e clique em "Tirar foto".');
+      } catch (err) {
+        console.error('Erro ao iniciar câmera do aceite.', err);
+
+        let mensagem = 'Não foi possível acessar a câmera deste dispositivo.';
+
+        if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+          mensagem = 'O acesso à câmera foi negado. Permita o uso da câmera no navegador ou faça a solicitação pelo celular.';
+        } else if (err?.name === 'NotFoundError' || err?.name === 'DevicesNotFoundError') {
+          mensagem = 'Nenhuma câmera foi encontrada neste computador. Faça a solicitação pelo celular.';
+        } else if (err?.name === 'NotReadableError' || err?.name === 'TrackStartError') {
+          mensagem = 'A câmera está ocupada por outro aplicativo. Feche o aplicativo que está usando a câmera ou faça a solicitação pelo celular.';
+        } else if (err?.name === 'OverconstrainedError' || err?.name === 'ConstraintNotSatisfiedError') {
+          mensagem = 'A câmera disponível não atende aos requisitos mínimos. Faça a solicitação pelo celular.';
+        }
+
+        set_camera_indisponivel(mensagem);
+        set_status_camera('Não foi possível iniciar a câmera.');
+
+        const btn_capturar = document.getElementById('btnCapturarFotoAceite');
+        if (btn_capturar) btn_capturar.disabled = true;
+      }
+    }
+
+    async function capturar_foto() {
+      const video = document.getElementById('videoAceiteTermoReservaCarro');
+      const canvas = document.getElementById('canvasAceiteTermoReservaCarro');
+      const img = document.getElementById('imgPreviewFotoAceiteTermoReservaCarro');
+      const btn_capturar = document.getElementById('btnCapturarFotoAceite');
+      const btn_refazer = document.getElementById('btnRefazerFotoAceite');
+
+      set_erro('');
+
+      if (!video || !canvas || !img) {
+        return set_erro('Não foi possível preparar a captura da foto.');
+      }
+
+      if (!stream_camera) {
+        return set_erro('Inicie a câmera antes de tirar a foto.');
+      }
+
+      const largura = video.videoWidth || 1280;
+      const altura = video.videoHeight || 720;
+
+      if (!largura || !altura) {
+        return set_erro('A câmera ainda não ficou pronta. Aguarde um instante e tente novamente.');
+      }
+
+      canvas.width = largura;
+      canvas.height = altura;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        return set_erro('Não foi possível processar a foto.');
+      }
+
+      ctx.drawImage(video, 0, 0, largura, altura);
+      foto_aceite_termo = canvas.toDataURL('image/jpeg', 0.92);
+
+      img.src = foto_aceite_termo;
+      img.classList.remove('hidden');
+      video.classList.add('hidden');
+
+      if (btn_capturar) btn_capturar.disabled = true;
+      if (btn_refazer) btn_refazer.classList.remove('hidden');
+
+      set_status_camera('Foto capturada com sucesso.');
+      await parar_camera();
+    }
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
+
+    const btn_close = document.getElementById('closeTermoReservaCarro');
+    const btn_cancelar = document.getElementById('cancelarTermoReservaCarro');
+    const btn_confirmar = document.getElementById('confirmarTermoReservaCarro');
+    const chk_aceite = document.getElementById('aceiteTermoReservaCarro');
+    const btn_iniciar_camera = document.getElementById('btnIniciarCameraAceite');
+    const btn_capturar_foto = document.getElementById('btnCapturarFotoAceite');
+    const btn_refazer_foto = document.getElementById('btnRefazerFotoAceite');
+
+    overlay.addEventListener('click', () => fechar(null));
+    btn_close?.addEventListener('click', () => fechar(null));
+    btn_cancelar?.addEventListener('click', () => fechar(null));
+
+    btn_iniciar_camera?.addEventListener('click', async () => {
+      await iniciar_camera();
+    });
+
+    btn_capturar_foto?.addEventListener('click', async () => {
+      await capturar_foto();
+    });
+
+    btn_refazer_foto?.addEventListener('click', async () => {
+      const video = document.getElementById('videoAceiteTermoReservaCarro');
+      const img = document.getElementById('imgPreviewFotoAceiteTermoReservaCarro');
+
+      foto_aceite_termo = '';
+
+      if (img) {
+        img.src = '';
+        img.classList.add('hidden');
+      }
+
+      if (video) {
+        video.classList.remove('hidden');
+      }
+
+      btn_refazer_foto.classList.add('hidden');
+      await iniciar_camera();
+    });
+
+    btn_confirmar?.addEventListener('click', async () => {
+      try {
+        set_erro('');
+
+        if (!chk_aceite?.checked) {
+          return set_erro('Você precisa aceitar o termo para continuar.');
+        }
+
+        if (!foto_aceite_termo) {
+          return set_erro('A foto do aceite é obrigatória e deve ser tirada pela câmera neste momento.');
+        }
+
+        await fechar({
+          aceito: true,
+          foto_aceite_termo,
+          termo_versao: '2026-04'
+        });
+      } catch (err) {
+        set_erro(err?.message || 'Erro ao processar o aceite do termo.');
+      }
+    });
+  });
+}
+
 // cadastro de veiculos
 
 async function listarVeiculosGestao() {
@@ -17834,7 +20966,6 @@ async function listarVeiculosGestao() {
   return Array.isArray(json?.items) ? json.items : [];
 }
 
-
 async function buscarVeiculoPorId(idVeiculo) {
   const APIBASE = obterApiBase();
   if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
@@ -17848,7 +20979,6 @@ async function buscarVeiculoPorId(idVeiculo) {
 
   return json.item || null;
 }
-
 
 async function salvarVeiculo(payload, idEdicao = null) {
   const APIBASE = obterApiBase();
@@ -17873,7 +21003,6 @@ async function salvarVeiculo(payload, idEdicao = null) {
 
   return json;
 }
-
 
 async function excluirVeiculo(idVeiculo) {
   const APIBASE = obterApiBase();
@@ -18043,21 +21172,23 @@ async function abrirModalGestaoVeiculos() {
         <td class="px-4 py-3">
           <div class="flex justify-end gap-2">
             ${
-              String(item.status_veiculo || '')
-                .trim()
-                .toUpperCase()
-                .replace(/\s+/g, '_') === 'DISPONIVEL'
-                ? `
-                  <button
-                    type="button"
-                    class="btnEditarVeiculo w-10 h-10 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
-                    data-id="${escapeHtml(item.id)}"
-                    title="Editar veículo">
-                    <i class="fas fa-pen"></i>
-                  </button>
-                `
-                : ''
-            }
+                ['DISPONIVEL', 'MANUTENCAO'].includes(
+                  String(item.status_veiculo || '')
+                    .trim()
+                    .toUpperCase()
+                    .replace(/\s+/g, '_')
+                )
+                  ? `
+                    <button
+                      type="button"
+                      class="btnEditarVeiculo w-10 h-10 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+                      data-id="${escapeHtml(item.id)}"
+                      title="Editar veículo">
+                      <i class="fas fa-pen"></i>
+                    </button>
+                  `
+                  : ''
+              }
           </div>
         </td>
       </tr>
@@ -18326,7 +21457,6 @@ async function abrirModalVeiculo(modo = 'new', veiculo = null) {
 }
 
 
-
 // --------------- Fim Reserva Carro ----------------
 
 function ativarHomeMobileTab(tab) {
@@ -18359,3 +21489,1691 @@ function ativarHomeMobileTab(tab) {
 }
 
 window.addEventListener('resize', resetHomePanelsDesktop);
+
+
+/* =========================
+   Cadastro Organograma
+========================= */
+
+let organogramaState = {
+  unidades: [],
+  setores: [],
+  vinculos: [],
+  editandoId: null
+};
+
+function getApiBaseOrganograma() {
+  const base = sessionStorage.getItem('api_base') || sessionStorage.getItem('apibase');
+  if (!base) throw new Error('APIBASE não configurada.');
+  return String(base).trim().replace(/\/$/, '');
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function normalizarListaResposta(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.items)) return data.items;
+  return [];
+}
+
+function normalizarItemUnidade(item) {
+  return {
+    id: item?.id ?? item?.ID ?? '',
+    nome: item?.nome ?? item?.NOME ?? ''
+  };
+}
+
+function normalizarItemSetor(item) {
+  return {
+    id: item?.id ?? item?.ID ?? '',
+    nome: item?.nome ?? item?.NOME ?? '',
+    descricao: item?.descricao ?? item?.DESCRICAO ?? '',
+    status: Number(item?.status ?? item?.STATUS ?? 1) ? 1 : 0
+  };
+}
+
+function mostrarMsgOrganograma(msg, erro = false) {
+  const el = document.getElementById('organogramaMsg');
+  if (!el) return;
+
+  el.textContent = msg || '';
+  el.classList.remove('hidden', 'text-destructive', 'text-emerald-700');
+
+  if (!msg) {
+    el.classList.add('hidden');
+    return;
+  }
+
+  el.classList.add(erro ? 'text-destructive' : 'text-emerald-700');
+}
+
+function limparFormularioOrganograma() {
+  organogramaState.editandoId = null;
+
+  const setorPai = document.getElementById('orgSetorPai');
+  const setorFilho = document.getElementById('orgSetorFilho');
+  const btnSalvar = document.getElementById('btnSalvarVinculoOrganograma');
+  const btnLimpar = document.getElementById('btnLimparVinculoOrganograma');
+
+  if (setorPai) setorPai.value = '';
+  if (setorFilho) setorFilho.value = '';
+
+  if (btnSalvar) btnSalvar.textContent = 'Salvar vínculo';
+  if (btnLimpar) btnLimpar.classList.remove('hidden');
+}
+
+async function carregarUnidadesTrabalhoOrganograma() {
+  const resp = await fetch(`${APIBASE}/api/local-trabalho`);
+  if (!resp.ok) throw new Error('Falha ao carregar unidades de trabalho.');
+
+  const data = await resp.json();
+  organogramaState.unidades = Array.isArray(data?.items) ? data.items : [];
+
+  preencherSelectUnidadesOrganograma();
+}
+
+async function carregarSetoresOrganograma() {
+  const resp = await fetch(`${APIBASE}/api/organograma-setores`);
+  if (!resp.ok) throw new Error('Falha ao carregar setores do organograma.');
+
+  const data = await resp.json();
+  organogramaState.setores = Array.isArray(data?.items) ? data.items : [];
+
+  preencherSelectSetoresOrganograma();
+}
+
+async function carregarVinculosOrganograma(idLocalTrabalho = '') {
+  const APIBASE = getApiBaseOrganograma();
+
+  const url = idLocalTrabalho
+    ? `${APIBASE}/api/organograma?id_local_trabalho=${encodeURIComponent(idLocalTrabalho)}`
+    : `${APIBASE}/api/organograma`;
+
+  const resp = await fetch(url);
+
+  if (!resp.ok) {
+    throw new Error('Falha ao carregar vínculos do organograma.');
+  }
+
+  const data = await resp.json();
+  organogramaState.vinculos = normalizarListaResposta(data);
+
+  renderTabelaOrganograma();
+  renderArvoreOrganograma();
+}
+
+function preencherSelectUnidadesOrganograma() {
+  const select = document.getElementById('orgFiltroUnidade');
+  if (!select) return;
+
+  const options = ['<option value="">Selecione...</option>'].concat(
+    organogramaState.unidades.map(item => {
+      const id = item.id ?? item.ID;
+      const nome = item.nome ?? item.NOME;
+      return `<option value="${id}">${escapeHtml(nome)}</option>`;
+    })
+  );
+
+  select.innerHTML = options.join('');
+}
+
+function preencherSelectSetoresOrganograma() {
+  const ids = ['orgSetorPai', 'orgSetorFilho'];
+
+  ids.forEach(idSelect => {
+    const select = document.getElementById(idSelect);
+    if (!select) return;
+
+    const options = ['<option value="">Selecione...</option>'].concat(
+      organogramaState.setores.map(item => {
+        const id = item.id ?? item.ID;
+        const nome = item.nome ?? item.NOME;
+        return `<option value="${id}">${escapeHtml(nome)}</option>`;
+      })
+    );
+
+    select.innerHTML = options.join('');
+  });
+}
+
+async function salvarVinculoOrganograma() {
+  try {
+    mostrarMsgOrganograma('');
+
+    const APIBASE = getApiBaseOrganograma();
+    const idLocalTrabalho = document.getElementById('orgFiltroUnidade')?.value;
+    const idSetorPai = document.getElementById('orgSetorPai')?.value;
+    const idSetorFilho = document.getElementById('orgSetorFilho')?.value;
+
+    if (!idLocalTrabalho) {
+      return mostrarMsgOrganograma('Selecione a unidade de trabalho.', true);
+    }
+
+    if (!idSetorPai || !idSetorFilho) {
+      return mostrarMsgOrganograma('Selecione o setor pai e o setor filho.', true);
+    }
+
+    if (String(idSetorPai) === String(idSetorFilho)) {
+      return mostrarMsgOrganograma('O setor pai não pode ser igual ao setor filho.', true);
+    }
+
+    const payload = {
+      id_local_trabalho: Number(idLocalTrabalho),
+      id_setor_pai: Number(idSetorPai),
+      id_setor_filho: Number(idSetorFilho)
+    };
+
+
+    const editandoId = organogramaState.editandoId;
+
+    const resp = await fetch(
+      editandoId
+        ? `${APIBASE}/api/organograma/${editandoId}`
+        : `${APIBASE}/api/organograma`,
+      {
+        method: editandoId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data = await resp.json().catch(() => null);
+
+    if (!resp.ok) {
+      throw new Error(data?.message || data?.error || data?.erro || 'Não foi possível salvar o vínculo.');
+    }
+
+    organogramaState.editandoId = null;
+    limparFormularioOrganograma();
+    mostrarMsgOrganograma('Vínculo salvo com sucesso.');
+
+    await carregarVinculosOrganograma(idLocalTrabalho);
+  } catch (err) {
+    mostrarMsgOrganograma(err?.message || 'Erro ao salvar vínculo.', true);
+  }
+}
+
+async function excluirVinculoOrganograma(id) {
+  try {
+    if (!confirm('Deseja realmente excluir este vínculo?')) return;
+
+    const APIBASE = getApiBaseOrganograma();
+    const idLocal = document.getElementById('orgFiltroUnidade')?.value;
+
+    const resp = await fetch(`${APIBASE}/api/organograma/${id}`, {
+      method: 'DELETE'
+    });
+
+    const data = await resp.json().catch(() => null);
+
+    if (!resp.ok) {
+      throw new Error(data?.message || data?.error || data?.erro || 'Erro ao excluir vínculo.');
+    }
+
+    mostrarMsgOrganograma(data?.message || 'Vínculo excluído com sucesso.');
+    limparFormularioOrganograma();
+    await carregarVinculosOrganograma(idLocal);
+  } catch (err) {
+    mostrarMsgOrganograma(err?.message || 'Erro ao excluir vínculo.', true);
+  }
+}
+
+function editarVinculoOrganograma(id) {
+  const item = organogramaState.vinculos.find(x => String(x.id) === String(id));
+  if (!item) return;
+
+  organogramaState.editandoId = item.id;
+
+  const unidade = document.getElementById('orgFiltroUnidade');
+  const setorPai = document.getElementById('orgSetorPai');
+  const setorFilho = document.getElementById('orgSetorFilho');
+  const btnSalvar = document.getElementById('btnSalvarVinculoOrganograma');
+
+  if (unidade) unidade.value = item.id_local_trabalho ?? '';
+  if (setorPai) setorPai.value = item.id_setor_pai ?? '';
+  if (setorFilho) setorFilho.value = item.id_setor_filho ?? '';
+
+  if (btnSalvar) btnSalvar.textContent = 'Salvar alterações';
+
+  mostrarMsgOrganograma('Modo de edição ativado.');
+}
+
+function renderTabelaOrganograma() {
+  const tbody = document.getElementById('tbodyOrganograma');
+  if (!tbody) return;
+
+  const itens = (Array.isArray(organogramaState.vinculos) ? organogramaState.vinculos : []).filter(item =>
+    Number(item?.id) > 0 &&
+    Number(item?.id_local_trabalho) > 0 &&
+    Number(item?.id_setor_pai) > 0 &&
+    Number(item?.id_setor_filho) > 0
+  );
+
+  if (!itens.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" class="px-4 py-6 form-subtitle-sm text-center">Nenhum vínculo cadastrado.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = itens.map(item => `
+    <tr>
+      <td class="px-4 py-3">${escapeHtml(item?.nomelocaltrabalho ?? '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(item?.nomesetorpai ?? '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(item?.nomesetorfilho ?? '-')}</td>
+      <td class="px-4 py-3 text-right">
+        <div class="inline-flex items-center gap-2">
+          <button type="button" class="w-9 h-9 rounded-lg border border-border bg-white/70 hover:bg-white transition-all"
+            onclick="editarVinculoOrganograma(${Number(item.id)})" title="Editar">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button type="button" class="w-9 h-9 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-all"
+            onclick="excluirVinculoOrganograma(${Number(item.id)})" title="Excluir">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function montarArvoreOrganograma(vinculos) {
+  const filhosPorPai = new Map();
+  const todosFilhos = new Set();
+  const todosNos = new Map();
+
+  const lista = Array.isArray(vinculos) ? vinculos : [];
+
+  lista.forEach(item => {
+    const paiId = Number(item?.id_setor_pai);
+    const filhoId = Number(item?.id_setor_filho);
+    const nomePai = String(item?.nomesetorpai ?? '').trim();
+    const nomeFilho = String(item?.nomesetorfilho ?? '').trim();
+
+    if (!Number.isFinite(paiId) || paiId <= 0) return;
+    if (!Number.isFinite(filhoId) || filhoId <= 0) return;
+    if (!nomePai || !nomeFilho) return;
+    if (paiId === filhoId) return;
+
+    if (!todosNos.has(paiId)) {
+      todosNos.set(paiId, { id: paiId, nome: nomePai });
+    }
+
+    if (!todosNos.has(filhoId)) {
+      todosNos.set(filhoId, { id: filhoId, nome: nomeFilho });
+    }
+
+    if (!filhosPorPai.has(paiId)) {
+      filhosPorPai.set(paiId, []);
+    }
+
+    const filhos = filhosPorPai.get(paiId);
+    if (!filhos.includes(filhoId)) {
+      filhos.push(filhoId);
+    }
+
+    todosFilhos.add(filhoId);
+  });
+
+  const raizes = [...todosNos.values()].filter(no => !todosFilhos.has(no.id));
+
+  return { raizes, filhosPorPai, todosNos };
+}
+
+function renderNoOrganograma(noId, filhosPorPai, todosNos, visitados = new Set()) {
+  if (visitados.has(noId)) {
+    return `
+      <li>
+        <div class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          Ciclo detectado
+        </div>
+      </li>
+    `;
+  }
+
+  const novoVisitados = new Set(visitados);
+  novoVisitados.add(noId);
+
+  const no = todosNos.get(noId);
+  const filhos = filhosPorPai.get(noId) || [];
+
+  return `
+    <li class="relative pl-6">
+      <div class="rounded-xl border border-border bg-white80 px-4 py-3 shadow-sm inline-flex items-center gap-2">
+        <i class="fas fa-building text-primary"></i>
+        <span class="font-medium">${escapeHtml(no?.nome ?? 'Sem nome')}</span>
+      </div>
+
+      ${
+        filhos.length
+          ? `
+            <ul class="mt-3 space-y-3 border-l border-border70 ml-4 pl-4">
+              ${filhos.map(filhoId => renderNoOrganograma(filhoId, filhosPorPai, todosNos, novoVisitados)).join('')}
+            </ul>
+          `
+          : ''
+      }
+    </li>
+  `;
+}
+
+function renderArvoreOrganograma() {
+  const container = document.getElementById('organogramaArvore');
+  const idLocalTrabalho = document.getElementById('orgFiltroUnidade')?.value;
+
+  if (!container) return;
+
+  if (!idLocalTrabalho) {
+    container.innerHTML = `
+      <div class="rounded-2xl border border-dashed border-border bg-white/40 p-8 text-center form-subtitle-sm">
+        Selecione uma unidade de trabalho para visualizar o organograma.
+      </div>
+    `;
+    return;
+  }
+
+  const vinculos = (Array.isArray(organogramaState.vinculos) ? organogramaState.vinculos : [])
+    .filter(v => String(v?.id_local_trabalho) === String(idLocalTrabalho))
+    .filter(v =>
+      Number(v?.id_setor_pai) > 0 &&
+      Number(v?.id_setor_filho) > 0 &&
+      String(v?.nomesetorpai ?? '').trim() &&
+      String(v?.nomesetorfilho ?? '').trim()
+    );
+
+  if (!vinculos.length) {
+    container.innerHTML = `
+      <div class="rounded-2xl border border-dashed border-border bg-white/40 p-8 text-center form-subtitle-sm">
+        Nenhum vínculo cadastrado para esta unidade.
+      </div>
+    `;
+    return;
+  }
+
+  const { raizes, filhosPorPai, todosNos } = montarArvoreOrganograma(vinculos);
+
+  if (!raizes.length) {
+    container.innerHTML = `
+      <div class="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-8 text-center form-subtitle-sm text-amber-800">
+        Não foi possível montar a árvore do organograma. Verifique se os vínculos cadastrados possuem uma raiz válida.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="organograma-classico-wrap overflow-auto py-6">
+      <div class="organograma-classico">
+        ${raizes.map(raiz => renderNoClassico(raiz.id, filhosPorPai, todosNos)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderNoClassico(noId, filhosPorPai, todosNos, visitados = new Set()) {
+  if (visitados.has(noId)) {
+    return `
+      <div class="org-group">
+        <div class="org-card !bg-red-500">Ciclo detectado</div>
+      </div>
+    `;
+  }
+
+  const novoVisitados = new Set(visitados);
+  novoVisitados.add(noId);
+
+  const no = todosNos.get(noId);
+  if (!no) return '';
+
+  const filhos = filhosPorPai.get(noId) || [];
+
+  return `
+    <div class="org-group">
+      <div class="org-card">${escapeHtml(no.nome)}</div>
+
+      ${filhos.length ? `
+        <div class="org-children-wrap">
+          <div class="org-parent-line"></div>
+          <div class="org-children">
+            ${filhos.map(filhoId => `
+              <div class="org-child">
+                ${renderNoClassico(filhoId, filhosPorPai, todosNos, novoVisitados)}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+/* =========================
+   Modal de Setores Organograma
+========================= */
+
+function removerModalSetoresOrganograma() {
+  document.getElementById('organogramaSetoresOverlay')?.remove();
+  document.getElementById('organogramaSetoresModal')?.remove();
+}
+
+async function abrirModalSetoresOrganograma() {
+  removerModalSetoresOrganograma();
+
+  const APIBASE = getApiBaseOrganograma();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'organogramaSetoresOverlay';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[220]';
+  document.body.appendChild(overlay);
+
+  const modal = document.createElement('div');
+  modal.id = 'organogramaSetoresModal';
+  modal.className = 'fixed inset-0 z-[230]';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-y-auto no-scrollbar">
+      <div class="min-h-full flex items-start justify-center p-4 md:p-8">
+        <div class="w-full max-w-5xl mx-auto px-4 sm:px-6">
+          <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden bg-white">
+            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-semibold text-foreground">Gerenciar setores do organograma</h3>
+                <p class="text-sm text-muted-foreground">Cadastre, edite e exclua os setores usados no organograma.</p>
+              </div>
+
+              <button
+                id="btnFecharModalSetoresOrganograma"
+                type="button"
+                class="w-10 h-10 rounded-xl bg-white60 border border-border hover:bg-white transition-all flex items-center justify-center"
+                aria-label="Fechar"
+                title="Fechar"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div class="px-6 py-6 space-y-5">
+              <div class="rounded-2xl border border-border bg-white/60 p-4 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="space-y-2">
+                    <label class="form-label-sm block">Nome do setor</label>
+                    <input
+                      id="orgModalSetorNome"
+                      type="text"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none"
+                      placeholder="Informe o nome do setor"
+                    />
+                  </div>
+
+                  <div class="space-y-2">
+                    <label class="form-label-sm block">Status</label>
+                    <select
+                      id="orgModalSetorStatus"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none"
+                    >
+                      <option value="1">Ativo</option>
+                      <option value="0">Inativo</option>
+                    </select>
+                  </div>
+
+                  <div class="space-y-2 md:col-span-2">
+                    <label class="form-label-sm block">Descrição</label>
+                    <textarea
+                      id="orgModalSetorDescricao"
+                      rows="3"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none resize-none"
+                      placeholder="Descrição do setor (opcional)"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <button
+                    id="btnSalvarSetorOrganogramaModal"
+                    type="button"
+                    class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
+                  >
+                    Salvar setor
+                  </button>
+
+                  <button
+                    id="btnLimparSetorOrganogramaModal"
+                    type="button"
+                    class="sm:flex-1 rounded-xl border border-border bg-white/60 form-control-sm font-medium hover:bg-white transition-all"
+                  >
+                    Limpar
+                  </button>
+                </div>
+
+                <p id="orgModalSetorMsg" class="form-subtitle-sm hidden"></p>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-white/50 overflow-hidden">
+                <div class="overflow-auto">
+                  <table class="min-w-full text-sm">
+                    <thead class="bg-muted/40 text-muted-foreground">
+                      <tr>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">ID</th>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">Nome</th>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">Descrição</th>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">Status</th>
+                        <th class="text-right font-semibold form-control-sm px-4 py-3">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbodySetoresOrganogramaModal">
+                      <tr>
+                        <td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">Carregando setores...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-6 py-5 border-t border-border flex justify-end">
+              <button
+                id="btnFecharRodapeModalSetoresOrganograma"
+                type="button"
+                class="rounded-xl border border-border bg-white/60 form-control-sm px-4 hover:bg-white transition-all"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  let editandoSetorId = null;
+  let cacheSetores = [];
+
+  const tbody = document.getElementById('tbodySetoresOrganogramaModal');
+  const inputNome = document.getElementById('orgModalSetorNome');
+  const inputDescricao = document.getElementById('orgModalSetorDescricao');
+  const inputStatus = document.getElementById('orgModalSetorStatus');
+  const btnSalvar = document.getElementById('btnSalvarSetorOrganogramaModal');
+
+  function setMsg(msg, erro = false) {
+    const el = document.getElementById('orgModalSetorMsg');
+    if (!el) return;
+
+    el.textContent = msg || '';
+    el.classList.remove('hidden', 'text-destructive', 'text-emerald-700');
+
+    if (!msg) {
+      el.classList.add('hidden');
+      return;
+    }
+
+    el.classList.add(erro ? 'text-destructive' : 'text-emerald-700');
+  }
+
+  function limparFormularioModalSetor() {
+    editandoSetorId = null;
+    if (inputNome) inputNome.value = '';
+    if (inputDescricao) inputDescricao.value = '';
+    if (inputStatus) inputStatus.value = '1';
+    if (btnSalvar) btnSalvar.textContent = 'Salvar setor';
+    setMsg('');
+  }
+
+  function badgeStatusSetor(status) {
+    return Number(status) === 1
+      ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-emerald-200 bg-emerald-50 text-emerald-700">Ativo</span>'
+      : '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-slate-200 bg-slate-100 text-slate-700">Inativo</span>';
+  }
+
+  function renderTabelaSetores() {
+    if (!tbody) return;
+
+    if (!cacheSetores.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">
+            Nenhum setor cadastrado.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = cacheSetores.map(item => `
+      <tr class="border-t border-border/70">
+        <td class="px-4 py-3 font-semibold">${escapeHtml(item.id)}</td>
+        <td class="px-4 py-3">${escapeHtml(item.nome)}</td>
+        <td class="px-4 py-3">${escapeHtml(item.descricao || '-')}</td>
+        <td class="px-4 py-3">${badgeStatusSetor(item.status)}</td>
+        <td class="px-4 py-3 text-right">
+          <div class="inline-flex items-center gap-2">
+            <button
+              type="button"
+              class="w-9 h-9 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+              data-editar-id="${escapeHtml(item.id)}"
+              title="Editar"
+            >
+              <i class="fas fa-pen"></i>
+            </button>
+
+            <button
+              type="button"
+              class="w-9 h-9 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-all"
+              data-excluir-id="${escapeHtml(item.id)}"
+              title="Excluir"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('[data-editar-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-editar-id');
+        const item = cacheSetores.find(x => String(x.id) === String(id));
+        if (!item) return;
+
+        editandoSetorId = item.id;
+        if (inputNome) inputNome.value = item.nome || '';
+        if (inputDescricao) inputDescricao.value = item.descricao || '';
+        if (inputStatus) inputStatus.value = String(Number(item.status) ? 1 : 0);
+        if (btnSalvar) btnSalvar.textContent = 'Salvar alterações';
+        setMsg('Modo de edição ativado.');
+        inputNome?.focus();
+      });
+    });
+
+    tbody.querySelectorAll('[data-excluir-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-excluir-id');
+        const item = cacheSetores.find(x => String(x.id) === String(id));
+
+        if (!item) return;
+        if (!confirm(`Deseja realmente excluir o setor "${item.nome}"?`)) return;
+
+        try {
+          setMsg('');
+
+          const resp = await fetch(`${APIBASE}/api/organograma-setores/${id}`, {
+            method: 'DELETE'
+          });
+
+          const data = await resp.json().catch(() => null);
+
+          if (!resp.ok) {
+            throw new Error(data?.message || data?.error || 'Erro ao excluir setor.');
+          }
+
+          setMsg(data?.message || 'Setor excluído com sucesso.');
+          await carregarListaSetoresModal();
+          await carregarSetoresOrganograma();
+        } catch (err) {
+          setMsg(err?.message || 'Erro ao excluir setor.', true);
+        }
+      });
+    });
+  }
+
+  async function carregarListaSetoresModal() {
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">
+            Carregando setores...
+          </td>
+        </tr>
+      `;
+    }
+
+    const resp = await fetch(`${APIBASE}/api/organograma-setores`);
+    const data = await resp.json().catch(() => null);
+
+    if (!resp.ok) {
+      throw new Error(data?.message || data?.error || 'Erro ao carregar setores.');
+    }
+
+    cacheSetores = normalizarListaResposta(data).map(normalizarItemSetor);
+    renderTabelaSetores();
+  }
+
+  async function salvarSetorModal() {
+    try {
+      setMsg('');
+
+      const nome = String(inputNome?.value ?? '').trim();
+      const descricao = String(inputDescricao?.value ?? '').trim();
+      const status = Number(inputStatus?.value ?? 1) ? 1 : 0;
+
+      if (!nome) {
+        return setMsg('Informe o nome do setor.', true);
+      }
+
+      const payload = {
+        nome,
+        descricao,
+        status
+      };
+
+      const resp = await fetch(
+        editandoSetorId
+          ? `${APIBASE}/api/organograma-setores/${editandoSetorId}`
+          : `${APIBASE}/api/organograma-setores`,
+        {
+          method: editandoSetorId ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      const data = await resp.json().catch(() => null);
+
+      if (!resp.ok) {
+        throw new Error(data?.message || data?.error || 'Erro ao salvar setor.');
+      }
+
+      setMsg(editandoSetorId ? 'Setor atualizado com sucesso.' : 'Setor cadastrado com sucesso.');
+      limparFormularioModalSetor();
+      await carregarListaSetoresModal();
+      await carregarSetoresOrganograma();
+    } catch (err) {
+      setMsg(err?.message || 'Erro ao salvar setor.', true);
+    }
+  }
+
+  function fecharModal() {
+    removerModalSetoresOrganograma();
+  }
+
+  overlay.addEventListener('click', fecharModal);
+  document.getElementById('btnFecharModalSetoresOrganograma')?.addEventListener('click', fecharModal);
+  document.getElementById('btnFecharRodapeModalSetoresOrganograma')?.addEventListener('click', fecharModal);
+  document.getElementById('btnLimparSetorOrganogramaModal')?.addEventListener('click', limparFormularioModalSetor);
+  document.getElementById('btnSalvarSetorOrganogramaModal')?.addEventListener('click', salvarSetorModal);
+
+  await carregarListaSetoresModal();
+}
+
+function removerModalUsuariosOrganograma() {
+  document.getElementById('organogramaUsuariosOverlay')?.remove();
+  document.getElementById('organogramaUsuariosModal')?.remove();
+}
+
+async function abrirModalUsuariosOrganograma() {
+  removerModalUsuariosOrganograma();
+
+  const APIBASE = getApiBaseOrganograma();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'organogramaUsuariosOverlay';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[220]';
+  document.body.appendChild(overlay);
+
+  const modal = document.createElement('div');
+  modal.id = 'organogramaUsuariosModal';
+  modal.className = 'fixed inset-0 z-[230]';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-y-auto no-scrollbar">
+      <div class="min-h-full flex items-start justify-center p-4 md:p-8">
+        <div class="w-full max-w-6xl mx-auto px-4 sm:px-6">
+          <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden bg-white">
+            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-semibold text-foreground">Vincular usuário ao setor do organograma</h3>
+                <p class="text-sm text-muted-foreground">Cadastre, edite e exclua vínculos de usuários com setores do organograma.</p>
+              </div>
+
+              <button
+                id="btnFecharModalUsuariosOrganograma"
+                type="button"
+                class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+                aria-label="Fechar"
+                title="Fechar"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div class="px-6 py-6 space-y-5">
+              <div class="rounded-2xl border border-border bg-white/60 p-4 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="space-y-2">
+                    <label class="form-label-sm block">Usuário</label>
+                    <select
+                      id="orgUsuarioVinculoSelect"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none"
+                    >
+                      <option value="">Selecione...</option>
+                    </select>
+                  </div>
+
+                  <div class="space-y-2">
+                    <label class="form-label-sm block">Setor do organograma</label>
+                    <select
+                      id="orgSetorUsuarioVinculoSelect"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none"
+                    >
+                      <option value="">Selecione...</option>
+                    </select>
+                  </div>
+
+                  <div class="space-y-2">
+                    <label class="form-label-sm block">Precisa aprovação para reservar carro?</label>
+                    <select
+                      id="orgUsuarioPrecisaAprovacaoReservaCarro"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none"
+                    >
+                      <option value="sim">Sim</option>
+                      <option value="nao">Não</option>
+                    </select>
+                  </div>
+
+                  <div class="space-y-2">
+                    <label class="form-label-sm block">Status</label>
+                    <select
+                      id="orgUsuarioVinculoStatus"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none"
+                    >
+                      <option value="1">Ativo</option>
+                      <option value="0">Inativo</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <button
+                    id="btnSalvarUsuarioVinculoOrganogramaModal"
+                    type="button"
+                    class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
+                  >
+                    Salvar vínculo
+                  </button>
+
+                  <button
+                    id="btnLimparUsuarioVinculoOrganogramaModal"
+                    type="button"
+                    class="sm:flex-1 rounded-xl border border-border bg-white/60 form-control-sm font-medium hover:bg-white transition-all"
+                  >
+                    Limpar
+                  </button>
+                </div>
+
+                <p id="orgUsuarioVinculoMsg" class="form-subtitle-sm hidden"></p>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-white/50 overflow-hidden">
+                <div class="overflow-auto">
+                  <table class="min-w-full text-sm">
+                    <thead class="bg-muted/40 text-muted-foreground">
+                      <tr>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">Usuário</th>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">E-mail</th>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">Setor</th>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">Precisa aprovação</th>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">Status</th>
+                        <th class="text-right font-semibold form-control-sm px-4 py-3">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbodyUsuariosVinculosOrganogramaModal">
+                      <tr>
+                        <td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">Carregando vínculos...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-6 py-5 border-t border-border flex justify-end">
+              <button
+                id="btnFecharRodapeModalUsuariosOrganograma"
+                type="button"
+                class="rounded-xl border border-border bg-white/60 form-control-sm px-4 hover:bg-white transition-all"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  let editandoId = null;
+  let cacheVinculos = [];
+  let cacheUsuarios = [];
+
+  const tbody = document.getElementById('tbodyUsuariosVinculosOrganogramaModal');
+  const selectUsuario = document.getElementById('orgUsuarioVinculoSelect');
+  const selectSetor = document.getElementById('orgSetorUsuarioVinculoSelect');
+  const selectStatus = document.getElementById('orgUsuarioVinculoStatus');
+  const btnSalvar = document.getElementById('btnSalvarUsuarioVinculoOrganogramaModal');
+  const selectPrecisaAprovacao = document.getElementById('orgUsuarioPrecisaAprovacaoReservaCarro');
+
+  function setMsg(msg, erro = false) {
+    const el = document.getElementById('orgUsuarioVinculoMsg');
+    if (!el) return;
+
+    el.textContent = msg || '';
+    el.classList.remove('hidden', 'text-destructive', 'text-emerald-700');
+
+    if (!msg) {
+      el.classList.add('hidden');
+      return;
+    }
+
+    el.classList.add(erro ? 'text-destructive' : 'text-emerald-700');
+  }
+
+  function limparFormulario() {
+    editandoId = null;
+    if (selectUsuario) selectUsuario.value = '';
+    if (selectSetor) selectSetor.value = '';
+    if (selectPrecisaAprovacao) selectPrecisaAprovacao.value = 'sim';
+    if (selectStatus) selectStatus.value = '1';
+    if (btnSalvar) btnSalvar.textContent = 'Salvar vínculo';
+    setMsg('');
+  }
+
+  function badgeStatus(status) {
+    return Number(status) === 1
+      ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-emerald-200 bg-emerald-50 text-emerald-700">Ativo</span>'
+      : '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-slate-200 bg-slate-100 text-slate-700">Inativo</span>';
+  }
+
+  async function carregarUsuarios() {
+    const resp = await fetch(`${APIBASE}/api/usuarios`);
+    const data = await resp.json().catch(() => null);
+
+    if (!resp.ok) {
+      throw new Error(data?.message || data?.error || 'Erro ao carregar usuários.');
+    }
+
+    cacheUsuarios = normalizarListaResposta(data);
+
+    if (selectUsuario) {
+      selectUsuario.innerHTML = ['<option value="">Selecione...</option>'].concat(
+        cacheUsuarios.map(item => `
+          <option value="${item.id ?? item.ID}">
+            ${escapeHtml(item.nome ?? item.NOME ?? 'Sem nome')}
+          </option>
+        `)
+      ).join('');
+    }
+  }
+
+  async function carregarSetores() {
+    const resp = await fetch(`${APIBASE}/api/organograma-setores`);
+    const data = await resp.json().catch(() => null);
+
+    if (!resp.ok) {
+      throw new Error(data?.message || data?.error || 'Erro ao carregar setores.');
+    }
+
+    const setores = normalizarListaResposta(data);
+
+    if (selectSetor) {
+      selectSetor.innerHTML = ['<option value="">Selecione...</option>'].concat(
+        setores.map(item => `
+          <option value="${item.id ?? item.ID}">
+            ${escapeHtml(item.nome ?? item.NOME ?? 'Sem nome')}
+          </option>
+        `)
+      ).join('');
+    }
+  }
+
+  function badgePrecisaAprovacao(value) {
+    const v = String(value || '').trim().toLowerCase();
+    return v === 'sim'
+      ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-700">Sim</span>'
+      : '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-slate-200 bg-slate-100 text-slate-700">Não</span>';
+  }
+
+  function renderTabela() {
+    if (!tbody) return;
+
+    if (!cacheVinculos.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">
+            Nenhum vínculo cadastrado.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = cacheVinculos.map(item => `
+      <tr class="border-t border-border/70">
+        <td class="px-4 py-3">${escapeHtml(item.NOME_USUARIO ?? item.nomeusuario ?? '-')}</td>
+        <td class="px-4 py-3">${escapeHtml(item.EMAIL_USUARIO ?? item.emailusuario ?? '-')}</td>
+        <td class="px-4 py-3">${escapeHtml(item.NOME_SETOR ?? item.nomesetor ?? '-')}</td>
+        <td class="px-4 py-3">${badgePrecisaAprovacao(item.PRECISA_APROCAVAO ?? item.precisaaprocavao ?? item.PRECISA_APROVACAO ?? item.precisaaprovacao ?? 'nao')}</td>
+        <td class="px-4 py-3">${badgeStatus(item.STATUS ?? item.status)}</td>
+        <td class="px-4 py-3 text-right">
+          <div class="inline-flex items-center gap-2">
+            <button
+              type="button"
+              class="w-9 h-9 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+              data-editar-id="${escapeHtml(item.ID ?? item.id)}"
+              title="Editar"
+            >
+              <i class="fas fa-pen"></i>
+            </button>
+
+            <button
+              type="button"
+              class="w-9 h-9 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-all"
+              data-excluir-id="${escapeHtml(item.ID ?? item.id)}"
+              title="Excluir"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('[data-editar-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-editar-id');
+        const item = cacheVinculos.find(x => String(x.ID ?? x.id) === String(id));
+        if (!item) return;
+
+        editandoId = item.ID ?? item.id;
+        if (selectUsuario) selectUsuario.value = String(item.ID_USUARIO ?? item.idusuario ?? '');
+        if (selectSetor) selectSetor.value = String(item.ID_SETOR_ORGANOGRAMA ?? item.idsetororganograma ?? '');
+        if (selectPrecisaAprovacao) {
+          selectPrecisaAprovacao.value = String(
+            item.PRECISA_APROCAVAO ??
+            item.precisaaprocavao ??
+            item.PRECISA_APROVACAO ??
+            item.precisaaprovacao ??
+            'sim'
+          ).toLowerCase();
+        }
+        if (selectStatus) selectStatus.value = String(Number(item.STATUS ?? item.status) ? 1 : 0);
+        if (btnSalvar) btnSalvar.textContent = 'Salvar alterações';
+        setMsg('Modo de edição ativado.');
+      });
+    });
+
+    tbody.querySelectorAll('[data-excluir-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-excluir-id');
+        if (!confirm('Deseja realmente excluir este vínculo?')) return;
+
+        try {
+          setMsg('');
+
+          const resp = await fetch(`${APIBASE}/api/organograma-usuarios-vinculos/${id}`, {
+            method: 'DELETE'
+          });
+
+          const data = await resp.json().catch(() => null);
+
+          if (!resp.ok) {
+            throw new Error(data?.message || data?.error || 'Erro ao excluir vínculo.');
+          }
+
+          setMsg(data?.message || 'Vínculo excluído com sucesso.');
+          await carregarLista();
+        } catch (err) {
+          setMsg(err?.message || 'Erro ao excluir vínculo.', true);
+        }
+      });
+    });
+  }
+
+  async function carregarLista() {
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">
+            Carregando vínculos...
+          </td>
+        </tr>
+      `;
+    }
+
+    const resp = await fetch(`${APIBASE}/api/organograma-usuarios-vinculos`);
+    const data = await resp.json().catch(() => null);
+
+    if (!resp.ok) {
+      throw new Error(data?.message || data?.error || 'Erro ao carregar vínculos.');
+    }
+
+    cacheVinculos = normalizarListaResposta(data);
+    renderTabela();
+  }
+
+  async function salvar() {
+    try {
+      setMsg('');
+
+      const idusuario = Number(selectUsuario?.value || 0);
+      const idsetororganograma = Number(selectSetor?.value || 0);
+      const precisaaprocavao = String(selectPrecisaAprovacao?.value || 'sim').trim().toLowerCase();
+      const status = Number(selectStatus?.value ?? 1) ? 1 : 0;
+
+      if (!idusuario) {
+        return setMsg('Selecione o usuário.', true);
+      }
+
+      if (!idsetororganograma) {
+        return setMsg('Selecione o setor do organograma.', true);
+      }
+
+      const payload = {
+        idusuario,
+        idsetororganograma,
+        precisaaprocavao,
+        status
+      };
+
+      const resp = await fetch(
+        editandoId
+          ? `${APIBASE}/api/organograma-usuarios-vinculos/${editandoId}`
+          : `${APIBASE}/api/organograma-usuarios-vinculos`,
+        {
+          method: editandoId ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      const data = await resp.json().catch(() => null);
+
+      if (!resp.ok) {
+        throw new Error(data?.message || data?.error || 'Erro ao salvar vínculo.');
+      }
+
+      setMsg(editandoId ? 'Vínculo atualizado com sucesso.' : 'Vínculo cadastrado com sucesso.');
+      limparFormulario();
+      await carregarLista();
+    } catch (err) {
+      setMsg(err?.message || 'Erro ao salvar vínculo.', true);
+    }
+  }
+
+  function fecharModal() {
+    removerModalUsuariosOrganograma();
+  }
+
+  overlay.addEventListener('click', fecharModal);
+  document.getElementById('btnFecharModalUsuariosOrganograma')?.addEventListener('click', fecharModal);
+  document.getElementById('btnFecharRodapeModalUsuariosOrganograma')?.addEventListener('click', fecharModal);
+  document.getElementById('btnLimparUsuarioVinculoOrganogramaModal')?.addEventListener('click', limparFormulario);
+  document.getElementById('btnSalvarUsuarioVinculoOrganogramaModal')?.addEventListener('click', salvar);
+
+  await carregarUsuarios();
+  await carregarSetores();
+  await carregarLista();
+}
+
+/* =========================
+   Init
+========================= */
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await carregarUnidadesTrabalhoOrganograma();
+    await carregarSetoresOrganograma();
+    await carregarVinculosOrganograma();
+
+    document.getElementById('orgFiltroUnidade')?.addEventListener('change', async e => {
+      await carregarVinculosOrganograma(e.target.value);
+    });
+
+    document.getElementById('btnSalvarVinculoOrganograma')?.addEventListener('click', salvarVinculoOrganograma);
+
+    document.getElementById('btnLimparVinculoOrganograma')?.addEventListener('click', () => {
+      limparFormularioOrganograma();
+      mostrarMsgOrganograma('');
+    });
+
+    document.getElementById('btnAtualizarOrganograma')?.addEventListener('click', async () => {
+      const idLocal = document.getElementById('orgFiltroUnidade')?.value;
+      await carregarVinculosOrganograma(idLocal);
+    });
+
+    document.getElementById('btnGerenciarSetoresOrganogramaPai')?.addEventListener('click', async () => {
+      try {
+        await abrirModalSetoresOrganograma();
+      } catch (err) {
+        alert(`Erro ao abrir gerenciamento de setores: ${err?.message || err}`);
+      }
+    });
+
+    document.getElementById('btnGerenciarUsuariosOrganograma')?.addEventListener('click', async () => {
+      try {
+        await abrirModalUsuariosOrganograma();
+      } catch (err) {
+        alert(`Erro ao abrir vínculo de usuários: ${err?.message || err}`);
+      }
+    });
+
+    document.getElementById('btnGerenciarSetoresOrganogramaFilho')?.addEventListener('click', async () => {
+      try {
+        await abrirModalSetoresOrganograma();
+      } catch (err) {
+        alert(`Erro ao abrir gerenciamento de setores: ${err?.message || err}`);
+      }
+    });
+  } catch (err) {
+    console.error('Erro ao inicializar organograma:', err);
+    mostrarMsgOrganograma(err?.message || 'Erro ao inicializar organograma.', true);
+  }
+});
+
+
+// importar usuarios
+
+let arquivoImportacaoUsuarios = null;
+let previewImportacaoUsuarios = [];
+
+function getRefs() {
+  return {
+    modalPreviewImportacao: document.getElementById('modalPreviewImportacaoUsuarios'),
+    previewImportacaoResumo: document.getElementById('previewImportacaoResumo'),
+    previewImportacaoTabelaWrapper: document.getElementById('previewImportacaoTabelaWrapper'),
+    resultadoImportacaoWrapper: document.getElementById('resultadoImportacaoWrapper'),
+    resultadoImportacaoLista: document.getElementById('resultadoImportacaoLista'),
+    btnConfirmarImportacaoUsuarios: document.getElementById('btnConfirmarImportacaoUsuarios'),
+    inputImportarTemplateUsuarios: document.getElementById('inputImportarTemplateUsuarios')
+  };
+}
+
+function abrirModalPreviewImportacao() {
+  const { modalPreviewImportacao } = getRefs();
+
+  if (!modalPreviewImportacao) {
+    console.error('[IMPORTAÇÃO USUÁRIOS] Modal não encontrado.');
+    alert('Modal de pré-visualização não encontrado.');
+    return;
+  }
+
+  modalPreviewImportacao.classList.remove('hidden');
+  modalPreviewImportacao.classList.add('flex');
+  document.body.classList.add('overflow-hidden');
+}
+
+function fecharModalPreviewImportacao() {
+  const { modalPreviewImportacao } = getRefs();
+  modalPreviewImportacao?.classList.add('hidden');
+  modalPreviewImportacao?.classList.remove('flex');
+  document.body.classList.remove('overflow-hidden');
+}
+
+function escaparHtml(valor) {
+  return String(valor ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function limparEstadoImportacaoUsuarios() {
+  const {
+    inputImportarTemplateUsuarios,
+    previewImportacaoResumo,
+    previewImportacaoTabelaWrapper,
+    resultadoImportacaoWrapper,
+    resultadoImportacaoLista
+  } = getRefs();
+
+  arquivoImportacaoUsuarios = null;
+  previewImportacaoUsuarios = [];
+
+  if (inputImportarTemplateUsuarios) inputImportarTemplateUsuarios.value = '';
+  if (previewImportacaoResumo) previewImportacaoResumo.textContent = '';
+  if (previewImportacaoTabelaWrapper) previewImportacaoTabelaWrapper.innerHTML = '';
+  if (resultadoImportacaoLista) resultadoImportacaoLista.innerHTML = '';
+  resultadoImportacaoWrapper?.classList.add('hidden');
+}
+
+function renderizarPreviewImportacao(dados) {
+  const {
+    previewImportacaoResumo,
+    previewImportacaoTabelaWrapper
+  } = getRefs();
+
+  const linhas = Array.isArray(dados) ? dados : [];
+
+  if (!previewImportacaoResumo || !previewImportacaoTabelaWrapper) {
+    console.error('[IMPORTAÇÃO USUÁRIOS] Elementos do modal não encontrados.');
+    alert('Estrutura do modal de importação não foi encontrada na página.');
+    return;
+  }
+
+  previewImportacaoResumo.textContent =
+    `${linhas.length} registro(s) encontrado(s) na planilha. Confira antes de confirmar.`;
+
+  if (!linhas.length) {
+    previewImportacaoTabelaWrapper.innerHTML = `
+      <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+        Nenhum dado válido foi encontrado na planilha.
+      </div>
+    `;
+    return;
+  }
+
+  const colunas = Object.keys(linhas[0] || {});
+
+  previewImportacaoTabelaWrapper.innerHTML = `
+    <div class="rounded-2xl border border-border bg-white40 overflow-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-muted/40 sticky top-0">
+          <tr>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-muted-foreground uppercase">#</th>
+            ${colunas.map(col => `
+              <th class="px-3 py-2 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">
+                ${escaparHtml(col)}
+              </th>
+            `).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${linhas.map((linha, index) => `
+            <tr class="border-t border-border/70 hover:bg-white60">
+              <td class="px-3 py-2 text-sm text-muted-foreground">${index + 1}</td>
+              ${colunas.map(col => `
+                <td class="px-3 py-2 text-sm text-foreground whitespace-nowrap">
+                  ${escaparHtml(linha[col])}
+                </td>
+              `).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderizarResultadoImportacao(retorno) {
+  const itens = [];
+
+  if (Array.isArray(retorno?.sucessos)) {
+    retorno.sucessos.forEach(item => {
+      itens.push({
+        tipo: 'sucesso',
+        linha: item?.linha,
+        nome: item?.nome || '',
+        cpf: item?.cpf || '',
+        mensagem: item?.message || 'Usuário importado com sucesso.'
+      });
+    });
+  }
+
+  if (Array.isArray(retorno?.ignoradosDetalhes)) {
+    retorno.ignoradosDetalhes.forEach(item => {
+      itens.push({
+        tipo: 'ignorado',
+        linha: item?.linha,
+        nome: item?.nome || '',
+        cpf: item?.cpf || '',
+        mensagem: item?.message || 'Registro ignorado.'
+      });
+    });
+  }
+
+  if (Array.isArray(retorno?.erros)) {
+    retorno.erros.forEach(item => {
+      itens.push({
+        tipo: 'erro',
+        linha: item?.linha,
+        nome: item?.nome || '',
+        cpf: item?.cpf || '',
+        mensagem: item?.erro || item?.message || 'Erro ao processar registro.'
+      });
+    });
+  }
+
+  itens.sort((a, b) => (a.linha || 0) - (b.linha || 0));
+
+  resultadoImportacaoLista.innerHTML = itens.map(item => {
+    const mapa = {
+      sucesso: {
+        card: 'border-emerald-200 bg-emerald-50',
+        titulo: 'text-emerald-800',
+        texto: 'text-emerald-700',
+        badge: 'bg-emerald-100 text-emerald-700',
+        rotulo: 'Importado'
+      },
+      ignorado: {
+        card: 'border-amber-200 bg-amber-50',
+        titulo: 'text-amber-800',
+        texto: 'text-amber-700',
+        badge: 'bg-amber-100 text-amber-700',
+        rotulo: 'Ignorado'
+      },
+      erro: {
+        card: 'border-red-200 bg-red-50',
+        titulo: 'text-red-800',
+        texto: 'text-red-700',
+        badge: 'bg-red-100 text-red-700',
+        rotulo: 'Erro'
+      }
+    };
+
+    const cfg = mapa[item.tipo] || mapa.erro;
+
+    return `
+      <div class="rounded-xl border px-4 py-3 ${cfg.card}">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-sm font-semibold ${cfg.titulo}">
+              Linha ${item.linha || '-'}${item.nome ? ` - ${escaparHtml(item.nome)}` : ''}
+            </div>
+            <div class="text-xs mt-1 ${cfg.texto}">
+              ${item.cpf ? `CPF: ${escaparHtml(item.cpf)}` : ''}
+            </div>
+            <div class="mt-1 text-sm ${cfg.texto}">
+              ${escaparHtml(item.mensagem)}
+            </div>
+          </div>
+
+          <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${cfg.badge}">
+            ${cfg.rotulo}
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  resultadoImportacaoWrapper.classList.remove('hidden');
+}
+
+async function lerArquivoExcelUsuarios(file) {
+  if (!window.XLSX) {
+    throw new Error('A biblioteca XLSX não foi carregada.');
+  }
+
+  if (!file) {
+    throw new Error('Nenhum arquivo foi informado.');
+  }
+
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: 'array' });
+
+  if (!workbook?.SheetNames?.length) {
+    throw new Error('A planilha não possui abas válidas.');
+  }
+
+  const primeiraAba = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[primeiraAba];
+
+  if (!worksheet) {
+    throw new Error('Não foi possível localizar a primeira aba da planilha.');
+  }
+
+  return XLSX.utils.sheet_to_json(worksheet, {
+    defval: '',
+    raw: false
+  });
+}
+
+document.addEventListener('click', async (e) => {
+  const btnImportar = e.target.closest('#btnImportarTemplateUsuarios');
+  if (btnImportar) {
+    e.preventDefault();
+
+    const { inputImportarTemplateUsuarios } = getRefs();
+
+    if (!inputImportarTemplateUsuarios) {
+      console.error('[IMPORTAÇÃO USUÁRIOS] inputImportarTemplateUsuarios não encontrado.');
+      alert('Campo de seleção de arquivo não encontrado.');
+      return;
+    }
+
+    inputImportarTemplateUsuarios.click();
+    return;
+  }
+
+  const btnFechar = e.target.closest('#btnFecharModalPreviewImportacao, #btnCancelarPreviewImportacao');
+  if (btnFechar) {
+    fecharModalPreviewImportacao();
+    return;
+  }
+
+  const { modalPreviewImportacao, btnConfirmarImportacaoUsuarios } = getRefs();
+
+  if (e.target === modalPreviewImportacao) {
+    fecharModalPreviewImportacao();
+    return;
+  }
+
+  const btnConfirmarClick = e.target.closest('#btnConfirmarImportacaoUsuarios');
+  if (btnConfirmarClick) {
+    if (!arquivoImportacaoUsuarios) {
+      alert('Nenhum arquivo selecionado para importação.');
+      return;
+    }
+
+    try {
+      btnConfirmarClick.disabled = true;
+      btnConfirmarClick.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Importando...';
+
+      const formData = new FormData();
+      formData.append('arquivo', arquivoImportacaoUsuarios);
+
+      const apiBase = sessionStorage.getItem('api_base') || '';
+      if (!apiBase) {
+        throw new Error('API base não encontrada na sessão.');
+      }
+
+      const resp = await fetch(`${apiBase}/api/gestao-usuarios-importar`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const json = await resp.json().catch(() => null);
+
+      if (!resp.ok || !json?.success) {
+        throw new Error(json?.message || 'Erro ao importar planilha.');
+      }
+
+      const { previewImportacaoResumo, resultadoImportacaoWrapper, resultadoImportacaoLista, inputImportarTemplateUsuarios } = getRefs();
+
+      if (previewImportacaoResumo) {
+        previewImportacaoResumo.textContent =
+          `Importação concluída. Inseridos: ${json.inseridos ?? 0} | Ignorados: ${json.ignorados ?? 0} | Erros: ${json.erros?.length || 0}`;
+      }
+
+      renderizarResultadoImportacao(json);
+      await carregarGestaoUsuarios();
+
+      if (inputImportarTemplateUsuarios) inputImportarTemplateUsuarios.value = '';
+      arquivoImportacaoUsuarios = null;
+    } catch (err) {
+      const { resultadoImportacaoWrapper, resultadoImportacaoLista } = getRefs();
+
+      if (resultadoImportacaoWrapper && resultadoImportacaoLista) {
+        resultadoImportacaoWrapper.classList.remove('hidden');
+        resultadoImportacaoLista.innerHTML = `
+          <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 whitespace-pre-line">
+            ${escaparHtml(err?.message || 'Erro ao importar usuários.')}
+          </div>
+        `;
+      } else {
+        alert(err?.message || 'Erro ao importar usuários.');
+      }
+    } finally {
+      const { btnConfirmarImportacaoUsuarios, inputImportarTemplateUsuarios } = getRefs();
+
+      if (btnConfirmarImportacaoUsuarios) {
+        btnConfirmarImportacaoUsuarios.disabled = false;
+        btnConfirmarImportacaoUsuarios.innerHTML = 'Confirmar importação';
+      }
+
+      if (inputImportarTemplateUsuarios) {
+        inputImportarTemplateUsuarios.value = '';
+      }
+    }
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  const { modalPreviewImportacao } = getRefs();
+
+  if (e.key === 'Escape' && modalPreviewImportacao && !modalPreviewImportacao.classList.contains('hidden')) {
+    fecharModalPreviewImportacao();
+  }
+});
+
+document.addEventListener('change', async (e) => {
+  const input = e.target.closest('#inputImportarTemplateUsuarios');
+  if (!input) return;
+
+  const file = input.files?.[0];
+  if (!file) return;
+
+  try {
+    arquivoImportacaoUsuarios = file;
+    previewImportacaoUsuarios = [];
+
+    const { resultadoImportacaoWrapper, resultadoImportacaoLista } = getRefs();
+    resultadoImportacaoWrapper?.classList.add('hidden');
+    if (resultadoImportacaoLista) resultadoImportacaoLista.innerHTML = '';
+
+    const dados = await lerArquivoExcelUsuarios(file);
+    previewImportacaoUsuarios = dados;
+
+    renderizarPreviewImportacao(dados);
+    abrirModalPreviewImportacao();
+  } catch (err) {
+    console.error('[IMPORTAÇÃO USUÁRIOS] Erro ao ler planilha:', err);
+    alert(err?.message || 'Erro ao ler a planilha.');
+    input.value = '';
+    arquivoImportacaoUsuarios = null;
+  }
+});
