@@ -1511,6 +1511,14 @@
             <i class="fas fa-sitemap w-4 text-info"></i>
             <span class="font-medium truncate">Organograma</span>
           </div>
+
+          <div
+            class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+            data-page="secao-ping-monitor"
+          >
+            <i class="fas fa-network-wired w-4 text-info"></i>
+            <span class="font-medium truncate">Monitor de Ping</span>
+          </div>
         </div>
       </div>
 
@@ -2197,6 +2205,7 @@
         </div>
       </div>
     </section>
+    
     <!-- ESTOQUE -->
     <section id="inventory-control" class="page-content md:ml-4">
       <div class="space-y-6">
@@ -2219,28 +2228,42 @@
             </div>
 
             <div class="flex flex-wrap gap-2">
-              <button id="btnNovoProdutoEstoque" type="button"
-                      class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
-                <i class="fas fa-download mr-2" aria-hidden="true"></i>
-                Importar do sistema
+              <button
+                id="btnNovoProdutoEstoque"
+                type="button"
+                class="w-11 h-11 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center"
+                title="Importar do sistema"
+                aria-label="Importar do sistema"
+              >
+                <i class="fas fa-download" aria-hidden="true"></i>
               </button>
 
               <button
                 id="btnLancamentoManualEstoque"
                 type="button"
-                class="rounded-xl border border-emerald-200 bg-emerald-50 form-control-sm form-label-sm text-emerald-700 hover:bg-emerald-100 transition-all"
+                class="w-11 h-11 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all flex items-center justify-center"
+                title="Lançamento manual"
+                aria-label="Lançamento manual"
               >
-                <i class="fas fa-keyboard mr-2" aria-hidden="true"></i>
-                Lançamento manual
+                <i class="fas fa-keyboard" aria-hidden="true"></i>
               </button>
 
-              <button id="btnImportarPdfEstoque" type="button"
-                class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
-                <i class="fas fa-file-pdf mr-2" aria-hidden="true"></i>
-                Importar XML/PDF
+              <button
+                id="btnImportarPdfEstoque"
+                type="button"
+                class="w-11 h-11 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+                title="Importar XML/PDF"
+                aria-label="Importar XML/PDF"
+              >
+                <i class="fas fa-file-pdf" aria-hidden="true"></i>
               </button>
 
-              <input id="inputImportarPdfEstoque" type="file" accept=".pdf,.xml,application/pdf,text/xml,application/xml" hidden />
+              <input
+                id="inputImportarPdfEstoque"
+                type="file"
+                accept=".pdf,.xml,application/pdf,text/xml,application/xml"
+                hidden
+              />
             </div>
           </div>
         </div>
@@ -2322,9 +2345,10 @@
                   <tr>
                     <th class="form-control-sm text-left font-semibold text-foreground">Código</th>
                     <th class="form-control-sm text-left font-semibold text-foreground">Descrição</th>
-                    <th class="form-control-sm text-right font-semibold text-foreground">Quantidade</th>
-                    <th class="form-control-sm text-right font-semibold text-foreground">Em tranferência</th>
                     <th class="form-control-sm text-left font-semibold text-foreground">UN</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Disponível</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Em transferência</th>
+                    <th class="form-control-sm text-right font-semibold text-foreground">Saída</th>
                     <th class="form-control-sm text-right font-semibold text-foreground">Ações</th>
                   </tr>
                 </thead>
@@ -3140,6 +3164,54 @@
                 <td colspan="7" class="px-4 py-6 form-subtitle-sm text-center">
                   Nenhum agendamento encontrado.
                 </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Monitor de Ping -->
+    <section id="secao-ping-monitor" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-5">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button type="button" onclick="openSidebarSafe()" class="w-11 h-11 rounded-xl bg-white85 border border-border60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0" title="Abrir menu">
+              <i class="fas fa-bars"></i>
+            </button>
+            <div>
+              <h3 class="font-semibold">Monitoramento de Ping</h3>
+              <p class="form-subtitle-sm">Cadastre IPs, local, equipamento e destinatários de alerta.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btnAtualizarPingMonitor" type="button" class="w-10 h-10 rounded-xl border border-border bg-white60 hover:bg-white90 flex items-center justify-center transition-all" title="Atualizar lista">
+              <i class="fas fa-rotate-right"></i>
+            </button>
+            <button id="btnNovoPingMonitor" type="button" class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 flex items-center justify-center transition-all" title="Novo monitor">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="pingMonitorMsg" class="form-subtitle-sm hidden"></div>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white50">
+          <table class="min-w-full text-sm">
+            <thead class="bg-muted40 text-muted-foreground">
+              <tr>
+                <th class="text-left font-semibold form-control-sm">Equipamento</th>
+                <th class="text-left font-semibold form-control-sm">IP</th>
+                <th class="text-left font-semibold form-control-sm">Local</th>
+                <th class="text-left font-semibold form-control-sm">Intervalo</th>
+                <th class="text-left font-semibold form-control-sm">Status</th>
+                <th class="text-right font-semibold form-control-sm">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyPingMonitor" class="divide-y divide-border">
+              <tr>
+                <td colspan="6" class="px-4 py-6 form-subtitle-sm text-center">Nenhum monitor carregado.</td>
               </tr>
             </tbody>
           </table>

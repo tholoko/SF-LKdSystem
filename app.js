@@ -14,7 +14,6 @@ async function openSidebarSafe() {
     const usuarioId = sessionStorage.getItem('id') || '';
 
     if (!usuarioId) {
-      console.warn('[Sidebar] Usuário não identificado na sessão.');
       alert('Usuário logado não identificado.');
       return;
     }
@@ -29,7 +28,8 @@ async function openSidebarSafe() {
       organograma: document.querySelector('[data-page="secao-organograma"]'),
       estoque: document.querySelector('[data-page="inventory-control"]'),
       perfilacesso: document.querySelector('[data-page="secao-perfis"]'),
-      agendamentoveiculos: document.querySelector('[data-page="secao-meus-agendamentos"]')
+      agendamentoveiculos: document.querySelector('[data-page="secao-meus-agendamentos"]'),
+      monitorping: document.querySelector('[data-page="secao-ping-monitor"]')
     };
 
     Object.entries(itensMenu).forEach(([chave, el]) => {
@@ -53,15 +53,20 @@ async function openSidebarSafe() {
     const data = await resp.json();
 
     if (!resp.ok || !data.success) {
-      console.warn('[Sidebar] Falha ao buscar permissões do menu.');
       alert(data?.message || 'Erro ao validar permissões do menu.');
       return;
     }
 
     const perm = data.item || {};
 
+    console.log(perm);
+
     if (Number(perm.pedidos) === 1) {
       itensMenu.pedidos?.classList.remove('hidden');
+    }
+
+    if (Number(perm.monitorping) === 1) {
+      itensMenu.monitorping?.classList.remove('hidden');
     }
 
     if (Number(perm.reservarcarro) === 1) {
@@ -312,6 +317,14 @@ function agendarProximoSlideMarketingPainel(delayMs = marketingLoopIntervalMs) {
   }, marketingLoopIntervalMs);
 }
 
+function getApiBasePing() {
+  return (
+    sessionStorage.getItem('api_base') ||
+    sessionStorage.getItem('apibase') ||
+    sessionStorage.getItem('APIBASE') ||
+    ''
+  ).trim();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   resetHomePanelsDesktop();
@@ -334,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
       DefinirPaginaAtiva(page, this);
 
       if (page === 'secao-clientes') carregarClientes();
+      if (page === 'secao-ping-monitor') carregarPingMonitores();
     });
   });
 
@@ -1263,7 +1277,6 @@ function AbrirModalAgendamentoSala() {
         const usuarioId = usuarioLogado;
 
         if (!usuarioId) {
-          console.warn('[AgendarSalaReuniao] Usuário logado não identificado.');
           alert('Usuário logado não identificado.');
           return;
         }
@@ -1275,17 +1288,11 @@ function AbrirModalAgendamentoSala() {
         const data = await resp.json();
 
         if (!resp.ok || !data.success) {
-          console.warn('[AgendarSalaReuniao] Falha na validação da permissão.', {
-            ok: resp.ok,
-            success: data?.success,
-            message: data?.message
-          });
           alert(data?.message || 'Erro ao validar permissão.');
           return;
         }
 
         if (Number(data?.item?.agendar_sala_reuniao) !== 1) {
-          console.warn('[AgendarSalaReuniao] Usuário sem permissão para abrir o modal.');
           alert('Você não tem permissão para agendar sala de reunião.');
           return;
         }
@@ -2286,13 +2293,11 @@ async function abrirModalAssinatura(usuario = {}) {
   try {
     if (logoSfRender) logoSfRender = await imageUrlToDataUrl(logoSfRender);
   } catch (err) {
-    console.warn('Não foi possível converter a logo Sociedade Franciosi para data URL:', err);
   }
 
   try {
     if (logoFranciosiRender) logoFranciosiRender = await imageUrlToDataUrl(logoFranciosiRender);
   } catch (err) {
-    console.warn('Não foi possível converter a logo Franciosi Sementes para data URL:', err);
   }
 
   function gerarHtmlAssinatura(opcoes = {}) {
@@ -2846,19 +2851,16 @@ async function abrirModalCrachaRetrato(usuario = {}) {
   try {
     if (logoPrincipal) logoPrincipal = await imageUrlToDataUrl(logoPrincipal);
   } catch (err) {
-    console.warn('Não foi possível carregar a logo principal:', err);
   }
 
   try {
     if (logoSecundaria) logoSecundaria = await imageUrlToDataUrl(logoSecundaria);
   } catch (err) {
-    console.warn('Não foi possível carregar a logo secundária:', err);
   }
 
   try {
     if (fundoCracha) fundoCracha = await imageUrlToDataUrl(fundoCracha);
   } catch (err) {
-    console.warn('Não foi possível carregar a imagem de fundo do crachá:', err);
     fundoCracha = '';
   }
 
@@ -7570,7 +7572,6 @@ function abrirModalCliente({ modo, cliente }) {
     try {
       dados = await consultarCNPJ_BrasilAPI(doc); // [web:848]
     } catch (e) {
-      console.warn('CNPJ lookup:', e?.message || e);
       return;
     }
 
@@ -8821,11 +8822,13 @@ async function validarPermissaoEstoqueAlmoxarifado() {
   const painelEstoqueEscritorio = document.getElementById('painelEstoqueEscritorio');
   const abaEstoqueCentroCusto = document.getElementById('abaEstoqueCentroCusto');
   const painelEstoqueCentroCusto = document.getElementById('painelEstoqueCentroCusto');
+  const btnLancamentoManualEstoque = document.getElementById('btnLancamentoManualEstoque');
 
   if (!usuarioId) {
     btnNovoProdutoEstoque?.classList.add('hidden');
     btnImportarPdfEstoque?.classList.add('hidden');
     abaEstoqueEscritorio?.classList.add('hidden');
+    btnLancamentoManualEstoque?.classList.add('hidden');
 
     abaEstoqueCentroCusto?.setAttribute('aria-selected', 'true');
     abaEstoqueEscritorio?.setAttribute('aria-selected', 'false');
@@ -8845,18 +8848,20 @@ async function validarPermissaoEstoqueAlmoxarifado() {
 
     const permitido = Number(data?.item?.estoque_almoxarifado) === 1;
 
-    podeVerAlmoxarifado = permitido;  // ← ADICIONE ESTA LINHA
+    podeVerAlmoxarifado = permitido;
 
     if (permitido) {
       btnNovoProdutoEstoque?.classList.remove('hidden');
       btnImportarPdfEstoque?.classList.remove('hidden');
       abaEstoqueEscritorio?.classList.remove('hidden');
+      btnLancamentoManualEstoque?.classList.remove('hidden');
       return true;
     }
 
     btnNovoProdutoEstoque?.classList.add('hidden');
     btnImportarPdfEstoque?.classList.add('hidden');
     abaEstoqueEscritorio?.classList.add('hidden');
+    btnLancamentoManualEstoque?.classList.add('hidden');
 
     abaEstoqueCentroCusto?.setAttribute('aria-selected', 'true');
     abaEstoqueEscritorio?.setAttribute('aria-selected', 'false');
@@ -8871,6 +8876,7 @@ async function validarPermissaoEstoqueAlmoxarifado() {
     btnNovoProdutoEstoque?.classList.add('hidden');
     btnImportarPdfEstoque?.classList.add('hidden');
     abaEstoqueEscritorio?.classList.add('hidden');
+    btnLancamentoManualEstoque?.classList.add('hidden');
 
     abaEstoqueCentroCusto?.setAttribute('aria-selected', 'true');
     abaEstoqueEscritorio?.setAttribute('aria-selected', 'false');
@@ -9141,7 +9147,6 @@ function extrairItensNfePdfRobusto(textoOriginal) {
 
 
   if (!bloco) {
-    console.warn('[NFE PDF] Nenhum bloco de itens encontrado.');
     return itens;
   }
 
@@ -12575,7 +12580,6 @@ function abrirModalEditarEntradas(produtoId) {
   });
 }
 
-
 async function obterSaldoProduto(produtoId) {
   const idLocalAlmoxarifado = 7;
   return apiJson(apiUrl(`/api/estoque/produto/${produtoId}/saldo/${idLocalAlmoxarifado}`));
@@ -13695,6 +13699,7 @@ async function carregarEstoqueCentroCusto() {
     ? resposta.notificacoesPendentes
     : [];
 
+
   atualizarIndicadorPendenciasCentroCusto();
   renderizarEstoqueCentroCusto(cacheEstoqueCentroCusto);
 }
@@ -13721,68 +13726,96 @@ function atualizarIndicadorPendenciasCentroCusto() {
   badge.textContent = String(total);
 }
 
-function renderizarEstoqueCentroCusto(items = []) {
+function renderizarEstoqueCentroCusto(items) {
   const tbody = document.getElementById('tbodyEstoqueCentroCusto');
   if (!tbody) return;
 
   if (!Array.isArray(items) || !items.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
+        <td colspan="9" class="px-4 py-6 form-subtitle-sm text-center">
           Nenhum material disponível no centro de custo.
         </td>
-      </tr>
-    `;
+      </tr>`;
     return;
   }
 
   tbody.innerHTML = items.map(item => {
-    const id = item.ID ?? item.ID_TRANSFERENCIA ?? '';
-    const idProduto = item.ID_PRODUTO ?? item.IDPRODUTO ?? '';
+    const id = item.ID ?? item.IDTRANSFERENCIA ?? '';
+    const idProduto = item.IDPRODUTO ?? '';
     const idLocalOrigem =
-      item.ID_LOCAL_DESTINO ??
       item.IDLOCALDESTINO ??
-      item.ID_LOCAL_ORIGEM_ESTOQUE ??
       item.IDLOCALORIGEMESTOQUE ??
       '';
 
-    const codigo = item.CODIGO_PRODUTO ?? item.CODIGOPRODUTO ?? '—';
-    const descricao = item.DESCRICAO_PRODUTO ?? item.DESCRICAOPRODUTO ?? '—';
-    const origem =
-      item.LOCAL_ORIGEM ??
-      item.LOCALORIGEM ??
-      item.LOCAL_ORIGEM_ESTOQUE ??
-      item.LOCALORIGEMESTOQUE ??
-      item.CENTRO_CUSTO ??
-      item.CENTROCUSTO ??
-      '—';
-
-    const destino =
-      item.LOCAL_DESTINO ??
-      item.LOCALDESTINO ??
-      item.CENTRO_CUSTO ??
-      item.CENTROCUSTO ??
-      '—';
-
-    const quantidade = Number(item.QUANTIDADE ?? 0);
-    const quantidadeNaoRecebida = Number(item.QTD_TRANSFERIDA_NAO_RECEBIDA ?? 0);
+    const codigo = item.CODIGOPRODUTO ?? '';
+    const descricao = item.DESCRICAOPRODUTO ?? '';
     const unidade = item.UNIDADE ?? 'UN';
-    const dataRecebimento =
-      item.DATA_HORA_RECEBIMENTO ??
-      item.DATAHORARECEBIMENTO ??
-      item.DATA_CADASTRO ??
-      item.DATACADASTRO ??
-      '';
+
+    const quantidadeNaoRecebida = Number(item.QTDTRANSFERIDANAORECEBIDA ?? 0);
+
+    const quantidadeSaida = Number(
+      item.QTDSAIDA ??
+      item.QUANTIDADESAIDA ??
+      item.QTDSAIDACENTROCUSTO ??
+      0
+    );
+
+    const quantidadeDevolvida = Number(
+      item.QTDDEVOLVIDA ??
+      item.QUANTIDADEDEVOLVIDA ??
+      item.QTDDEVOLUCAO ??
+      0
+    );
+
+    const quantidadeSaidaLiquida = Number(
+      item.QTDSAIDALIQUIDA ??
+      (quantidadeSaida - quantidadeDevolvida) ??
+      0
+    );
+
+    const saldo = Number(
+      item.QUANTIDADE ??
+      item.SALDO ??
+      item.SALDOCENTROCUSTO ??
+      0
+    );
 
     return `
       <tr class="border-b border-border last:border-b-0 hover:bg-white/30 transition-colors">
-        <td class="form-control-sm text-sm">${escapeHtml(String(codigo))}</td>
-        <td class="form-control-sm text-sm">${escapeHtml(String(descricao))}</td>
-        <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(quantidade, 2))}</td>
+        <td class="form-control-sm text-sm">${escapeHtmlString(codigo)}</td>
+        <td class="form-control-sm text-sm">${escapeHtmlString(descricao)}</td>
+        <td class="form-control-sm text-sm">${escapeHtmlString(unidade)}</td>
+        <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(saldo, 2))}</td>
         <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(quantidadeNaoRecebida, 2))}</td>
-        <td class="form-control-sm text-sm">${escapeHtml(String(unidade))}</td>
+        <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(quantidadeSaida - quantidadeDevolvida, 2))}</td>
         <td class="form-control-sm text-sm text-right">
           <div class="flex justify-end gap-2">
+            <button
+              type="button"
+              class="btnSaidaCentroCusto w-9 h-9 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-all"
+              data-id="${escapeHtmlString(String(id))}"
+              data-id-produto="${escapeHtmlString(String(idProduto))}"
+              data-id-local="${escapeHtmlString(String(idLocalOrigem))}"
+              data-codigo="${escapeHtmlString(String(codigo))}"
+              data-descricao="${escapeHtmlString(String(descricao))}"
+              data-unidade="${escapeHtmlString(String(unidade))}"
+              data-quantidade="${escapeHtmlString(String(saldo))}"
+              title="Dar saída do produto"
+            >
+              <i class="fas fa-arrow-up-from-bracket"></i>
+            </button>
+
+            <button
+              type="button"
+              class="btnLogsSaidaCentroCusto w-9 h-9 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all"
+              data-id-produto="${escapeHtmlString(String(idProduto))}"
+              data-id-local="${escapeHtmlString(String(idLocalOrigem))}"
+              title="Ver histórico de saídas"
+            >
+              <i class="fas fa-clock-rotate-left"></i>
+            </button>
+
             <button
               type="button"
               class="btnTransferenciaCentroCusto w-9 h-9 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
@@ -13792,6 +13825,7 @@ function renderizarEstoqueCentroCusto(items = []) {
               data-codigo="${escapeHtmlString(String(codigo))}"
               data-descricao="${escapeHtmlString(String(descricao))}"
               data-unidade="${escapeHtmlString(String(unidade))}"
+              data-quantidade="${escapeHtmlString(String(saldo))}"
               title="Transferir para outro centro de custo"
             >
               <i class="fas fa-right-left"></i>
@@ -13802,28 +13836,867 @@ function renderizarEstoqueCentroCusto(items = []) {
     `;
   }).join('');
 
+  vincularEventosSaidaCentroCusto();
+  vincularEventosLogsSaidaCentroCusto();
   vincularEventosTransferenciaCentroCusto();
   vincularEventosLogsTransferencia();
+}
 
-  document.addEventListener('click', async e => {
-    const btnLogs = e.target.closest('.btnLogsTransferenciaCentroCusto');
-    if (!btnLogs) return;
+function vincularEventosSaidaCentroCusto() {
+  document.querySelectorAll('.btnSaidaCentroCusto').forEach(btn => {
+    if (btn.dataset.eventoVinculado === '1') return;
+    btn.dataset.eventoVinculado = '1';
 
-    const idTransferencia = String(btnLogs.dataset.id || '').trim();
-    if (!idTransferencia) {
-      alert('ID da transferência não encontrado.');
+    btn.addEventListener('click', async e => {
+      const el = e.currentTarget;
+
+      const idProduto = String(el.dataset.idProduto || '').trim();
+      const idLocal = String(el.dataset.idLocal || '').trim();
+      const codigo = String(el.dataset.codigo || '').trim();
+      const descricao = String(el.dataset.descricao || '').trim();
+      const unidade = String(el.dataset.unidade || 'UN').trim();
+
+      if (!idProduto || !idLocal) {
+        alert('Não foi possível identificar o produto ou o centro de custo.');
+        return;
+      }
+
+      await abrirModalSaidaCentroCusto({
+        IDPRODUTO: idProduto,
+        IDLOCALORIGEM: idLocal,
+        CODIGOPRODUTO: codigo,
+        DESCRICAOPRODUTO: descricao,
+        UNIDADE: unidade
+      });
+    });
+  });
+}
+
+function removerModalSaidaCentroCusto() {
+  document.getElementById('saidaCentroCustoOverlay')?.remove();
+  document.getElementById('saidaCentroCustoModal')?.remove();
+}
+
+async function abrirModalSaidaCentroCusto(item) {
+  removerModalSaidaCentroCusto();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'saidaCentroCustoOverlay';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[130]';
+
+  const modal = document.createElement('div');
+  modal.id = 'saidaCentroCustoModal';
+  modal.className = 'fixed inset-0 z-[140]';
+
+  const idProduto = item.IDPRODUTO ?? '';
+  const idLocalOrigem = item.IDLOCALORIGEM ?? '';
+  const codigo = item.CODIGOPRODUTO ?? '—';
+  const descricao = item.DESCRICAOPRODUTO ?? '—';
+  const unidade = item.UNIDADE ?? 'UN';
+  const usuarioRegistro = typeof obterUsuarioLogado === 'function' ? obterUsuarioLogado() : 'SISTEMA';
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-auto">
+      <div class="min-h-full flex items-center justify-center p-2 sm:p-4">
+        <div class="w-[95vw] lg:w-[80vw] max-w-[80vw] max-h-[90vh] rounded-2xl border border-border bg-background shadow-2xl overflow-hidden flex flex-col">
+          
+          <div class="px-4 sm:px-5 py-4 border-b border-border flex items-start justify-between gap-3 shrink-0">
+            <div class="min-w-0">
+              <h3 class="text-base sm:text-lg font-semibold text-foreground">Saída de material</h3>
+              <p class="text-xs text-muted-foreground">Registre a utilização do material neste centro de custo.</p>
+            </div>
+            <button
+              type="button"
+              id="btnFecharModalSaidaCentroCusto"
+              class="w-9 h-9 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center shrink-0"
+            >
+              <i class="fas fa-times text-sm"></i>
+            </button>
+          </div>
+
+          <div class="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-4">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-3">
+              <div class="rounded-xl border border-border bg-white/60 p-3">
+                <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Código</div>
+                <div class="mt-1 text-sm font-semibold text-foreground leading-tight break-words">${escapeHtmlString(String(codigo))}</div>
+              </div>
+
+              <div class="rounded-xl border border-border bg-white/60 p-3 md:col-span-2 xl:col-span-2">
+                <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Descrição</div>
+                <div class="mt-1 text-sm font-semibold text-foreground leading-tight break-words">${escapeHtmlString(String(descricao))}</div>
+              </div>
+
+              <div class="rounded-xl border border-border bg-white/60 p-3">
+                <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Unidade</div>
+                <div class="mt-1 text-sm font-semibold text-foreground">${escapeHtmlString(String(unidade))}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div class="rounded-xl border border-border bg-white/60 p-3">
+                <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Saldo disponível</div>
+                <div id="saidaCentroCustoSaldoDisponivel" class="mt-1 text-base sm:text-lg font-semibold text-primary">0,00</div>
+              </div>
+
+              <div class="rounded-xl border border-border bg-white/40 p-3 sm:col-span-1 lg:col-span-3">
+                <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Usuário do registro</div>
+                <div class="mt-1 text-sm font-medium text-foreground break-words">${escapeHtmlString(usuarioRegistro)}</div>
+              </div>
+            </div>
+
+            <form id="formSaidaCentroCusto" class="rounded-xl border border-border bg-white/40 p-4 space-y-3">
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-foreground mb-1">Quantidade utilizada</label>
+                  <input
+                    id="saidaCentroCustoQuantidade"
+                    type="text"
+                    class="w-full h-10 rounded-lg border border-border bg-white/80 px-3 text-sm"
+                    placeholder="Ex. 1,00"
+                    required
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-foreground mb-1">Usuário solicitante</label>
+                  <input
+                    id="saidaCentroCustoSolicitante"
+                    type="text"
+                    maxlength="150"
+                    class="w-full h-10 rounded-lg border border-border bg-white/80 px-3 text-sm"
+                    placeholder="Nome do solicitante"
+                    required
+                  >
+                </div>
+
+                <div class="md:col-span-2 xl:col-span-1">
+                  <label class="block text-xs font-medium text-foreground mb-1">Finalidade</label>
+                  <input
+                    id="saidaCentroCustoFinalidade"
+                    type="text"
+                    maxlength="255"
+                    class="w-full h-10 rounded-lg border border-border bg-white/80 px-3 text-sm"
+                    placeholder="Ex.: manutenção, instalação..."
+                    required
+                  >
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-foreground mb-1">Observação</label>
+                  <input
+                    id="saidaCentroCustoObservacao"
+                    type="text"
+                    maxlength="255"
+                    class="w-full h-10 rounded-lg border border-border bg-white/80 px-3 text-sm"
+                    placeholder="Opcional"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-foreground mb-1">Usuário do registro</label>
+                  <input
+                    id="saidaCentroCustoUsuarioRegistro"
+                    type="text"
+                    class="w-full h-10 rounded-lg border border-border bg-white/80 px-3 text-sm"
+                    value="${escapeHtmlString(usuarioRegistro)}"
+                    readonly
+                  >
+                </div>
+              </div>
+
+              <div class="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  id="btnCancelarSaidaCentroCusto"
+                  class="h-10 rounded-lg border border-border bg-white/60 px-4 text-sm font-medium hover:bg-white/90 transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  id="btnSalvarSaidaCentroCusto"
+                  class="h-10 rounded-lg bg-primary text-white px-4 text-sm font-medium hover:opacity-90 transition-all"
+                >
+                  Registrar saída
+                </button>
+              </div>
+            </form>
+
+            <div class="rounded-xl border border-border bg-white/40 overflow-hidden">
+              <div class="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <h4 class="text-sm font-semibold text-foreground">Saídas registradas</h4>
+                  <p class="text-[11px] text-muted-foreground">Histórico de utilização, devoluções e saldo pendente deste material.</p>
+                </div>
+              </div>
+
+              <div class="overflow-auto max-h-[42vh]">
+                <table class="min-w-full text-xs sm:text-sm">
+                  <thead class="bg-white/60 border-b border-border sticky top-0 z-10">
+                    <tr>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">Finalidade</th>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">Solicitante</th>
+                      <th class="px-2 py-2 text-right font-semibold whitespace-nowrap">Qtd. saída</th>
+                      <th class="px-2 py-2 text-right font-semibold whitespace-nowrap">Qtd. devolvida</th>
+                      <th class="px-2 py-2 text-right font-semibold whitespace-nowrap">Saldo pendente</th>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">UN</th>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">Status</th>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">Usuário</th>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">Data/Hora</th>
+                      <th class="px-2 py-2 text-right font-semibold whitespace-nowrap">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbodySaidasCentroCusto">
+                    <tr>
+                      <td colspan="10" class="px-3 py-5 text-xs sm:text-sm text-center text-muted-foreground">
+                        Carregando saídas...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(modal);
+
+  const fechar = removerModalSaidaCentroCusto;
+  overlay.addEventListener('click', fechar);
+  document.getElementById('btnFecharModalSaidaCentroCusto')?.addEventListener('click', fechar);
+  document.getElementById('btnCancelarSaidaCentroCusto')?.addEventListener('click', fechar);
+
+  async function recarregarResumoETabela() {
+    try {
+      const [saldoResp, listaResp] = await Promise.all([
+        obterSaldoCentroCusto(idProduto, idLocalOrigem),
+        listarSaidasCentroCusto(idProduto, idLocalOrigem)
+      ]);
+
+      document.getElementById('saidaCentroCustoSaldoDisponivel').textContent =
+        formatarDecimalBr(saldoResp?.saldo ?? 0, 2);
+
+      document.getElementById('tbodySaidasCentroCusto').innerHTML =
+        renderTabelaSaidasCentroCusto(listaResp?.items);
+
+      vincularEventosTabelaSaidaCentroCusto();
+    } catch (err) {
+      console.error(err);
+      document.getElementById('tbodySaidasCentroCusto').innerHTML = `
+        <tr>
+          <td colspan="10" class="px-3 py-5 text-xs sm:text-sm text-danger text-center">
+            ${escapeHtml(err?.message || 'Erro ao carregar saídas.')}
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+  document.getElementById('formSaidaCentroCusto')?.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const btnSalvar = document.getElementById('btnSalvarSaidaCentroCusto');
+    const quantidade = parseDecimalBr(document.getElementById('saidaCentroCustoQuantidade')?.value);
+    const solicitante = String(document.getElementById('saidaCentroCustoSolicitante')?.value || '').trim();
+    const finalidade = String(document.getElementById('saidaCentroCustoFinalidade')?.value || '').trim();
+    const observacao = String(document.getElementById('saidaCentroCustoObservacao')?.value || '').trim();
+    const saldoAtual = parseDecimalBr(document.getElementById('saidaCentroCustoSaldoDisponivel')?.textContent || '0');
+
+    if (!quantidade || quantidade <= 0) {
+      alert('Informe uma quantidade válida.');
+      return;
+    }
+
+    if (quantidade > saldoAtual) {
+      alert(`A quantidade informada excede o saldo disponível (${formatarDecimalBr(saldoAtual, 2)}).`);
+      return;
+    }
+
+    if (!solicitante) {
+      alert('Informe o usuário solicitante.');
+      return;
+    }
+
+    if (!finalidade) {
+      alert('Informe a finalidade da utilização.');
       return;
     }
 
     try {
-      await abrirModalLogsTransferencia(idTransferencia);
+      btnSalvar.disabled = true;
+      btnSalvar.textContent = 'Registrando...';
+
+      await criarSaidaCentroCusto({
+        idProduto: Number(idProduto),
+        idLocalOrigem: Number(idLocalOrigem),
+        quantidade,
+        unidade,
+        finalidade,
+        usuarioSolicitante: solicitante,
+        usuario: usuarioRegistro,
+        observacao
+      });
+
+      await recarregarResumoETabela();
+      await carregarEstoqueCentroCusto();
+
+      document.getElementById('saidaCentroCustoQuantidade').value = '';
+      document.getElementById('saidaCentroCustoSolicitante').value = '';
+      document.getElementById('saidaCentroCustoFinalidade').value = '';
+      document.getElementById('saidaCentroCustoObservacao').value = '';
     } catch (err) {
       console.error(err);
-      alert(err?.message || 'Erro ao carregar histórico da transferência.');
+      alert(err?.message || 'Erro ao registrar saída.');
+    } finally {
+      btnSalvar.disabled = false;
+      btnSalvar.textContent = 'Registrar saída';
     }
   });
 
+  await recarregarResumoETabela();
 }
+
+function removerModalHistoricoSaidasCentroCusto() {
+  document.getElementById('historicoSaidasCentroCustoOverlay')?.remove();
+  document.getElementById('historicoSaidasCentroCustoModal')?.remove();
+}
+
+async function abrirModalHistoricoSaidasCentroCusto(idProduto, idLocalOrigem) {
+  removerModalHistoricoSaidasCentroCusto();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'historicoSaidasCentroCustoOverlay';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[170]';
+
+  const modal = document.createElement('div');
+  modal.id = 'historicoSaidasCentroCustoModal';
+  modal.className = 'fixed inset-0 z-[180]';
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-auto">
+      <div class="min-h-full flex items-center justify-center p-2 sm:p-4">
+        <div class="w-[95vw] lg:w-[88vw] max-w-[88vw] max-h-[90vh] rounded-2xl border border-border bg-background shadow-2xl overflow-hidden flex flex-col">
+          
+          <div class="px-4 sm:px-5 py-4 border-b border-border flex items-start justify-between gap-3 shrink-0">
+            <div class="min-w-0">
+              <h3 class="text-base sm:text-lg font-semibold text-foreground">Histórico de saídas</h3>
+              <p class="text-xs text-muted-foreground">Eventos separados por saída e devolução.</p>
+            </div>
+            <button
+              type="button"
+              id="btnFecharModalHistoricoSaidasCentroCusto"
+              class="w-9 h-9 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center shrink-0"
+            >
+              <i class="fas fa-times text-sm"></i>
+            </button>
+          </div>
+
+          <div class="flex-1 overflow-y-auto px-4 sm:px-5 py-4">
+            <div class="rounded-xl border border-border bg-white/40 overflow-hidden">
+              <div class="overflow-auto max-h-[72vh]">
+                <table class="min-w-full text-xs sm:text-sm">
+                  <thead class="bg-white/60 border-b border-border sticky top-0 z-10">
+                    <tr>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">Tipo</th>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">Finalidade / Motivo</th>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">Observação</th>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">Solicitante / Usuário</th>
+                      <th class="px-2 py-2 text-right font-semibold whitespace-nowrap">Quantidade</th>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">UN</th>
+                      <th class="px-2 py-2 text-left font-semibold whitespace-nowrap">Data/Hora</th>
+                      <th class="px-2 py-2 text-right font-semibold whitespace-nowrap">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbodyHistoricoSaidasCentroCusto">
+                    <tr>
+                      <td colspan="8" class="px-3 py-5 text-xs sm:text-sm text-center text-muted-foreground">
+                        Carregando histórico de saídas...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-4 sm:px-5 py-3 border-t border-border flex justify-end shrink-0">
+            <button
+              type="button"
+              id="btnFecharRodapeHistoricoSaidasCentroCusto"
+              class="h-10 rounded-lg border border-border bg-white/60 px-4 text-sm font-medium hover:bg-white/90 transition-all"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(modal);
+
+  const fechar = removerModalHistoricoSaidasCentroCusto;
+  overlay.addEventListener('click', fechar);
+  document.getElementById('btnFecharModalHistoricoSaidasCentroCusto')?.addEventListener('click', fechar);
+  document.getElementById('btnFecharRodapeHistoricoSaidasCentroCusto')?.addEventListener('click', fechar);
+
+  try {
+    const resposta = await listarSaidasCentroCusto(idProduto, idLocalOrigem);
+    const items = Array.isArray(resposta?.items) ? resposta.items : [];
+
+    const tbody = document.getElementById('tbodyHistoricoSaidasCentroCusto');
+    if (!tbody) return;
+
+    if (!items.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="px-3 py-5 text-xs sm:text-sm text-center text-muted-foreground">
+            Nenhuma saída registrada para este item.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const linhas = [];
+
+    items.forEach(item => {
+      const idSaida = String(item.ID ?? '');
+      const qtdSaida = Number(item.QUANTIDADE ?? 0);
+      const unidade = String(item.UNIDADE ?? 'UN');
+      const devolucoes = Array.isArray(item.devolucoes) ? item.devolucoes : [];
+
+      const qtdDevolvida = devolucoes.reduce((acc, d) => acc + Number(d.QUANTIDADE ?? 0), 0);
+      const saldoPendente = Math.max(qtdSaida - qtdDevolvida, 0);
+
+      linhas.push(`
+        <tr class="border-b border-red-100 bg-red-50/50 hover:bg-red-50/80 transition-colors align-top">
+          <td class="px-2 py-2">
+            <span class="inline-flex items-center rounded-md border border-red-200 bg-red-100 px-2 py-1 text-[11px] font-semibold text-red-700">
+              SAÍDA
+            </span>
+          </td>
+          <td class="px-2 py-2 text-xs sm:text-sm">
+            <div class="font-medium text-red-700">${escapeHtmlString(item.FINALIDADE ?? '—')}</div>
+            <div class="mt-1 text-[11px] text-red-600">
+              Saldo pendente: ${escapeHtmlString(formatarDecimalBr(saldoPendente, 2))} ${escapeHtmlString(unidade)}
+            </div>
+          </td>
+          <td class="px-2 py-2 text-xs sm:text-sm text-red-700 max-w-[260px] break-words">
+            ${escapeHtmlString(item.OBSERVACAO ?? '—')}
+          </td>
+          <td class="px-2 py-2 text-xs sm:text-sm">
+            <div class="text-red-700 font-medium">${escapeHtmlString(item.USUARIO_SOLICITANTE ?? item.USUARIOSOLICITANTE ?? '—')}</div>
+            <div class="mt-1 text-[11px] text-red-600">Registro: ${escapeHtmlString(item.USUARIO_CADASTRO ?? item.USUARIOCADASTRO ?? '—')}</div>
+          </td>
+          <td class="px-2 py-2 text-xs sm:text-sm text-right font-semibold text-red-700 whitespace-nowrap">
+            ${escapeHtmlString(formatarDecimalBr(qtdSaida, 2))}
+          </td>
+          <td class="px-2 py-2 text-xs sm:text-sm text-red-700 whitespace-nowrap">
+            ${escapeHtmlString(unidade)}
+          </td>
+          <td class="px-2 py-2 text-xs sm:text-sm text-red-700 whitespace-nowrap">
+            ${escapeHtml(formatarDataHora(item.DATA_CADASTRO ?? item.DATACADASTRO ?? ''))}
+          </td>
+          <td class="px-2 py-2 text-right">
+            <div class="flex justify-end gap-2">
+              ${
+                saldoPendente > 0
+                  ? `
+                    <button
+                      type="button"
+                      class="btnDevolverSaidaCentroCustoHistorico w-8 h-8 rounded-lg border border-red-200 bg-white text-red-700 hover:bg-red-100 transition-all"
+                      data-id="${escapeHtmlString(idSaida)}"
+                      data-saldo-pendente="${escapeHtmlString(String(saldoPendente))}"
+                      data-unidade="${escapeHtmlString(unidade)}"
+                      title="Devolver saída"
+                    >
+                      <i class="fas fa-rotate-left text-xs"></i>
+                    </button>
+                  `
+                  : ''
+              }
+            </div>
+          </td>
+        </tr>
+      `);
+
+      devolucoes.forEach(dev => {
+        linhas.push(`
+          <tr class="border-b border-blue-100 bg-blue-50/50 hover:bg-blue-50/80 transition-colors align-top">
+            <td class="px-2 py-2">
+              <span class="inline-flex items-center rounded-md border border-blue-200 bg-blue-100 px-2 py-1 text-[11px] font-semibold text-blue-700">
+                DEVOLUÇÃO
+              </span>
+            </td>
+            <td class="px-2 py-2 text-xs sm:text-sm text-blue-700">
+              <div class="font-medium">Devolução vinculada à saída #${escapeHtmlString(idSaida || '—')}</div>
+            </td>
+            <td class="px-2 py-2 text-xs sm:text-sm text-blue-700 max-w-[260px] break-words">
+              ${escapeHtmlString(dev.OBSERVACAO ?? '—')}
+            </td>
+            <td class="px-2 py-2 text-xs sm:text-sm text-blue-700">
+              ${escapeHtmlString(dev.USUARIO_DEVOLUCAO ?? dev.USUARIODEVOLUCAO ?? '—')}
+            </td>
+            <td class="px-2 py-2 text-xs sm:text-sm text-right font-semibold text-blue-700 whitespace-nowrap">
+              ${escapeHtmlString(formatarDecimalBr(Number(dev.QUANTIDADE ?? 0), 2))}
+            </td>
+            <td class="px-2 py-2 text-xs sm:text-sm text-blue-700 whitespace-nowrap">
+              ${escapeHtmlString(unidade)}
+            </td>
+            <td class="px-2 py-2 text-xs sm:text-sm text-blue-700 whitespace-nowrap">
+              ${escapeHtml(formatarDataHora(dev.DATA_CADASTRO ?? dev.DATADEVOLUCAO ?? dev.DATA_CADASTRO_DEVOLUCAO ?? ''))}
+            </td>
+            <td class="px-2 py-2 text-right">
+              <span class="text-[11px] text-blue-500">—</span>
+            </td>
+          </tr>
+        `);
+      });
+    });
+
+    tbody.innerHTML = linhas.join('');
+
+    document.querySelectorAll('.btnLogsItemSaidaCentroCustoHistorico').forEach(btn => {
+      if (btn.dataset.eventoVinculado === '1') return;
+      btn.dataset.eventoVinculado = '1';
+
+      btn.addEventListener('click', async e => {
+        const idSaida = String(e.currentTarget.dataset.id || '').trim();
+        if (!idSaida) return;
+        await abrirModalLogsSaidaCentroCusto(idSaida);
+      });
+    });
+
+    document.querySelectorAll('.btnDevolverSaidaCentroCustoHistorico').forEach(btn => {
+      if (btn.dataset.eventoVinculado === '1') return;
+      btn.dataset.eventoVinculado = '1';
+
+      btn.addEventListener('click', async e => {
+        const el = e.currentTarget;
+        const idSaida = String(el.dataset.id || '').trim();
+        const saldoPendente = Number(el.dataset.saldoPendente || 0);
+        const unidade = String(el.dataset.unidade || 'UN');
+
+        if (!idSaida) {
+          alert('Saída não identificada.');
+          return;
+        }
+
+        await abrirModalDevolucaoSaidaCentroCusto({ idSaida, saldoPendente, unidade });
+      });
+    });
+  } catch (err) {
+    console.error(err);
+
+    document.getElementById('tbodyHistoricoSaidasCentroCusto').innerHTML = `
+      <tr>
+        <td colspan="8" class="px-3 py-5 text-xs sm:text-sm text-danger text-center">
+          ${escapeHtml(err?.message || 'Erro ao carregar histórico de saídas.')}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+function renderTabelaSaidasCentroCusto(items) {
+  if (!Array.isArray(items) || !items.length) {
+    return `
+      <tr>
+        <td colspan="10" class="px-4 py-6 form-subtitle-sm text-center">
+          Nenhuma saída registrada.
+        </td>
+      </tr>
+    `;
+  }
+
+  return items.map(item => {
+    const qtdSaida = Number(item.QUANTIDADE ?? 0);
+    const qtdDevolvida = Number(item.QUANTIDADE_DEVOLVIDA ?? item.QUANTIDADEDEVOLVIDA ?? 0);
+    const saldoPendente = Math.max(qtdSaida - qtdDevolvida, 0);
+
+    let status = 'ATIVA';
+    if (qtdDevolvida > 0 && saldoPendente > 0) {
+      status = 'PARCIALMENTE DEVOLVIDA';
+    } else if (saldoPendente === 0) {
+      status = 'DEVOLVIDA TOTALMENTE';
+    }
+
+    return `
+      <tr class="border-b border-border last:border-b-0 hover:bg-white/30 transition-colors">
+        <td class="form-control-sm text-sm">${escapeHtmlString(item.FINALIDADE ?? '')}</td>
+        <td class="form-control-sm text-sm">${escapeHtmlString(item.USUARIO_SOLICITANTE ?? item.USUARIOSOLICITANTE ?? '')}</td>
+        <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(qtdSaida, 2))}</td>
+        <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(qtdDevolvida, 2))}</td>
+        <td class="form-control-sm text-sm text-right">${escapeHtmlString(formatarDecimalBr(saldoPendente, 2))}</td>
+        <td class="form-control-sm text-sm">${escapeHtmlString(item.UNIDADE ?? 'UN')}</td>
+        <td class="form-control-sm text-sm">${escapeHtmlString(item.STATUS_SAIDA ?? status)}</td>
+        <td class="form-control-sm text-sm">${escapeHtmlString(item.USUARIO_CADASTRO ?? item.USUARIOCADASTRO ?? '')}</td>
+        <td class="form-control-sm text-sm">${escapeHtml(formatarDataHora(item.DATA_CADASTRO ?? item.DATACADASTRO ?? ''))}</td>
+        <td class="form-control-sm text-sm text-right">
+          <div class="flex justify-end gap-2">
+            ${
+              saldoPendente > 0
+                ? `
+                  <button
+                    type="button"
+                    class="btnDevolverSaidaCentroCusto w-9 h-9 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all"
+                    data-id="${escapeHtmlString(String(item.ID ?? ''))}"
+                    data-saldo-pendente="${escapeHtmlString(String(saldoPendente))}"
+                    data-unidade="${escapeHtmlString(String(item.UNIDADE ?? 'UN'))}"
+                    title="Devolver saída"
+                  >
+                    <i class="fas fa-rotate-left"></i>
+                  </button>
+                `
+                : ''
+            }
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function vincularEventosLogsSaidaCentroCusto() {
+  document.querySelectorAll('.btnLogsSaidaCentroCusto').forEach(btn => {
+    if (btn.dataset.eventoVinculado === '1') return;
+    btn.dataset.eventoVinculado = '1';
+
+    btn.addEventListener('click', async e => {
+      const el = e.currentTarget;
+      const idProduto = String(el.dataset.idProduto || '').trim();
+      const idLocal = String(el.dataset.idLocal || '').trim();
+
+      if (!idProduto || !idLocal) {
+        alert('Produto ou local não identificado.');
+        return;
+      }
+
+      await abrirModalHistoricoSaidasCentroCusto(idProduto, idLocal);
+    });
+  });
+}
+
+function vincularEventosTabelaSaidaCentroCusto() {
+  document.querySelectorAll('.btnDevolverSaidaCentroCusto').forEach(btn => {
+    if (btn.dataset.eventoVinculado === '1') return;
+    btn.dataset.eventoVinculado = '1';
+
+    btn.addEventListener('click', async e => {
+      const el = e.currentTarget;
+      const idSaida = String(el.dataset.id || '').trim();
+      const saldoPendente = Number(el.dataset.saldoPendente || 0);
+      const unidade = String(el.dataset.unidade || 'UN');
+
+      if (!idSaida) {
+        alert('Saída não identificada.');
+        return;
+      }
+
+      await abrirModalDevolucaoSaidaCentroCusto({ idSaida, saldoPendente, unidade });
+    });
+  });
+
+  document.querySelectorAll('.btnLogsItemSaidaCentroCusto').forEach(btn => {
+    if (btn.dataset.eventoVinculado === '1') return;
+    btn.dataset.eventoVinculado = '1';
+
+    btn.addEventListener('click', async e => {
+      const idSaida = String(e.currentTarget.dataset.id || '').trim();
+      if (!idSaida) return;
+      await abrirModalLogsSaidaCentroCusto(idSaida);
+    });
+  });
+}
+
+function removerModalDevolucaoSaidaCentroCusto() {
+  document.getElementById('devolucaoSaidaCentroCustoOverlay')?.remove();
+  document.getElementById('devolucaoSaidaCentroCustoModal')?.remove();
+}
+
+async function abrirModalDevolucaoSaidaCentroCusto({ idSaida, saldoPendente, unidade }) {
+  removerModalDevolucaoSaidaCentroCusto();
+
+  const usuario = typeof obterUsuarioLogado === 'function' ? obterUsuarioLogado() : 'SISTEMA';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'devolucaoSaidaCentroCustoOverlay';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[150]';
+
+  const modal = document.createElement('div');
+  modal.id = 'devolucaoSaidaCentroCustoModal';
+  modal.className = 'fixed inset-0 z-[160]';
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-auto">
+      <div class="min-h-full flex items-center justify-center p-4">
+        <div class="w-full max-w-2xl rounded-2xl border border-border bg-background shadow-2xl overflow-hidden">
+          <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+            <div>
+              <h3 class="text-lg font-semibold text-foreground">Devolução de saída</h3>
+              <p class="form-subtitle-sm">Você pode devolver parcialmente ou totalmente a saída registrada.</p>
+            </div>
+            <button type="button" id="btnFecharModalDevolucaoSaidaCentroCusto"
+              class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <form id="formDevolucaoSaidaCentroCusto" class="px-6 py-6 space-y-4">
+            <div class="rounded-2xl border border-border bg-white/60 p-4">
+              <div class="text-xs uppercase tracking-wide text-muted-foreground">Saldo pendente para devolução</div>
+              <div class="mt-1 text-lg font-semibold text-primary">${formatarDecimalBr(saldoPendente, 2)} ${escapeHtmlString(unidade)}</div>
+            </div>
+
+            <div>
+              <label class="block form-label-sm text-foreground mb-2">Quantidade a devolver</label>
+              <input id="devolucaoSaidaQuantidade" type="text"
+                class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
+                placeholder="Ex. 1,00" required>
+            </div>
+
+            <div class="flex gap-2">
+              <button type="button" id="btnDevolverTotalSaidaCentroCusto"
+                class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 form-label-sm text-emerald-700 hover:bg-emerald-100 transition-all">
+                Devolver tudo
+              </button>
+            </div>
+
+            <div>
+              <label class="block form-label-sm text-foreground mb-2">Observação</label>
+              <input id="devolucaoSaidaObservacao" type="text" maxlength="255"
+                class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
+                placeholder="Motivo da devolução">
+            </div>
+
+            <div>
+              <label class="block form-label-sm text-foreground mb-2">Usuário</label>
+              <input type="text"
+                class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm"
+                value="${escapeHtmlString(usuario)}" readonly>
+            </div>
+
+            <div class="flex justify-end gap-2">
+              <button type="button" id="btnCancelarDevolucaoSaidaCentroCusto"
+                class="rounded-xl border border-border bg-white/60 form-control-sm form-label-sm hover:bg-white/90 transition-all">
+                Cancelar
+              </button>
+              <button type="submit" id="btnSalvarDevolucaoSaidaCentroCusto"
+                class="rounded-xl bg-primary text-white form-control-sm form-label-sm hover:opacity-90 transition-all">
+                Registrar devolução
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(modal);
+
+  const fechar = removerModalDevolucaoSaidaCentroCusto;
+  overlay.addEventListener('click', fechar);
+  document.getElementById('btnFecharModalDevolucaoSaidaCentroCusto')?.addEventListener('click', fechar);
+  document.getElementById('btnCancelarDevolucaoSaidaCentroCusto')?.addEventListener('click', fechar);
+
+  document.getElementById('btnDevolverTotalSaidaCentroCusto')?.addEventListener('click', () => {
+    document.getElementById('devolucaoSaidaQuantidade').value = formatarDecimalBr(saldoPendente, 2);
+  });
+
+  document.getElementById('formDevolucaoSaidaCentroCusto')?.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const btnSalvar = document.getElementById('btnSalvarDevolucaoSaidaCentroCusto');
+    const quantidade = parseDecimalBr(document.getElementById('devolucaoSaidaQuantidade')?.value);
+    const observacao = String(document.getElementById('devolucaoSaidaObservacao')?.value || '').trim();
+
+    if (!quantidade || quantidade <= 0) {
+      alert('Informe uma quantidade válida para devolução.');
+      return;
+    }
+
+    if (quantidade > saldoPendente) {
+      alert(`A quantidade de devolução não pode ser maior que o saldo pendente (${formatarDecimalBr(saldoPendente, 2)}).`);
+      return;
+    }
+
+    try {
+      btnSalvar.disabled = true;
+      btnSalvar.textContent = 'Registrando...';
+
+      await criarDevolucaoSaidaCentroCusto(idSaida, {
+        quantidade,
+        usuario,
+        observacao
+      });
+
+      removerModalDevolucaoSaidaCentroCusto();
+      await carregarEstoqueCentroCusto();
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || 'Erro ao registrar devolução.');
+    } finally {
+      btnSalvar.disabled = false;
+      btnSalvar.textContent = 'Registrar devolução';
+    }
+  });
+}
+
+async function obterSaldoCentroCusto(idProduto, idLocalOrigem) {
+  return apiJson(
+    apiUrlTr(`/api/estoque/centro-custo/saldo?idProduto=${encodeURIComponent(idProduto)}&idLocalOrigem=${encodeURIComponent(idLocalOrigem)}`)
+  );
+}
+
+async function criarDevolucaoSaidaCentroCusto(idSaida, payload) {
+  return apiJson(
+    apiUrlTr(`/api/estoque/centro-custo/saidas/${encodeURIComponent(idSaida)}/devolucoes`),
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }
+  );
+}
+
+async function listarDevolucoesSaidaCentroCusto(idSaida) {
+  return apiJson(
+    apiUrlTr(`/api/estoque/centro-custo/saidas/${encodeURIComponent(idSaida)}/devolucoes`)
+  );
+}
+
+
+async function listarSaidasCentroCusto(idProduto, idLocalOrigem) {
+  return apiJson(
+    apiUrlTr(`/api/estoque/centro-custo/saidas?idProduto=${encodeURIComponent(idProduto)}&idLocalOrigem=${encodeURIComponent(idLocalOrigem)}`)
+  );
+}
+
+async function criarSaidaCentroCusto(payload) {
+  return apiJson(apiUrlTr('/api/estoque/centro-custo/saidas'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+}
+
+async function listarLogsSaidaCentroCusto(idSaida) {
+  return apiJson(
+    apiUrlTr(`/api/estoque/centro-custo/saidas/${encodeURIComponent(idSaida)}/logs`)
+  );
+}
+
 
 function vincularEventosLogsTransferencia() {
   document.querySelectorAll('.btnLogsTransferencia').forEach(btn => {
@@ -13863,14 +14736,14 @@ function abrirModalPendenciasCentroCusto() {
       <div class="space-y-3 max-h-[65vh] overflow-auto pr-1">
         ${items.map(item => {
           const id = item.ID ?? '';
-          const codigo = item.CODIGO_PRODUTO ?? '—';
-          const descricao = item.DESCRICAO_PRODUTO ?? '—';
-          const origem = item.LOCAL_ORIGEM ?? '—';
-          const destino = item.LOCAL_DESTINO ?? '—';
+          const codigo = item.CODIGOPRODUTO ?? '—';
+          const descricao = item.DESCRICAOPRODUTO ?? '—';
+          const origem = item.LOCALORIGEM ?? '—';
+          const destino = item.LOCALDESTINO ?? '—';
           const quantidade = item.QUANTIDADE ?? 0;
           const unidade = item.UNIDADE ?? 'UN';
-          const status = item.STATUS_TRANSFERENCIA ?? '—';
-          const dataCadastro = item.DATA_CADASTRO ?? '';
+          const status = item.STATUSTRANSFERENCIA ?? '—';
+          const dataCadastro = item.DATACADASTRO ?? '';
 
           return `
             <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
@@ -14591,6 +15464,7 @@ function renderTabelaTransferenciasCentroCusto(items = []) {
   }).join('');
 }
 
+
 // ===============================
 // PERFIS
 // ===============================
@@ -14628,7 +15502,8 @@ const PERFIL_FIELDS = [
   'estoque_cadastrar',
   'estoque_transferir',
   'estoque_receber',
-  'perfil_acesso'
+  'perfil_acesso',
+  'monitor_ping'
 ];
 
 
@@ -14662,6 +15537,7 @@ function resumirPermissoes(perfil) {
   if (Number(perfil.gestao_usuarios) === 1) modulos.push('Usuários');
   if (Number(perfil.estoque) === 1) modulos.push('Estoque');
   if (Number(perfil.perfil_acesso) === 1) modulos.push('Perfil de Acesso');
+  if (Number(perfil.monitor_ping) === 1) modulos.push('Monitor Ping');
   return modulos.length ? modulos.join(', ') : 'Sem permissões';
 }
 
@@ -14853,6 +15729,7 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
                     <label class="flex items-center gap-2"><input type="checkbox" id="aprovar_reserva_carro"> <span>Aprovar reserva de carro (Frota)</span></label>
                     <label class="flex items-center gap-2"><input type="checkbox" id="aprovar_reserva_carro_gestor"> <span>Aprovar reserva de carro (Gestor)</span></label>
                     <label class="flex items-center gap-2"><input type="checkbox" id="excluir_reserva_carro"> <span>Excluir reserva de carro</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="monitor_ping"><span>Monitor de Ping</span></label>
                   </div>
                 </div>
 
@@ -23247,3 +24124,512 @@ document.addEventListener('change', async (e) => {
     arquivoImportacaoUsuarios = null;
   }
 });
+
+
+// Monitor de Ping 
+
+function removerModalPingMonitor() {
+  document.getElementById('pingMonitorOverlay')?.remove();
+  document.getElementById('pingMonitorModal')?.remove();
+}
+
+function abrirModalPingMonitor(modo, monitor = null) {
+  removerModalPingMonitor();
+
+  const isEdit = modo === 'edit';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'pingMonitorOverlay';
+  overlay.className = 'fixed inset-0 bg-black40 backdrop-blur-sm z-90';
+  document.body.appendChild(overlay);
+
+  const modal = document.createElement('div');
+  modal.id = 'pingMonitorModal';
+  modal.className = 'fixed inset-0 z-100 flex items-start justify-center p-4 md:p-8 overflow-auto';
+  modal.innerHTML = `
+    <div class="w-full max-w-4xl mx-auto">
+      <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
+        <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+          <div>
+            <h3 class="form-title-sm font-semibold text-foreground">${isEdit ? 'Editar monitor' : 'Novo monitor'}</h3>
+            <p class="form-subtitle-sm">Cadastre IP, equipamento, local e contatos de alerta.</p>
+          </div>
+          <button id="btnFecharPingMonitor" type="button" class="w-10 h-10 rounded-xl bg-white60 border border-border hover:bg-white transition-all flex items-center justify-center">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form id="formPingMonitor" class="p-6 space-y-5">
+          <input type="hidden" id="pingId" value="${monitor?.ID ?? ''}">
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="form-label-sm">IP</label>
+              <input id="pingIp" class="w-full rounded-xl border border-border bg-white70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary30" value="${escapeHtml(monitor?.IP ?? '')}" required>
+            </div>
+            <div class="space-y-1">
+              <label class="form-label-sm">Equipamento</label>
+              <input id="pingEquipamento" class="w-full rounded-xl border border-border bg-white70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary30" value="${escapeHtml(monitor?.EQUIPAMENTO ?? '')}" required>
+            </div>
+            <div class="space-y-1">
+              <label class="form-label-sm">Local</label>
+              <input id="pingLocalizacao" class="w-full rounded-xl border border-border bg-white70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary30" value="${escapeHtml(monitor?.LOCALIZACAO ?? '')}" required>
+            </div>
+            <div class="space-y-1">
+              <label class="form-label-sm">Intervalo em minutos</label>
+              <input id="pingIntervalo" type="number" min="1" class="w-full rounded-xl border border-border bg-white70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary30" value="${escapeHtml(String(monitor?.INTERVALO_MINUTOS ?? 5))}" required>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label class="flex items-center gap-3 rounded-2xl border border-border bg-white60 p-4">
+              <input id="pingAtivo" type="checkbox" ${String(monitor?.ATIVO ?? '1') === '1' ? 'checked' : ''} class="w-4 h-4">
+              <div>
+                <div class="font-medium text-sm">Ativo</div>
+                <div class="text-xs text-muted-foreground">Executa a verificação automática.</div>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-3 rounded-2xl border border-border bg-white60 p-4">
+              <input id="pingWhatsApp" type="checkbox" ${String(monitor?.ENVIAR_WHATSAPP ?? '1') === '1' ? 'checked' : ''} class="w-4 h-4">
+              <div>
+                <div class="font-medium text-sm">Enviar WhatsApp</div>
+                <div class="text-xs text-muted-foreground">Notifica na mudança de status.</div>
+              </div>
+            </label>
+          </div>
+
+          <div class="space-y-2">
+            <label class="form-label-sm">Observação</label>
+            <textarea id="pingObs" rows="3" class="w-full rounded-xl border border-border bg-white70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary30">${escapeHtml(monitor?.OBSERVACAO ?? '')}</textarea>
+          </div>
+
+          <div class="rounded-2xl border border-border bg-white60 p-4 space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <h4 class="font-semibold">Contatos de alerta</h4>
+              <div class="flex items-center gap-2">
+                <button id="btnAddContatoUsuario" type="button" class="px-3 py-2 rounded-xl border border-border bg-white70 text-sm hover:bg-white">
+                  + Usuário
+                </button>
+                <button id="btnAddContatoManual" type="button" class="px-3 py-2 rounded-xl border border-border bg-white70 text-sm hover:bg-white">
+                  + Manual
+                </button>
+              </div>
+            </div>
+
+            <div id="pingContatosBox" class="space-y-3"></div>
+          </div>
+
+          <div id="pingMonitorErro" class="hidden text-sm text-destructive whitespace-pre-line"></div>
+
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="btnSalvarPingMonitor" type="submit" class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90">
+              Salvar
+            </button>
+            <button id="btnCancelarPingMonitor" type="button" class="sm:flex-1 rounded-xl border border-border bg-white60 px-4 py-3 font-medium hover:bg-white70">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const fechar = () => removerModalPingMonitor();
+  overlay.addEventListener('click', fechar);
+  modal.querySelector('#btnFecharPingMonitor')?.addEventListener('click', fechar);
+  modal.querySelector('#btnCancelarPingMonitor')?.addEventListener('click', fechar);
+}
+
+function adicionarLinhaContatoManual(container, dados = {}) {
+  const row = document.createElement('div');
+  row.className = 'grid grid-cols-1 md:grid-cols-12 gap-2 rounded-xl border border-border bg-white70 p-3';
+
+  row.innerHTML = `
+    <div class="md:col-span-4">
+      <label class="text-xs font-semibold text-muted-foreground">Tipo</label>
+      <select class="ping-tipo w-full rounded-xl border border-border bg-white px-3 py-2">
+        <option value="MANUAL" ${dados.tipoContato === 'MANUAL' ? 'selected' : ''}>Manual</option>
+        <option value="USUARIO" ${dados.tipoContato === 'USUARIO' ? 'selected' : ''}>Usuário</option>
+      </select>
+    </div>
+    <div class="md:col-span-3">
+      <label class="text-xs font-semibold text-muted-foreground">Nome</label>
+      <input class="ping-nome w-full rounded-xl border border-border bg-white px-3 py-2" value="${escapeHtml(dados.nomeContato ?? '')}">
+    </div>
+    <div class="md:col-span-3">
+      <label class="text-xs font-semibold text-muted-foreground">Telefone</label>
+      <input class="ping-telefone w-full rounded-xl border border-border bg-white px-3 py-2" value="${escapeHtml(dados.telefone ?? '')}">
+    </div>
+    <div class="md:col-span-2 flex items-end">
+      <button type="button" class="btn-remover-contato w-full rounded-xl border border-border bg-white60 px-3 py-2 hover:bg-white90">
+        Remover
+      </button>
+    </div>
+  `;
+
+  container.appendChild(row);
+
+  row.querySelector('.btn-remover-contato')?.addEventListener('click', () => row.remove());
+}
+
+async function adicionarLinhaContatoUsuario(container, contato = null) {
+  const base = sessionStorage.getItem("apibase");
+  const resp = await fetch(`${base}/api/usuarios`);
+  const json = await resp.json().catch(() => null);
+
+  if (!resp.ok) {
+    throw new Error(json?.message || "Erro ao carregar usuários.");
+  }
+
+  const usuarios = Array.isArray(json?.items) ? json.items : [];
+  const usersValidos = usuarios.filter(u => String(u.TELEFONE || "").trim());
+
+  const row = document.createElement("div");
+  row.className = "grid grid-cols-1 md:grid-cols-12 gap-2 rounded-xl border border-border bg-white/70 p-3";
+
+  row.innerHTML = `
+    <div class="md:col-span-5">
+      <label class="text-xs font-semibold text-muted-foreground">Usuário</label>
+      <select class="ping-usuario w-full rounded-xl border border-border bg-white px-3 py-2">
+        <option value="">Selecione...</option>
+        ${usersValidos.map(u => `
+          <option
+            value="${u.id}"
+            data-nome="${escapeHtml(u.nome || "")}"
+            data-telefone="${escapeHtml(u.TELEFONE || "")}"
+          >
+            ${escapeHtml(u.nome || "")} - ${escapeHtml(u.TELEFONE || "")}
+          </option>
+        `).join("")}
+      </select>
+    </div>
+
+    <div class="md:col-span-3">
+      <label class="text-xs font-semibold text-muted-foreground">Nome</label>
+      <input class="ping-nome w-full rounded-xl border border-border bg-white px-3 py-2" readonly />
+    </div>
+
+    <div class="md:col-span-2">
+      <label class="text-xs font-semibold text-muted-foreground">Telefone</label>
+      <input class="ping-telefone w-full rounded-xl border border-border bg-white px-3 py-2" readonly />
+    </div>
+
+    <div class="md:col-span-2 flex items-end">
+      <button type="button" class="btn-remover-contato w-full rounded-xl border border-border bg-white/60 px-3 py-2 hover:bg-white/90">
+        Remover
+      </button>
+    </div>
+  `;
+
+  container.appendChild(row);
+
+  const select = row.querySelector(".ping-usuario");
+  const inputNome = row.querySelector(".ping-nome");
+  const inputTel = row.querySelector(".ping-telefone");
+
+  const atualizarCampos = () => {
+    const opt = select.selectedOptions[0];
+    inputNome.value = opt?.dataset?.nome || "";
+    inputTel.value = opt?.dataset?.telefone || "";
+  };
+
+  select.addEventListener("change", atualizarCampos);
+
+  if (contato?.USUARIO_ID) {
+    select.value = String(contato.USUARIO_ID);
+    atualizarCampos();
+  }
+
+  row.querySelector(".btn-remover-contato")?.addEventListener("click", () => row.remove());
+
+  return row;
+}
+
+function coletarContatosDoModal() {
+  const linhas = Array.from(document.querySelectorAll('#pingContatosBox > div'));
+  return linhas.map(row => {
+    const tipoContato = row.querySelector('.ping-tipo')?.value || 'MANUAL';
+    const usuarioId = row.querySelector('.ping-usuario')?.value || null;
+    const nomeContato = row.querySelector('.ping-nome')?.value || '';
+    const telefone = row.querySelector('.ping-telefone')?.value || '';
+
+    return {
+      tipoContato,
+      usuarioId: usuarioId ? Number(usuarioId) : null,
+      nomeContato,
+      telefone
+    };
+  }).filter(x => String(x.telefone || '').trim());
+}
+
+document.addEventListener('submit', async e => {
+  const form = e.target.closest('#formPingMonitor');
+  if (!form) return;
+
+  e.preventDefault();
+
+  const btn = document.getElementById('btnSalvarPingMonitor');
+  const erro = document.getElementById('pingMonitorErro');
+
+  const setErro = msg => {
+    if (!erro) return;
+    if (!msg) {
+      erro.classList.add('hidden');
+      erro.textContent = '';
+      return;
+    }
+    erro.textContent = msg;
+    erro.classList.remove('hidden');
+  };
+
+  try {
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+    setErro('');
+
+    const payload = {
+      ip: document.getElementById('pingIp')?.value?.trim(),
+      equipamento: document.getElementById('pingEquipamento')?.value?.trim(),
+      localizacao: document.getElementById('pingLocalizacao')?.value?.trim(),
+      intervaloMinutos: Number(document.getElementById('pingIntervalo')?.value || 5),
+      ativo: document.getElementById('pingAtivo')?.checked ? '1' : '0',
+      enviarWhatsApp: document.getElementById('pingWhatsApp')?.checked ? '1' : '0',
+      observacao: document.getElementById('pingObs')?.value?.trim(),
+      usuarioCadastro: sessionStorage.getItem('usuario') || 'SISTEMA'
+    };
+
+    const id = document.getElementById('pingId')?.value?.trim();
+    const base = sessionStorage.getItem('api_base');
+
+    const resp = await fetch(`${base}/api/ping-monitor${id ? `/${id}` : ''}`, {
+      method: id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const json = await resp.json().catch(() => null);
+
+    if (!resp.ok) {
+      throw new Error(json?.message || 'Erro ao salvar monitor.');
+    }
+
+    const monitorId = id || json.id;
+
+    const contatos = coletarContatosDoModal();
+    if (contatos.length) {
+      const respContatos = await fetch(`${base}/api/ping-monitor/${monitorId}/contatos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contatos })
+      });
+
+      const jsonContatos = await respContatos.json().catch(() => null);
+      if (!respContatos.ok) {
+        throw new Error(jsonContatos?.message || 'Erro ao salvar contatos.');
+      }
+    }
+
+    removerModalPingMonitor();
+    await carregarPingMonitores();
+    alert(json.message || 'Monitor salvo com sucesso.');
+  } catch (err) {
+    setErro(err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Salvar';
+  }
+});
+
+async function carregarPingMonitores() {
+  const tbody = document.getElementById('tbodyPingMonitor');
+  const msg = document.getElementById('pingMonitorMsg');
+  const base = getApiBasePing();
+
+  if (!tbody) return;
+
+  if (msg) {
+    msg.classList.add('hidden');
+    msg.textContent = '';
+  }
+
+  try {
+    if (!base) {
+      throw new Error('API base não configurada na sessão.');
+    }
+
+    tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 form-subtitle-sm text-center">Carregando...</td></tr>`;
+
+    const resp = await fetch(`${base}/api/ping-monitor`);
+    const json = await resp.json().catch(() => null);
+
+    if (!resp.ok) {
+      throw new Error(json?.message || `Erro ao buscar monitores. HTTP ${resp.status}`);
+    }
+
+    const items = Array.isArray(json?.items) ? json.items : [];
+
+    if (!items.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 form-subtitle-sm text-center">Nenhum monitor cadastrado.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = items.map(item => `
+      <tr>
+        <td class="px-4 py-3">${escapeHtml(item.EQUIPAMENTO)}</td>
+        <td class="px-4 py-3 font-mono">${escapeHtml(item.IP)}</td>
+        <td class="px-4 py-3">${escapeHtml(item.LOCALIZACAO)}</td>
+        <td class="px-4 py-3">${escapeHtml(String(item.INTERVALO_MINUTOS || 0))} min</td>
+        <td class="px-4 py-3">
+          <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+            item.STATUS_ATUAL === "UP"
+              ? "bg-success/15 text-success border border-success/20"
+              : item.STATUS_ATUAL === "DOWN"
+              ? "bg-destructive/15 text-destructive border border-destructive/20"
+              : "bg-info/15 text-info border border-info/20"
+          }">
+            ${escapeHtml(item.STATUS_ATUAL || "UNKNOWN")}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-right">
+          <button class="btnPingEditar px-3 py-2 rounded-xl border border-border bg-white/60 hover:bg-white/90 mr-2" data-id="${item.ID}">
+            Editar
+          </button>
+          <button class="btnPingExcluir px-3 py-2 rounded-xl border border-border bg-white/60 hover:bg-white/90" data-id="${item.ID}">
+            Excluir
+          </button>
+        </td>
+      </tr>
+    `).join("");
+  } catch (err) {
+    console.error('Erro ao carregar monitores:', err);
+
+    if (msg) {
+      msg.textContent = err.message;
+      msg.classList.remove('hidden');
+    }
+
+    tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-destructive">Falha ao carregar monitores.</td></tr>`;
+  }
+}
+
+document.addEventListener('click', async e => {
+  const btnNovo = e.target.closest('#btnNovoPingMonitor');
+  if (!btnNovo) return;
+
+  abrirModalPingMonitor('new', null);
+
+  const box = document.getElementById('pingContatosBox');
+  document.getElementById('btnAddContatoManual')?.addEventListener('click', () => adicionarLinhaContatoManual(box));
+  document.getElementById('btnAddContatoUsuario')?.addEventListener('click', () => adicionarLinhaContatoUsuario(box));
+
+  adicionarLinhaContatoManual(box, { tipoContato: 'MANUAL' });
+});
+
+document.addEventListener("click", async (e) => {
+  const btnAtualizar = e.target.closest("#btnAtualizarPingMonitor");
+  if (btnAtualizar) {
+    await carregarPingMonitores();
+  }
+});
+
+document.addEventListener('click', async e => {
+  const btnVerificar = e.target.closest('.btnPingVerificar');
+  const btnEditar = e.target.closest('.btnPingEditar');
+  const btnExcluir = e.target.closest('.btnPingExcluir');
+
+  if (btnVerificar) {
+    const id = Number(btnVerificar.dataset.id);
+    const base = sessionStorage.getItem('api_base');
+    const resp = await fetch(`${base}/api/ping-monitor/verificar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idMonitor: id })
+    });
+    const json = await resp.json();
+    alert(json.message || `Status: ${json.statusNovo}`);
+    await carregarPingMonitores();
+    return;
+  }
+
+  if (btnEditar) {
+    const id = Number(btnEditar.dataset.id);
+    const base = sessionStorage.getItem("api_base");
+
+    const resp = await fetch(`${base}/api/ping-monitor`);
+    const json = await resp.json().catch(() => null);
+
+    if (!resp.ok) {
+      alert(json?.message || "Erro ao carregar monitor.");
+      return;
+    }
+
+    const monitor = (Array.isArray(json?.items) ? json.items : []).find(x => Number(x.ID) === id);
+    if (!monitor) {
+      alert("Monitor não encontrado.");
+      return;
+    }
+
+    abrirModalPingMonitor("edit", monitor);
+
+    const box = document.getElementById("pingContatosBox");
+    if (box) box.innerHTML = "";
+
+    const contatosResp = await fetch(`${base}/api/ping-monitor/${id}/contatos`);
+    const contatosJson = await contatosResp.json().catch(() => null);
+
+    if (!contatosResp.ok) {
+      alert(contatosJson?.message || "Erro ao carregar contatos do monitor.");
+      return;
+    }
+
+    const contatos = Array.isArray(contatosJson?.items) ? contatosJson.items : [];
+
+    if (!contatos.length) {
+      adicionarLinhaContatoManual(box, { tipoContato: "MANUAL" });
+    } else {
+      for (const c of contatos) {
+        if (String(c.TIPO_CONTATO).toUpperCase() === "USUARIO") {
+          await adicionarLinhaContatoUsuario(box, c);
+        } else {
+          adicionarLinhaContatoManual(box, {
+            tipoContato: c.TIPO_CONTATO || "MANUAL",
+            nomeContato: c.NOME_CONTATO || "",
+            telefone: c.TELEFONE || ""
+          });
+        }
+      }
+    }
+
+    document.getElementById("btnAddContatoManual")?.addEventListener("click", () => {
+      adicionarLinhaContatoManual(box, { tipoContato: "MANUAL" });
+    });
+
+    document.getElementById("btnAddContatoUsuario")?.addEventListener("click", async () => {
+      await adicionarLinhaContatoUsuario(box);
+    });
+
+    return;
+  }
+
+
+  if (btnExcluir) {
+    const id = Number(btnExcluir.dataset.id);
+    if (!confirm('Deseja excluir este monitor?')) return;
+
+    const base = sessionStorage.getItem('api_base');
+    const resp = await fetch(`${base}/api/ping-monitor/${id}`, { method: 'DELETE' });
+    const json = await resp.json().catch(() => null);
+
+    if (!resp.ok) {
+      alert(json?.message || 'Erro ao excluir monitor.');
+      return;
+    }
+
+    alert(json.message || 'Monitor excluído.');
+    await carregarPingMonitores();
+  }
+});
+
