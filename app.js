@@ -29,7 +29,14 @@ async function openSidebarSafe() {
       estoque: document.querySelector('[data-page="inventory-control"]'),
       perfilacesso: document.querySelector('[data-page="secao-perfis"]'),
       agendamentoveiculos: document.querySelector('[data-page="secao-meus-agendamentos"]'),
-      monitorping: document.querySelector('[data-page="secao-ping-monitor"]')
+      monitorping: document.querySelector('[data-page="secao-ping-monitor"]'),
+
+      fiscal: document.querySelector('[data-page="secao-dfe-certificado"]'),
+      cadastrocalendario: document.querySelector('[data-page="secao-cadastro-calendario"]'),
+      jornada: document.querySelector('[data-page="secao-jornada"]'),
+      vinculojornada: document.querySelector('[data-page="secao-vinculo-jornada"]'),
+      solicitacoes: document.querySelector('[data-page="secao-solicitacoes"]'),
+      cadastroequipamento: document.querySelector('[data-page="secao-cadastro-equipamento"]')
     };
 
     Object.entries(itensMenu).forEach(([chave, el]) => {
@@ -59,44 +66,26 @@ async function openSidebarSafe() {
 
     const perm = data.item || {};
 
-    console.log(perm);
-
-    if (Number(perm.pedidos) === 1) {
-      itensMenu.pedidos?.classList.remove('hidden');
-    }
-
-    if (Number(perm.monitorping) === 1) {
-      itensMenu.monitorping?.classList.remove('hidden');
-    }
-
-    if (Number(perm.reservarcarro) === 1) {
-      itensMenu.agendamentoveiculos?.classList.remove('hidden');
-    }
-
-    if (Number(perm.clientes) === 1) {
-      itensMenu.clientes?.classList.remove('hidden');
-    }
-
-    if (Number(perm.marketing) === 1) {
-      itensMenu.marketing?.classList.remove('hidden');
-    }
-
-    if (Number(perm.emailautomaticos) === 1) {
-      itensMenu.emailautomaticos?.classList.remove('hidden');
-    }
+    if (Number(perm.pedidos) === 1) itensMenu.pedidos?.classList.remove('hidden');
+    if (Number(perm.clientes) === 1) itensMenu.clientes?.classList.remove('hidden');
+    if (Number(perm.marketing) === 1) itensMenu.marketing?.classList.remove('hidden');
+    if (Number(perm.emailautomaticos) === 1) itensMenu.emailautomaticos?.classList.remove('hidden');
+    if (Number(perm.gestaousuarios) === 1) itensMenu.gestaousuarios?.classList.remove('hidden');
+    if (Number(perm.estoque) === 1) itensMenu.estoque?.classList.remove('hidden');
+    if (Number(perm.perfilacesso) === 1) itensMenu.perfilacesso?.classList.remove('hidden');
+    if (Number(perm.reservarcarro) === 1) itensMenu.agendamentoveiculos?.classList.remove('hidden');
+    if (Number(perm.monitorping) === 1) itensMenu.monitorping?.classList.remove('hidden');
 
     if (Number(perm.gestaousuarios) === 1) {
-      itensMenu.gestaousuarios?.classList.remove('hidden');
       itensMenu.organograma?.classList.remove('hidden');
     }
 
-    if (Number(perm.estoque) === 1) {
-      itensMenu.estoque?.classList.remove('hidden');
-    }
-
-    if (Number(perm.perfilacesso) === 1) {
-      itensMenu.perfilacesso?.classList.remove('hidden');
-    }
+    if (Number(perm.fiscal) === 1) itensMenu.fiscal?.classList.remove('hidden');
+    if (Number(perm.cadastrocalendario) === 1) itensMenu.cadastrocalendario?.classList.remove('hidden');
+    if (Number(perm.jornada) === 1) itensMenu.jornada?.classList.remove('hidden');
+    if (Number(perm.vinculojornada) === 1) itensMenu.vinculojornada?.classList.remove('hidden');
+    if (Number(perm.solicitacoes) === 1) itensMenu.solicitacoes?.classList.remove('hidden');
+    if (Number(perm.cadastroequipamento) === 1) itensMenu.cadastroequipamento?.classList.remove('hidden');
 
     document.querySelectorAll('.menu-group').forEach(grupo => {
       const subitemsVisiveis = Array.from(
@@ -1508,8 +1497,6 @@ async function CarregarResumoDoDia() {
 }
 
 
-
-
 // ===============================
 // GESTÃO DE USUÁRIOS - COMPLETO ATUALIZADO
 // Com locais de trabalho dinâmicos (SF_LOCAL_TRABALHO)
@@ -1529,9 +1516,9 @@ function obterValorOrdenacaoUsuario(u, coluna) {
     case 'perfil':
       return u.PERFIL ?? u.perfil ?? '';
     case 'centroCusto':
-      return u.LOCAL_TRABALHO ?? u.local_trabalho ?? u.LOCALTRABALHO ?? u.localtrabalho ?? '';
+      return u.LOCALTRABALHO ?? u.localtrabalho ?? u.CENTRO_CUSTO ?? u.centro_custo ?? '';
     case 'unidadeTrabalho':
-      return u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.UNIDADE_TRABALHO ?? u.unidade_trabalho ?? '';
+      return u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.LOCAL_TRABALHO ?? u.local_trabalho ?? '';
     case 'status':
       return u.STATUS ?? u.status ?? '';
     default:
@@ -1614,8 +1601,8 @@ function obterTextoFiltroUsuario(u) {
   const email = u.EMAIL ?? u.email ?? '';
   const setor = u.SETOR ?? u.setor ?? '';
   const perfil = u.PERFIL ?? u.perfil ?? '';
-  const localTrabalho = u.LOCAL_TRABALHO ?? u.local_trabalho ?? u.LOCALTRABALHO ?? u.localtrabalho ?? '';
-  const unidadeTrabalho = u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.UNIDADE_TRABALHO ?? u.unidade_trabalho ?? '';
+  const localTrabalho = u.LOCALTRABALHO ?? u.localtrabalho ?? u.CENTRO_CUSTO ?? u.centro_custo ?? '';
+  const unidadeTrabalho = u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.LOCAL_TRABALHO ?? u.local_trabalho ?? '';
   const status = u.STATUS ?? u.status ?? '';
 
   return normalizarTextoFiltro([
@@ -1858,8 +1845,8 @@ function rowUsuario(u) {
   const emailCorporativo = u.EMAIL ?? u.email ?? '';
   const setor = u.SETOR ?? u.setor ?? '';
   const perfil = u.PERFIL ?? u.perfil ?? '';
-  const localTrabalho = u.LOCAL_TRABALHO ?? u.local_trabalho ?? u.LOCALTRABALHO ?? u.localtrabalho ?? '';
-  const unidadeTrabalho = u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.UNIDADE_TRABALHO ?? u.unidade_trabalho ?? '';
+  const localTrabalho = u.LOCALTRABALHO ?? u.localtrabalho ?? u.CENTRO_CUSTO ?? u.centro_custo ?? '';
+  const unidadeTrabalho = u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.LOCAL_TRABALHO ?? u.local_trabalho ?? '';
   const status = u.STATUS ?? u.status ?? '';
   const id = u.ID ?? u.id ?? '';
 
@@ -3627,7 +3614,7 @@ async function abrirModalCrachaRetrato(usuario = {}) {
   modal.querySelector('#btnImprimirCracha')?.addEventListener('click', abrirImpressao);
 }
 
-function abrirModalGestaoUsuario({ modo, usuario }) {
+function abrirModalGestaoUsuario({ modo, usuario = {} }) {
   removerModalGestaoUsuario();
 
   const overlay = document.createElement('div');
@@ -3652,7 +3639,6 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
   const fotoAtualRel = u.FOTO ?? u.foto ?? '';
   let fotoAtualAbs = '';
-
   try {
     fotoAtualAbs = fotoAtualRel ? absUrlFromApiGestaoUsuarios(fotoAtualRel) : '';
   } catch (err) {
@@ -3666,8 +3652,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   let funcaoOptions = '';
   let unidadeTrabalhoOptions = '';
 
-  const perfilLogado = (sessionStorage.getItem('perfilacesso') || '').trim().toLowerCase();
-
+  const perfilLogado = String(sessionStorage.getItem('perfilacesso') || '').trim().toLowerCase();
   const perfisPermitidos = Array.isArray(cachePerfisGestao)
     ? cachePerfisGestao.filter((p) => {
         const nomePerfil = String(p.NOME ?? p.nome ?? '').trim().toLowerCase();
@@ -3677,14 +3662,14 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     : [];
 
   try {
-    perfilOptions = optionsFromRows(perfisPermitidos, u.PERFIL ?? u.perfil ?? '');
+    perfilOptions = optionsFromRows(perfisPermitidos, u.PERFIL ?? u.perfil ?? '', 'Selecione...');
   } catch (err) {
     console.error('Erro ao gerar options de perfil:', err);
     perfilOptions = `<option value="" selected>Erro ao carregar perfis</option>`;
   }
 
   try {
-    setorOptions = optionsFromRows(cacheSetoresGestao, (u.SETOR ?? u.setor ?? ''));
+    setorOptions = optionsFromRows(cacheSetoresGestao, u.SETOR ?? u.setor ?? '', 'Selecione...');
   } catch (err) {
     console.error('Erro ao gerar options de setor:', err);
     setorOptions = `<option value="" selected>Erro ao carregar setores</option>`;
@@ -3693,17 +3678,17 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   try {
     localTrabalhoOptions = optionsFromRows(
       cacheLocaisTrabalhoGestao,
-      (u.LOCAL_TRABALHO ?? u.local_trabalho ?? u.LOCALTRABALHO ?? u.localtrabalho ?? ''),
-      'Selecione...'
+      u.LOCALTRABALHO ?? u.localtrabalho ?? u.CENTRO_CUSTO ?? u.centro_custo ?? '',
+      'Selecione o local de trabalho'
     );
   } catch (err) {
-    console.error('Erro ao gerar options de Centro de Custo:', err);
-    localTrabalhoOptions = `<option value="" selected>Erro ao carregar centros de custo</option>`;
+    console.error('Erro ao gerar options de local de trabalho:', err);
+    localTrabalhoOptions = `<option value="" selected>Erro ao carregar locais</option>`;
   }
 
   try {
     funcaoOptions = optionsFromRows(
-      cacheFuncoesGestao || [],
+      cacheFuncoesGestao,
       u.FUNCAO ?? u.funcao ?? '',
       'Selecione...'
     );
@@ -3714,9 +3699,9 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
   try {
     unidadeTrabalhoOptions = optionsFromRows(
-      cacheLocaisTrabalhoGestaoUnidade || [],
-      u.UNIDADE_TRABALHO ?? u.unidade_trabalho ?? u.UNIDADETRABALHO ?? u.unidadetrabalho ?? '',
-      'Selecione...'
+      cacheLocaisTrabalhoGestaoUnidade,
+      u.UNIDADETRABALHO ?? u.unidadetrabalho ?? u.LOCAL_TRABALHO ?? u.local_trabalho ?? '',
+      'Selecione a unidade de trabalho'
     );
   } catch (err) {
     console.error('Erro ao gerar options de unidade de trabalho:', err);
@@ -3724,58 +3709,94 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   }
 
   const dataAdmissaoAtual = String(
-    u.DATA_ADMISSAO ?? u.data_admissao ?? u.DATAADMISSAO ?? u.dataadmissao ?? ''
-  ).slice(0, 10);
+    u.DATAADMISSAO ??
+    u.dataadmissao ??
+    u.DATA_ADMISSAO ??
+    u.data_admissao ??
+    ''
+  ).trim().slice(0, 10);
 
   const emailCorporativo = u.EMAIL ?? u.email ?? '';
   const telefoneCorporativo = formatarCelularBR(u.TELEFONE ?? u.telefone ?? '');
   const statusAtual = (u.STATUS ?? u.status ?? 'Ativo').toString().trim() || 'Ativo';
 
+  const localTrabalhoAtual = String(
+    u.LOCALTRABALHO ??
+    u.localtrabalho ??
+    u.CENTRO_CUSTO ??
+    u.centro_custo ??
+    ''
+  ).trim();
+
+  const unidadeTrabalhoAtual = String(
+    u.UNIDADETRABALHO ??
+    u.unidadetrabalho ??
+    u.LOCAL_TRABALHO ??
+    u.local_trabalho ??
+    ''
+  ).trim();
+
+  const batePontoAtual = Number(
+    u.BATEPONTO ??
+    u.bateponto ??
+    u.BATE_PONTO ??
+    u.bate_ponto ??
+    0
+  ) === 1;
+
+  const dataInicioBatePontoAtual = String(
+    u.DATAINICIOBATEPONTO ??
+    u.datainiciobateponto ??
+    u.DATA_INICIO_BATE_PONTO ??
+    u.data_inicio_bate_ponto ??
+    ''
+  ).trim().slice(0, 10);
+
   const cpfAtual = formatarCPF(u.CPF ?? u.cpf ?? '');
   const rgAtual = u.RG ?? u.rg ?? '';
   const cnhAtual = u.CNH ?? u.cnh ?? '';
-  const cnhCategoriaAtual = u.CNH_CATEGORIA ?? u.cnh_categoria ?? u.CNHCATEGORIA ?? u.cnhcategoria ?? '';
+  const cnhCategoriaAtual = u.CNHCATEGORIA ?? u.cnhcategoria ?? u.CNH_CATEGORIA ?? u.cnh_categoria ?? '';
   const dataNascimentoAtual = String(
-    u.DATA_NASCIMENTO ?? u.data_nascimento ?? u.DATANASCIMENTO ?? u.datanascimento ?? ''
-  ).slice(0, 10);
-  const estadoCivilAtual = u.ESTADO_CIVIL ?? u.estado_civil ?? u.ESTADOCIVIL ?? u.estadocivil ?? '';
+    u.DATANASCIMENTO ??
+    u.datanascimento ??
+    u.DATA_NASCIMENTO ??
+    u.data_nascimento ??
+    ''
+  ).trim().slice(0, 10);
+  const estadoCivilAtual = u.ESTADOCIVIL ?? u.estadocivil ?? u.ESTADO_CIVIL ?? u.estado_civil ?? '';
   const telefonePessoalAtual = formatarCelularBR(
-    u.TELEFONE_PESSOAL ?? u.telefone_pessoal ?? u.TELEFONEPESSOAL ?? u.telefonepessoal ?? ''
+    u.TELEFONEPESSOAL ?? u.telefonepessoal ?? u.TELEFONE_PESSOAL ?? u.telefone_pessoal ?? ''
   );
-  const emailPessoalAtual = u.EMAIL_PESSOAL ?? u.email_pessoal ?? u.EMAILPESSOAL ?? u.emailpessoal ?? '';
+  const emailPessoalAtual = u.EMAILPESSOAL ?? u.emailpessoal ?? u.EMAIL_PESSOAL ?? u.email_pessoal ?? '';
   const cnhValidadeAtual = String(
-    u.CNH_VALIDADE ??
-    u.cnh_validade ??
     u.CNHVALIDADE ??
     u.cnhvalidade ??
+    u.CNH_VALIDADE ??
+    u.cnh_validade ??
     ''
-  ).slice(0, 10);
-
+  ).trim().slice(0, 10);
   const apelidoAtual = u.APELIDO ?? u.apelido ?? '';
-  const numeroCalcadoAtual = u.NUMERO_CALCADO ?? u.numero_calcado ?? u.NUMEROCALCADO ?? u.numerocalcado ?? '';
+  const numeroCalcadoAtual = u.NUMEROCALCADO ?? u.numerocalcado ?? u.NUMERO_CALCADO ?? u.numero_calcado ?? '';
   const tamanhoCamisaAtual = String(
-    u.TAMANHO_CAMISA ?? u.tamanho_camisa ?? u.TAMANHOCAMISA ?? u.tamanhocamisa ?? ''
+    u.TAMANHOCAMISA ??
+    u.tamanhocamisa ??
+    u.TAMANHO_CAMISA ??
+    u.tamanho_camisa ??
+    ''
   ).trim().toUpperCase();
-  const tamanhoCalcaAtual = u.TAMANHO_CALCA ?? u.tamanho_calca ?? u.TAMANHOCALCA ?? u.tamanhocalca ?? '';
+  const tamanhoCalcaAtual = u.TAMANHOCALCA ?? u.tamanhocalca ?? u.TAMANHO_CALCA ?? u.tamanho_calca ?? '';
   const sexoAtual = String(u.SEXO ?? u.sexo ?? '').trim().toUpperCase();
-  const temFilhosAtual = String(u.TEM_FILHOS ?? u.tem_filhos ?? u.TEMFILHOS ?? u.temfilhos ?? 'NÃO').trim().toUpperCase();
+  const temFilhosAtual = String(
+    u.TEMFILHOS ?? u.temfilhos ?? u.TEM_FILHOS ?? u.tem_filhos ?? 'NAO'
+  ).trim().toUpperCase();
   const quantidadeFilhosAtual = String(
-    u.QUANTIDADE_FILHOS ?? u.quantidade_filhos ?? u.QUANTIDADEFILHOS ?? u.quantidadefilhos ?? ''
+    u.QUANTIDADEFILHOS ?? u.quantidadefilhos ?? u.QUANTIDADE_FILHOS ?? u.quantidade_filhos ?? ''
   ).trim();
 
-  const cnhArquivoAtualRel =
-    u.CNH_ARQUIVO ??
-    u.cnh_arquivo ??
-    u.CNHARQUIVO ??
-    u.cnharquivo ??
-    '';
-
+  const cnhArquivoAtualRel = u.CNHARQUIVO ?? u.cnharquivo ?? u.CNH_ARQUIVO ?? u.cnh_arquivo ?? '';
   let cnhArquivoAtualAbs = '';
-
   try {
-    cnhArquivoAtualAbs = cnhArquivoAtualRel
-      ? absUrlFromApiGestaoUsuarios(cnhArquivoAtualRel)
-      : '';
+    cnhArquivoAtualAbs = cnhArquivoAtualRel ? absUrlFromApiGestaoUsuarios(cnhArquivoAtualRel) : '';
   } catch (err) {
     console.error('Erro ao resolver cnhArquivoAtualAbs:', err);
     cnhArquivoAtualAbs = '';
@@ -3792,13 +3813,17 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                   ${isView ? 'Visualizar usuário' : isEdit ? 'Editar usuário' : 'Novo usuário'}
                 </h3>
                 <p class="form-subtitle-sm">
-                  ${isView ? 'Consulta de dados do usuário' : 'Dados corporativos, pessoais e adcionais (*Abas obrigatórias | **Campos Obrigatórios)'}
+                  ${isView ? 'Consulta de dados do usuário' : 'Dados corporativos, pessoais e adicionais'}
                 </p>
               </div>
 
-              <button id="btnFecharGestaoUsuario" type="button"
+              <button
+                id="btnFecharGestaoUsuario"
+                type="button"
                 class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
-                aria-label="Fechar" title="Fechar">
+                aria-label="Fechar"
+                title="Fechar"
+              >
                 <i class="fas fa-times" aria-hidden="true"></i>
               </button>
             </div>
@@ -3813,10 +3838,12 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                     <label class="form-label-sm block">Foto do usuário</label>
 
                     <div class="w-28 h-28 rounded-full overflow-hidden bg-muted flex items-center justify-center mx-auto border border-border">
-                      <img id="guFotoPreview"
+                      <img
+                        id="guFotoPreview"
                         src="${escapeHtml(fotoAtualAbs)}"
                         alt="Foto do usuário"
-                        class="w-full h-full object-cover ${fotoAtualAbs ? '' : 'hidden'}">
+                        class="w-full h-full object-cover ${fotoAtualAbs ? '' : 'hidden'}"
+                      >
                       <span id="guFotoPlaceholder" class="text-xs text-muted-foreground ${fotoAtualAbs ? 'hidden' : ''}">
                         Sem foto
                       </span>
@@ -3824,234 +3851,355 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
                     <canvas id="guFotoCanvas" class="hidden border border-dashed border-border rounded-xl w-full max-h-64 cursor-grab ${isView ? 'hidden' : ''}"></canvas>
 
-                    ${isView ? '' : `
-                    <div class="flex flex-col gap-2">
-                      <input id="guFotoInput" type="file" accept="image/*" ${fileDisabledAttr}
-                        class="w-full rounded-xl border border-border bg-white/70 px-4 py-2 text-sm"
-                        autocomplete="off" />
-
-                      <button id="btnRemoverFotoGU" type="button"
-                        class="rounded-xl border border-border bg-white/60 px-4 py-2 text-sm hover:bg-white/90 transition-all">
-                        Remover foto
-                      </button>
-                    </div>
-
-                    <p class="text-xs text-muted-foreground">
-                      Selecione uma imagem e use arraste/zoom para ajustar.
-                    </p>
-                    `}
+                    ${
+                      isView ? '' : `
+                        <div class="flex flex-col gap-2">
+                          <input
+                            id="guFotoInput"
+                            type="file"
+                            accept="image/*"
+                            ${fileDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 px-4 py-2 text-sm"
+                            autocomplete="off"
+                          >
+                          <button
+                            id="btnRemoverFotoGU"
+                            type="button"
+                            class="rounded-xl border border-border bg-white/60 px-4 py-2 text-sm hover:bg-white/90 transition-all"
+                          >
+                            Remover foto
+                          </button>
+                        </div>
+                        <p class="text-xs text-muted-foreground">Selecione uma imagem e use arraste/zoom para ajustar.</p>
+                      `
+                    }
                   </div>
 
-                  ${isEdit && !isView ? `
-                  <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-3">
-                    <div>
-                      <h4 class="text-sm font-semibold text-foreground">Segurança</h4>
-                      <p class="text-xs text-muted-foreground">Troca de senha do usuário</p>
-                    </div>
+                  ${
+                    isEdit && !isView ? `
+                      <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-3">
+                        <div>
+                          <h4 class="text-sm font-semibold text-foreground">Segurança</h4>
+                          <p class="text-xs text-muted-foreground">Troca de senha do usuário</p>
+                        </div>
 
-                    <div class="grid grid-cols-1 gap-2">
-                      <button id="btnMostrarAlteracaoSenhaGU" type="button"
-                        class="rounded-xl border border-border bg-white/70 form-control-sm form-label-sm hover:bg-white transition-all">
-                        Alterar com senha atual
-                      </button>
-                    </div>
+                        <div class="grid grid-cols-1 gap-2">
+                          <button
+                            id="btnMostrarAlteracaoSenhaGU"
+                            type="button"
+                            class="rounded-xl border border-border bg-white/70 form-control-sm form-label-sm hover:bg-white transition-all"
+                          >
+                            Alterar com senha atual
+                          </button>
+                        </div>
 
-                    <div id="guBlocoAlteracaoSenha" class="hidden space-y-3">
-                      <div class="space-y-2">
-                        <label class="form-label-sm">Senha atual</label>
-                        <input id="guSenhaAtual" type="password"
-                          class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                          placeholder="Informe a senha atual"
-                          autocomplete="new-password"
-                          data-lpignore="true">
+                        <div id="guBlocoAlteracaoSenha" class="hidden space-y-3">
+                          <div class="space-y-2">
+                            <label class="form-label-sm">Senha atual</label>
+                            <input
+                              id="guSenhaAtual"
+                              type="password"
+                              class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                              placeholder="Informe a senha atual"
+                              autocomplete="new-password"
+                              data-lpignore="true"
+                            >
+                          </div>
+
+                          <div class="space-y-2">
+                            <label class="form-label-sm">Nova senha</label>
+                            <input
+                              id="guNovaSenha"
+                              type="password"
+                              minlength="6"
+                              class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                              placeholder="Mínimo 6 caracteres"
+                              autocomplete="new-password"
+                              data-lpignore="true"
+                            >
+                          </div>
+
+                          <div class="grid grid-cols-1 gap-2">
+                            <button
+                              id="btnTrocarSenhaGU"
+                              type="button"
+                              class="rounded-xl border border-border bg-white/70 form-control-sm form-label-sm hover:bg-white transition-all"
+                            >
+                              Salvar nova senha
+                            </button>
+                          </div>
+
+                          <p id="guSenhaMsg" class="text-xs hidden whitespace-pre-line"></p>
+                        </div>
                       </div>
+                    ` : ''
+                  }
 
-                      <div class="space-y-2">
-                        <label class="form-label-sm">Nova senha</label>
-                        <input id="guNovaSenha" type="password" minlength="6"
+                  ${
+                    isNew ? `
+                      <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-2">
+                        <label class="form-label-sm">Senha inicial</label>
+                        <input
+                          id="guSenha"
+                          type="password"
+                          minlength="6"
                           class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                           placeholder="Mínimo 6 caracteres"
                           autocomplete="new-password"
-                          data-lpignore="true">
+                          data-lpignore="true"
+                        >
+                        <p class="text-xs text-muted-foreground">Será gravada com hash no banco.</p>
                       </div>
-
-                      <div class="grid grid-cols-1 gap-2">
-                        <button id="btnTrocarSenhaGU" type="button"
-                          class="rounded-xl border border-border bg-white/70 form-control-sm form-label-sm hover:bg-white transition-all">
-                          Salvar nova senha
-                        </button>
-                      </div>
-                    </div>
-
-                    <p id="guSenhaMsg" class="text-xs hidden whitespace-pre-line"></p>
-                  </div>
-                  ` : ''}
-
-                  ${isNew ? `
-                  <div class="rounded-2xl border border-border bg-white/40 p-4 space-y-2">
-                    <label class="form-label-sm">Senha inicial</label>
-                    <input id="guSenha" type="password" minlength="6"
-                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                      placeholder="Mínimo 6 caracteres"
-                      autocomplete="new-password"
-                      data-lpignore="true" />
-                    <p class="text-xs text-muted-foreground">Será gravada com hash no banco.</p>
-                  </div>
-                  ` : ''}
+                    ` : ''
+                  }
                 </div>
 
                 <div class="space-y-4 min-w-0">
                   <div class="flex flex-wrap gap-2">
-                    <button id="guAbaCorporativo" type="button" aria-selected="true"
-                      class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all">
-                      Corporativo*
-                    </button>
-
-                    <button id="guAbaPessoal" type="button" aria-selected="false"
-                      class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">
-                      Pessoal*
-                    </button>
-
-                    <button id="guAbaDadosAdicionais" type="button" aria-selected="false"
-                      class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">
-                      Dados adicionais
-                    </button>
+                    <button id="guAbaCorporativo" type="button" aria-selected="true" class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white text-foreground shadow-sm transition-all">Corporativo</button>
+                    <button id="guAbaPessoal" type="button" aria-selected="false" class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">Pessoal</button>
+                    <button id="guAbaDadosAdicionais" type="button" aria-selected="false" class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">Dados adicionais</button>
                   </div>
 
                   <div id="guPainelCorporativo" class="space-y-4">
                     <div class="rounded-2xl border border-border bg-white/40 p-4">
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2 md:col-span-2">
-                          <label class="form-label-sm">Nome **</label>
-                          <input id="guNome" type="text" required ${inputReadonlyAttr}
+                          <label class="form-label-sm">Nome</label>
+                          <input
+                            id="guNome"
+                            type="text"
+                            required
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(u.NOME ?? u.nome ?? '')}" autocomplete="off">
+                            value="${escapeHtml(u.NOME ?? u.nome ?? '')}"
+                            autocomplete="off"
+                          >
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">E-mail corporativo</label>
-                          <input id="guEmailCorporativo" type="email" ${inputReadonlyAttr}
+                          <input
+                            id="guEmailCorporativo"
+                            type="email"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(emailCorporativo)}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+                            value="${escapeHtml(emailCorporativo)}"
+                            autocomplete="off"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
+                          >
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">Telefone corporativo</label>
-                          <input id="guTelefoneCorporativo" type="text" ${inputReadonlyAttr}
+                          <input
+                            id="guTelefoneCorporativo"
+                            type="text"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(telefoneCorporativo)}" placeholder="77 9XXXX-XXXX" autocomplete="off">
+                            value="${escapeHtml(telefoneCorporativo)}"
+                            placeholder="(77) 9XXXX-XXXX"
+                            autocomplete="off"
+                          >
                         </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Perfil **</label>
-                          <select id="guPerfil" required ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
+                          <label class="form-label-sm">Perfil</label>
+                          <select
+                            id="guPerfil"
+                            required
+                            ${formDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          >
                             ${perfilOptions}
                           </select>
                         </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Data admissão **</label>
-                          <input id="guDataAdmissao" type="date" required ${formDisabledAttr}
+                          <label class="form-label-sm">Data admissão</label>
+                          <input
+                            id="guDataAdmissao"
+                            type="date"
+                            required
+                            ${formDisabledAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(dataAdmissaoAtual)}">
+                            value="${escapeHtml(dataAdmissaoAtual)}"
+                          >
                         </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Função **</label>
+                          <label class="form-label-sm">Função</label>
                           <div class="flex items-stretch gap-2">
-                            <select id="guFuncao" required ${formDisabledAttr}
-                              class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
+                            <select
+                              id="guFuncao"
+                              required
+                              ${formDisabledAttr}
+                              class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            >
                               ${funcaoOptions}
                             </select>
-
-                            ${isView ? '' : `
-                              <button id="btnAddFuncao" type="button"
-                                class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
-                                aria-label="Adicionar função" title="Adicionar função">
-                                <i class="fas fa-plus" aria-hidden="true"></i>
-                              </button>
-                            `}
-                          </div>
-
-                          </div>
-                            <div class="space-y-2">
-                            <label class="form-label-sm">Setor **</label>
-                            <div class="flex items-stretch gap-2">
-                              <select id="guSetor" required ${formDisabledAttr}
-                                class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
-                                ${setorOptions}
-                              </select>
-
-                              ${isView ? '' : `
-                                <button id="btnAddSetor" type="button"
+                            ${
+                              isView ? '' : `
+                                <button
+                                  id="btnAddFuncao"
+                                  type="button"
                                   class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
-                                  aria-label="Adicionar setor" title="Adicionar setor">
+                                  aria-label="Adicionar função"
+                                  title="Adicionar função"
+                                >
                                   <i class="fas fa-plus" aria-hidden="true"></i>
                                 </button>
-                              `}
+                              `
+                            }
+                          </div>
+                        </div>
+
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Setor</label>
+                          <div class="flex items-stretch gap-2">
+                            <select
+                              id="guSetor"
+                              required
+                              ${formDisabledAttr}
+                              class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            >
+                              ${setorOptions}
+                            </select>
+                            ${
+                              isView ? '' : `
+                                <button
+                                  id="btnAddSetor"
+                                  type="button"
+                                  class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+                                  aria-label="Adicionar setor"
+                                  title="Adicionar setor"
+                                >
+                                  <i class="fas fa-plus" aria-hidden="true"></i>
+                                </button>
+                              `
+                            }
+                          </div>
+                        </div>
+
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Local de trabalho</label>
+                          <div class="flex items-stretch gap-2">
+                            <select
+                              id="guLocalTrabalho"
+                              ${formDisabledAttr}
+                              class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            >
+                              ${optionsFromRows(cacheLocaisTrabalhoGestao, localTrabalhoAtual, 'Selecione o local de trabalho')}
+                            </select>
+                            ${
+                              isView ? '' : `
+                                <button
+                                  id="btnAddLocalTrabalho"
+                                  type="button"
+                                  class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+                                  aria-label="Adicionar local de trabalho"
+                                  title="Adicionar local de trabalho"
+                                >
+                                  <i class="fas fa-plus" aria-hidden="true"></i>
+                                </button>
+                              `
+                            }
+                          </div>
+                        </div>
+
+                        <div class="space-y-2">
+                          <label class="form-label-sm">Unidade de trabalho</label>
+                          <div class="flex items-stretch gap-2">
+                            <select
+                              id="guUnidadeTrabalho"
+                              required
+                              ${formDisabledAttr}
+                              class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            >
+                              ${optionsFromRows(cacheLocaisTrabalhoGestaoUnidade, unidadeTrabalhoAtual, 'Selecione a unidade de trabalho')}
+                            </select>
+                            ${
+                              isView ? '' : `
+                                <button
+                                  id="btnAddUnidadeTrabalho"
+                                  type="button"
+                                  class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
+                                  aria-label="Adicionar Unidade de Trabalho"
+                                  title="Adicionar Unidade de Trabalho"
+                                >
+                                  <i class="fas fa-plus" aria-hidden="true"></i>
+                                </button>
+                              `
+                            }
+                          </div>
+                        </div>
+
+                        <div class="md:col-span-2 rounded-2xl border border-border bg-white/40 p-4 space-y-4">
+                          <div class="flex items-start gap-3">
+                            <input
+                              id="guBatePonto"
+                              type="checkbox"
+                              ${isView ? 'disabled' : ''}
+                              class="mt-1 h-4 w-4 rounded border border-border text-primary focus:ring-2 focus:ring-primary/30"
+                              ${batePontoAtual ? 'checked' : ''}
+                            >
+                            <div class="space-y-1">
+                              <label for="guBatePonto" class="form-label-sm cursor-pointer">Usuário bate ponto</label>
+                              <p class="text-xs text-muted-foreground">
+                                Marque quando o colaborador deve registrar ponto no sistema.
+                              </p>
                             </div>
                           </div>
 
-                        <div class="space-y-2">
-                          <label class="form-label-sm">Centro de Custo</label>
-                          <div class="flex items-stretch gap-2">
-                            <select id="guLocalTrabalho" ${formDisabledAttr}
-                              class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
-                              ${localTrabalhoOptions}
-                            </select>
-
-                            ${isView ? '' : `
-                              <button id="btnAddLocalTrabalho" type="button"
-                                class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
-                                aria-label="Adicionar Centro de Custo" title="Adicionar Centro de Custo">
-                                <i class="fas fa-plus" aria-hidden="true"></i>
-                              </button>
-                            `}
+                          <div id="guBlocoInicioBatePonto" class="${batePontoAtual ? '' : 'hidden'} space-y-2">
+                            <label for="guDataInicioBatePonto" class="form-label-sm">Data inicial para bater ponto</label>
+                            <input
+                              id="guDataInicioBatePonto"
+                              type="date"
+                              ${formDisabledAttr}
+                              class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                              value="${escapeHtml(dataInicioBatePontoAtual)}"
+                              min="${escapeHtml(dataAdmissaoAtual || '')}"
+                            >
+                            <p class="text-xs text-muted-foreground">
+                              A data não pode ser anterior à data de admissão.
+                            </p>
                           </div>
                         </div>
 
-                        <div class="space-y-2">
-                          <label class="form-label-sm">Unidade de trabalho **</label>
-                          <div class="flex items-stretch gap-2">
-                            <select id="guUnidadeTrabalho" required ${formDisabledAttr}
-                              class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
-                              ${unidadeTrabalhoOptions}
-                            </select>
-
-                            ${isView ? '' : `
-                              <button id="btnAddUnidadeTrabalho" type="button"
-                                class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
-                                aria-label="Adicionar Unidade de Trabalho" title="Adicionar Unidade de Trabalho">
-                                <i class="fas fa-plus" aria-hidden="true"></i>
-                              </button>
-                            `}
-                          </div>
-                        </div>
-
-                        <!-- Status + Botão Assinatura -->
                         <div class="space-y-2 md:col-span-2">
                           <label class="form-label-sm block">Status</label>
-
                           <div class="grid grid-cols-1 lg:grid-cols-[minmax(220px,1fr)_auto_auto] gap-2">
-                            <select id="guStatus" required ${formDisabledAttr}
-                              class="w-full min-w-[220px] h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30">
+                            <select
+                              id="guStatus"
+                              required
+                              ${formDisabledAttr}
+                              class="w-full min-w-[220px] h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            >
                               ${['Ativo', 'Desativado'].map((s) => {
                                 const selected = statusAtual === s ? 'selected' : '';
                                 return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(s)}</option>`;
                               }).join('')}
                             </select>
 
-                            <button id="btnGerarAssinatura" type="button"
+                            <button
+                              id="btnGerarAssinatura"
+                              type="button"
                               class="h-12 px-4 rounded-xl border border-border bg-white/60 hover:bg-white transition-all flex items-center justify-center gap-2 text-sm font-medium whitespace-nowrap"
-                              title="Gerar assinatura de e-mail">
+                              title="Gerar assinatura de e-mail"
+                            >
                               <i class="fas fa-signature" aria-hidden="true"></i>
                               <span class="hidden sm:inline">Assinatura de e-mail</span>
                             </button>
 
-                            <button id="btnGerarCrachar" type="button"
+                            <button
+                              id="btnGerarCrachar"
+                              type="button"
                               class="h-12 px-4 rounded-xl border border-border bg-white/60 hover:bg-white transition-all flex items-center justify-center gap-2 text-sm font-medium whitespace-nowrap"
-                              title="Gerar crachá">
+                              title="Gerar crachá"
+                            >
                               <i class="fas fa-id-card" aria-hidden="true"></i>
                               <span class="hidden sm:inline">Gerar crachá</span>
                             </button>
@@ -4070,61 +4218,84 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
-                          <label class="form-label-sm">CPF **</label>
-                          <input id="guCpf" type="text" ${inputReadonlyAttr}
+                          <label class="form-label-sm">CPF</label>
+                          <input
+                            id="guCpf"
+                            type="text"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(cpfAtual)}"
                             placeholder="000.000.000-00"
-                            autocomplete="off" />
+                            autocomplete="off"
+                          >
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">RG</label>
-                          <input id="guRg" type="text" ${inputReadonlyAttr}
+                          <input
+                            id="guRg"
+                            type="text"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(rgAtual)}"
-                            autocomplete="off" />
+                            autocomplete="off"
+                          >
                         </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Data de nascimento **</label>
-                          <input id="guDataNascimento" type="date" required  ${formDisabledAttr}
+                          <label class="form-label-sm">Data de nascimento</label>
+                          <input
+                            id="guDataNascimento"
+                            type="date"
+                            required
+                            ${formDisabledAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(dataNascimentoAtual)}" />
+                            value="${escapeHtml(dataNascimentoAtual)}"
+                          >
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">Estado civil</label>
-                          <select id="guEstadoCivil" ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
-                            ${['', 'Solteiro(a)', 'Casado(a)', 'Divorciado(a)', 'Viúvo(a)', 'União estável']
-                              .map((s) => {
-                                const selected = estadoCivilAtual === s ? 'selected' : '';
-                                const label = s || 'Selecione...';
-                                return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(label)}</option>`;
-                              }).join('')}
+                          <select
+                            id="guEstadoCivil"
+                            ${formDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          >
+                            ${['', 'Solteiro(a)', 'Casado(a)', 'Divorciado(a)', 'Viúvo(a)', 'União estável'].map((s) => {
+                              const selected = estadoCivilAtual === s ? 'selected' : '';
+                              const label = s || 'Selecione...';
+                              return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(label)}</option>`;
+                            }).join('')}
                           </select>
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">Telefone pessoal</label>
-                          <input id="guTelefonePessoal" type="text" ${inputReadonlyAttr}
+                          <input
+                            id="guTelefonePessoal"
+                            type="text"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(telefonePessoalAtual)}"
                             placeholder="(77) 9XXXX-XXXX"
-                            autocomplete="off" />
+                            autocomplete="off"
+                          >
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">E-mail pessoal</label>
-                          <input id="guEmailPessoal" type="email" ${inputReadonlyAttr}
+                          <input
+                            id="guEmailPessoal"
+                            type="email"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(emailPessoalAtual)}"
                             autocomplete="off"
                             autocapitalize="off"
                             autocorrect="off"
                             spellcheck="false"
-                            data-lpignore="true" />
+                            data-lpignore="true"
+                          >
                         </div>
                       </div>
                     </div>
@@ -4138,74 +4309,85 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                           <label class="form-label-sm">CNH</label>
-                          <input id="guCnh" type="text" ${inputReadonlyAttr}
+                          <input
+                            id="guCnh"
+                            type="text"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
                             value="${escapeHtml(cnhAtual)}"
-                            autocomplete="off" />
+                            autocomplete="off"
+                          >
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">Categoria CNH</label>
-                          <input id="guCnhCategoria" type="text" maxlength="5" ${inputReadonlyAttr}
+                          <input
+                            id="guCnhCategoria"
+                            type="text"
+                            maxlength="5"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30 uppercase"
                             value="${escapeHtml(cnhCategoriaAtual)}"
                             placeholder="A, B, AB..."
-                            autocomplete="off" />
+                            autocomplete="off"
+                          >
                         </div>
 
                         <div class="space-y-2 md:col-span-2">
                           <label class="form-label-sm">Validade da CNH</label>
-                          <input id="guCnhValidade" type="date" ${formDisabledAttr}
+                          <input
+                            id="guCnhValidade"
+                            type="date"
+                            ${formDisabledAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(cnhValidadeAtual)}" />
+                            value="${escapeHtml(cnhValidadeAtual)}"
+                          >
                         </div>
 
                         <div class="space-y-2 md:col-span-2">
                           <label class="form-label-sm">Arquivo da CNH</label>
-
-                          ${isView
-                            ? (cnhArquivoAtualAbs
-                                ? `
-                                <a href="${escapeHtml(cnhArquivoAtualAbs)}" target="_blank" rel="noopener noreferrer"
-                                  class="inline-flex items-center gap-2 rounded-xl border border-border bg-white/70 form-control-sm text-sm hover:bg-white transition-all">
-                                  <i class="fas fa-paperclip"></i>
-                                  Visualizar CNH
-                                </a>
-                              `
-                                : `
-                                <div class="rounded-xl border border-dashed border-border bg-white/40 form-control-sm form-subtitle-sm">
-                                  Nenhum arquivo anexado.
-                                </div>
-                              `)
-                            : `
-                              <div class="space-y-3">
-                                <div class="flex flex-col lg:flex-row gap-2 lg:items-center">
-                                  <input id="guCnhArquivoInput" type="file" accept=".pdf,image/*"
-                                    class="flex-1 min-w-0 rounded-xl border border-border bg-white/70 form-control-sm text-sm"
-                                    autocomplete="off" />
-
-                                  <div id="guCnhArquivoAtualWrap" class="${cnhArquivoAtualAbs ? '' : 'hidden'} shrink-0">
-                                    <a id="guCnhArquivoAtualLink" href="${escapeHtml(cnhArquivoAtualAbs)}" target="_blank" rel="noopener noreferrer"
-                                      class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-white/70 form-control-sm text-sm hover:bg-white transition-all whitespace-nowrap">
-                                      <i class="fas fa-paperclip"></i>
-                                      Visualizar CNH
-                                    </a>
+                          ${
+                            isView
+                              ? (
+                                cnhArquivoAtualAbs
+                                  ? `<a href="${escapeHtml(cnhArquivoAtualAbs)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl border border-border bg-white/70 form-control-sm text-sm hover:bg-white transition-all"><i class="fas fa-paperclip"></i>Visualizar CNH</a>`
+                                  : `<div class="rounded-xl border border-dashed border-border bg-white/40 form-control-sm form-subtitle-sm">Nenhum arquivo anexado.</div>`
+                              )
+                              : `
+                                <div class="space-y-3">
+                                  <div class="flex flex-col lg:flex-row gap-2 lg:items-center">
+                                    <input
+                                      id="guCnhArquivoInput"
+                                      type="file"
+                                      accept=".pdf,image/*"
+                                      class="flex-1 min-w-0 rounded-xl border border-border bg-white/70 form-control-sm text-sm"
+                                      autocomplete="off"
+                                    >
+                                    <div id="guCnhArquivoAtualWrap" class="${cnhArquivoAtualAbs ? '' : 'hidden'} shrink-0">
+                                      <a
+                                        id="guCnhArquivoAtualLink"
+                                        href="${escapeHtml(cnhArquivoAtualAbs)}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-white/70 form-control-sm text-sm hover:bg-white transition-all whitespace-nowrap"
+                                      >
+                                        <i class="fas fa-paperclip"></i>
+                                        Visualizar CNH
+                                      </a>
+                                    </div>
+                                    <button
+                                      id="btnRemoverCnhArquivoGU"
+                                      type="button"
+                                      class="shrink-0 rounded-xl border border-border bg-white/60 form-control-sm text-sm hover:bg-white/90 transition-all whitespace-nowrap"
+                                    >
+                                      Remover CNH
+                                    </button>
                                   </div>
-
-                                  <button id="btnRemoverCnhArquivoGU" type="button"
-                                    class="shrink-0 rounded-xl border border-border bg-white/60 form-control-sm text-sm hover:bg-white/90 transition-all whitespace-nowrap">
-                                    Remover CNH
-                                  </button>
+                                  <div id="guCnhArquivoNovoWrap" class="hidden rounded-xl border border-border bg-white/50 form-control-sm text-sm text-foreground"></div>
+                                  <p class="text-xs text-muted-foreground">Aceita PDF, JPG, PNG, JPEG ou WEBP.</p>
                                 </div>
-
-                                <div id="guCnhArquivoNovoWrap"
-                                  class="hidden rounded-xl border border-border bg-white/50 form-control-sm text-sm text-foreground"></div>
-
-                                <p class="text-xs text-muted-foreground">
-                                  Aceita PDF, JPG, PNG, JPEG ou WEBP.
-                                </p>
-                              </div>
-                            `}
+                              `
+                          }
                         </div>
                       </div>
                     </div>
@@ -4221,16 +4403,24 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                           <label class="form-label-sm">Apelido</label>
-                          <input id="guApelido" type="text" ${inputReadonlyAttr}
+                          <input
+                            id="guApelido"
+                            type="text"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(apelidoAtual)}" autocomplete="off">
+                            value="${escapeHtml(apelidoAtual)}"
+                            autocomplete="off"
+                          >
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">Sexo</label>
-                          <select id="guSexo" ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
-                            ${['', 'MASCULINO', 'FEMININO', 'OUTRO', 'PREFIRO NÃO INFORMAR'].map(s => {
+                          <select
+                            id="guSexo"
+                            ${formDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          >
+                            ${['', 'MASCULINO', 'FEMININO', 'OUTRO', 'PREFIRO NAO INFORMAR'].map((s) => {
                               const selected = sexoAtual === s ? 'selected' : '';
                               const label = s || 'Selecione...';
                               return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(label)}</option>`;
@@ -4240,16 +4430,24 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
                         <div class="space-y-2">
                           <label class="form-label-sm">Número do calçado</label>
-                          <input id="guNumeroCalcado" type="number" min="0" ${inputReadonlyAttr}
+                          <input
+                            id="guNumeroCalcado"
+                            type="number"
+                            min="0"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(numeroCalcadoAtual)}">
+                            value="${escapeHtml(numeroCalcadoAtual)}"
+                          >
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">Tamanho camisa</label>
-                          <select id="guTamanhoCamisa" ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
-                            ${['', 'PP', 'P', 'M', 'G', 'GG', 'XG', 'XXG'].map(s => {
+                          <select
+                            id="guTamanhoCamisa"
+                            ${formDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          >
+                            ${['', 'PP', 'P', 'M', 'G', 'GG', 'XG', 'XXG'].map((s) => {
                               const selected = tamanhoCamisaAtual === s ? 'selected' : '';
                               const label = s || 'Selecione...';
                               return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(label)}</option>`;
@@ -4259,47 +4457,59 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
                         <div class="space-y-2">
                           <label class="form-label-sm">Tamanho calça</label>
-                          <input id="guTamanhoCalca" type="text" ${inputReadonlyAttr}
+                          <input
+                            id="guTamanhoCalca"
+                            type="text"
+                            ${inputReadonlyAttr}
                             class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                            value="${escapeHtml(tamanhoCalcaAtual)}">
+                            value="${escapeHtml(tamanhoCalcaAtual)}"
+                          >
                         </div>
 
                         <div class="space-y-2">
                           <label class="form-label-sm">Tem filhos?</label>
-                          <select id="guTemFilhos" ${formDisabledAttr}
-                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30">
-                            ${['NÃO', 'SIM'].map(s => {
+                          <select
+                            id="guTemFilhos"
+                            ${formDisabledAttr}
+                            class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          >
+                            ${['NAO', 'SIM'].map((s) => {
                               const selected = temFilhosAtual === s ? 'selected' : '';
                               return `<option value="${escapeHtml(s)}" ${selected}>${escapeHtml(s)}</option>`;
                             }).join('')}
                           </select>
                         </div>
-                      </div>
 
-                      <div id="guBlocoQtdFilhos" class="space-y-2 ${temFilhosAtual === 'SIM' ? '' : 'hidden'}">
-                        <label class="form-label-sm">Quantidade de filhos</label>
-                        <input id="guQuantidadeFilhos" type="number" min="1" step="1" ${inputReadonlyAttr}
-                          class="w-full md:w-14 rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-                          value="${escapeHtml(quantidadeFilhosAtual)}">
-                      </div>
-
-                      <div id="guBlocoTabelaFilhos" class="space-y-3 hidden">
-                        <div>
-                          <h5 class="text-sm font-semibold text-foreground">Filhos</h5>
-                          <p class="text-xs text-muted-foreground">Informe nome completo e data de nascimento.</p>
+                        <div id="guBlocoQtdFilhos" class="space-y-2 ${temFilhosAtual === 'SIM' ? '' : 'hidden'}">
+                          <label class="form-label-sm">Quantidade de filhos</label>
+                          <input
+                            id="guQuantidadeFilhos"
+                            type="number"
+                            min="1"
+                            step="1"
+                            ${inputReadonlyAttr}
+                            class="w-full md:w-14 rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            value="${escapeHtml(quantidadeFilhosAtual)}"
+                          >
                         </div>
 
-                        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
-                          <table class="min-w-full text-sm">
-                            <thead class="bg-muted/40 text-muted-foreground">
-                              <tr>
-                                <th class="text-left font-semibold form-control-sm">#</th>
-                                <th class="text-left font-semibold form-control-sm">Nome completo</th>
-                                <th class="text-left font-semibold form-control-sm">Data de nascimento</th>
-                              </tr>
-                            </thead>
-                            <tbody id="guTabelaFilhosBody"></tbody>
-                          </table>
+                        <div id="guBlocoTabelaFilhos" class="space-y-3 hidden">
+                          <div>
+                            <h5 class="text-sm font-semibold text-foreground">Filhos</h5>
+                            <p class="text-xs text-muted-foreground">Informe nome completo e data de nascimento.</p>
+                          </div>
+                          <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+                            <table class="min-w-full text-sm">
+                              <thead class="bg-muted/40 text-muted-foreground">
+                                <tr>
+                                  <th class="text-left font-semibold form-control-sm">#</th>
+                                  <th class="text-left font-semibold form-control-sm">Nome completo</th>
+                                  <th class="text-left font-semibold form-control-sm">Data de nascimento</th>
+                                </tr>
+                              </thead>
+                              <tbody id="guTabelaFilhosBody"></tbody>
+                            </table>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -4308,22 +4518,34 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
                   <p id="guErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
 
                   <div class="pt-2 flex flex-col sm:flex-row gap-3">
-                    ${isView ? `
-                    <button id="btnCancelarGU" type="button"
-                      class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all">
-                      Fechar
-                    </button>
-                    ` : `
-                    <button id="btnSalvarGU" type="submit"
-                      class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all">
-                      Salvar
-                    </button>
-
-                    <button id="btnCancelarGU" type="button"
-                      class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all">
-                      Cancelar
-                    </button>
-                    `}
+                    ${
+                      isView
+                        ? `
+                          <button
+                            id="btnCancelarGU"
+                            type="button"
+                            class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all"
+                          >
+                            Fechar
+                          </button>
+                        `
+                        : `
+                          <button
+                            id="btnSalvarGU"
+                            type="submit"
+                            class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
+                          >
+                            Salvar
+                          </button>
+                          <button
+                            id="btnCancelarGU"
+                            type="button"
+                            class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all"
+                          >
+                            Cancelar
+                          </button>
+                        `
+                    }
                   </div>
                 </div>
               </div>
@@ -4336,13 +4558,8 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
 
   document.body.appendChild(modal);
 
-  document.getElementById('btnGerarAssinatura')?.addEventListener('click', () => {
-    abrirModalAssinatura(u); 
-  });
-
-  document.getElementById('btnGerarCrachar')?.addEventListener('click', () => {
-    abrirModalCrachaRetrato(u); 
-  });
+  document.getElementById('btnGerarAssinatura')?.addEventListener('click', () => abrirModalAssinatura(u));
+  document.getElementById('btnGerarCrachar')?.addEventListener('click', () => abrirModalCrachaRetrato(u));
 
   let guFotoImage = null;
   let guFotoScale = 1;
@@ -4367,7 +4584,6 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   const btnAddUnidadeTrabalho = document.getElementById('btnAddUnidadeTrabalho');
   const btnMostrarAlteracaoSenha = document.getElementById('btnMostrarAlteracaoSenhaGU');
   const blocoAlteracaoSenha = document.getElementById('guBlocoAlteracaoSenha');
-
   const inpTelCorp = document.getElementById('guTelefoneCorporativo');
   const inpTelPess = document.getElementById('guTelefonePessoal');
   const inpCpf = document.getElementById('guCpf');
@@ -4381,7 +4597,6 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   const btnRemoverCnhArquivo = document.getElementById('btnRemoverCnhArquivoGU');
   const cnhArquivoAtualWrap = document.getElementById('guCnhArquivoAtualWrap');
   const cnhArquivoNovoWrap = document.getElementById('guCnhArquivoNovoWrap');
-
   let guCnhArquivoFile = null;
   let guCnhArquivoRemovido = false;
 
@@ -4391,12 +4606,17 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   const blocoTabelaFilhos = document.getElementById('guBlocoTabelaFilhos');
   const tabelaFilhosBody = document.getElementById('guTabelaFilhosBody');
 
+  const inpDataAdmissao = document.getElementById('guDataAdmissao');
+  const inpBatePonto = document.getElementById('guBatePonto');
+  const blocoInicioBatePonto = document.getElementById('guBlocoInicioBatePonto');
+  const inpDataInicioBatePonto = document.getElementById('guDataInicioBatePonto');
+
   let filhosAtuais = [];
   try {
     const bruto = u.FILHOS ?? u.filhos ?? '[]';
-    filhosAtuais = Array.isArray(bruto) ? bruto : JSON.parse(bruto || '[]');
+    filhosAtuais = Array.isArray(bruto) ? bruto : JSON.parse(bruto);
     if (!Array.isArray(filhosAtuais)) filhosAtuais = [];
-  } catch (_) {
+  } catch {
     filhosAtuais = [];
   }
 
@@ -4416,12 +4636,10 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
       abaCorp.setAttribute('aria-selected', ativa === 'corporativo' ? 'true' : 'false');
       abaCorp.className = ativa === 'corporativo' ? estiloAtivo : estiloInativo;
     }
-
     if (abaPess) {
       abaPess.setAttribute('aria-selected', ativa === 'pessoal' ? 'true' : 'false');
       abaPess.className = ativa === 'pessoal' ? estiloAtivo : estiloInativo;
     }
-
     if (abaAdic) {
       abaAdic.setAttribute('aria-selected', ativa === 'dados-adicionais' ? 'true' : 'false');
       abaAdic.className = ativa === 'dados-adicionais' ? estiloAtivo : estiloInativo;
@@ -4431,12 +4649,10 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
       painelCorp.hidden = ativa !== 'corporativo';
       painelCorp.classList.toggle('hidden', ativa !== 'corporativo');
     }
-
     if (painelPess) {
       painelPess.hidden = ativa !== 'pessoal';
       painelPess.classList.toggle('hidden', ativa !== 'pessoal');
     }
-
     if (painelAdic) {
       painelAdic.hidden = ativa !== 'dados-adicionais';
       painelAdic.classList.toggle('hidden', ativa !== 'dados-adicionais');
@@ -4446,13 +4662,12 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   function montarLinhasFilhos(qtd) {
     if (!tabelaFilhosBody) return;
 
-    const quantidade = Math.max(0, Number(qtd) || 0);
-
+    const quantidade = Math.max(0, Number(qtd || 0));
     tabelaFilhosBody.innerHTML = Array.from({ length: quantidade }).map((_, idx) => {
       const filho = filhosAtuais[idx] || {};
       const nome = filho.nome ?? filho.NOME ?? '';
       const dataNascimento = String(
-        filho.dataNascimento ?? filho.DATA_NASCIMENTO ?? filho.data_nascimento ?? ''
+        filho.dataNascimento ?? filho.DATANASCIMENTO ?? filho.datanascimento ?? ''
       ).slice(0, 10);
 
       return `
@@ -4465,7 +4680,8 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
               data-index="${idx}"
               value="${escapeHtml(nome)}"
               ${inputReadonlyAttr}
-              placeholder="Nome completo">
+              placeholder="Nome completo"
+            >
           </td>
           <td class="px-4 py-3">
             <input
@@ -4473,7 +4689,8 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
               class="gu-filho-data w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
               data-index="${idx}"
               value="${escapeHtml(dataNascimento)}"
-              ${formDisabledAttr}>
+              ${formDisabledAttr}
+            >
           </td>
         </tr>
       `;
@@ -4481,8 +4698,8 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   }
 
   function atualizarBlocoFilhos() {
-    const temFilhos = String(inpTemFilhos?.value || 'NÃO').toUpperCase() === 'SIM';
-    const qtd = Math.max(0, Number(inpQuantidadeFilhos?.value) || 0);
+    const temFilhos = String(inpTemFilhos?.value || 'NAO').toUpperCase() === 'SIM';
+    const qtd = Math.max(0, Number(inpQuantidadeFilhos?.value || 0));
 
     blocoQtdFilhos?.classList.toggle('hidden', !temFilhos);
     blocoTabelaFilhos?.classList.toggle('hidden', !temFilhos || qtd <= 0);
@@ -4494,7 +4711,39 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     }
   }
 
-  cnhArquivoInput?.addEventListener('change', e => {
+  function atualizarBlocoBatePonto() {
+    if (!inpBatePonto || !blocoInicioBatePonto || !inpDataInicioBatePonto) return;
+
+    const marcado = !!inpBatePonto.checked;
+    const dataAdmissao = String(inpDataAdmissao?.value || '').trim();
+
+    blocoInicioBatePonto.classList.toggle('hidden', !marcado);
+
+    if (dataAdmissao) {
+      inpDataInicioBatePonto.min = dataAdmissao;
+    } else {
+      inpDataInicioBatePonto.removeAttribute('min');
+    }
+
+    if (!marcado) {
+      inpDataInicioBatePonto.value = '';
+      return;
+    }
+
+    if (!inpDataInicioBatePonto.value && dataAdmissao) {
+      inpDataInicioBatePonto.value = dataAdmissao;
+    }
+
+    if (
+      dataAdmissao &&
+      inpDataInicioBatePonto.value &&
+      inpDataInicioBatePonto.value < dataAdmissao
+    ) {
+      inpDataInicioBatePonto.value = dataAdmissao;
+    }
+  }
+
+  cnhArquivoInput?.addEventListener('change', (e) => {
     const file = e.target.files?.[0] || null;
     guCnhArquivoFile = file;
     guCnhArquivoRemovido = false;
@@ -4513,17 +4762,12 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   btnRemoverCnhArquivo?.addEventListener('click', () => {
     guCnhArquivoFile = null;
     guCnhArquivoRemovido = true;
-
     if (cnhArquivoInput) cnhArquivoInput.value = '';
-
     if (cnhArquivoNovoWrap) {
       cnhArquivoNovoWrap.textContent = '';
       cnhArquivoNovoWrap.classList.add('hidden');
     }
-
-    if (cnhArquivoAtualWrap) {
-      cnhArquivoAtualWrap.classList.add('hidden');
-    }
+    if (cnhArquivoAtualWrap) cnhArquivoAtualWrap.classList.add('hidden');
   });
 
   function setErr(msg) {
@@ -4566,8 +4810,13 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   inpQuantidadeFilhos?.addEventListener('input', atualizarBlocoFilhos);
   inpQuantidadeFilhos?.addEventListener('change', atualizarBlocoFilhos);
 
+  inpBatePonto?.addEventListener('change', atualizarBlocoBatePonto);
+  inpDataAdmissao?.addEventListener('input', atualizarBlocoBatePonto);
+  inpDataAdmissao?.addEventListener('change', atualizarBlocoBatePonto);
+
   setAbaLocal('corporativo');
   atualizarBlocoFilhos();
+  atualizarBlocoBatePonto();
 
   if (isView) return;
 
@@ -4586,6 +4835,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     ctx.arc(AVATAR_SIZE / 2, AVATAR_SIZE / 2, AVATAR_SIZE / 2, 0, Math.PI * 2);
     ctx.closePath();
     ctx.clip();
+
     ctx.drawImage(
       guFotoImage,
       guFotoOffsetX,
@@ -4593,6 +4843,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
       guFotoImage.width * guFotoScale,
       guFotoImage.height * guFotoScale
     );
+
     ctx.restore();
 
     previewImg.src = canvas.toDataURL('image/jpeg', 0.9);
@@ -4639,7 +4890,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     blocoAlteracaoSenha?.classList.toggle('hidden');
   });
 
-  fileInput?.addEventListener('change', e => {
+  fileInput?.addEventListener('change', (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -4661,10 +4912,10 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
         drawGuFoto();
         canvas.style.cursor = 'grab';
       };
-      guFotoImage.onerror = err => console.error('Erro ao carregar imagem:', err);
+      guFotoImage.onerror = (err) => console.error('Erro ao carregar imagem:', err);
       guFotoImage.src = reader.result;
     };
-    reader.onerror = err => console.error('Erro no FileReader:', err);
+    reader.onerror = (err) => console.error('Erro no FileReader:', err);
     reader.readAsDataURL(file);
   });
 
@@ -4673,7 +4924,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     resetFotoUI();
   });
 
-  canvas.addEventListener('mousedown', e => {
+  canvas.addEventListener('mousedown', (e) => {
     if (!guFotoImage) return;
     guFotoIsDragging = true;
     guFotoStartX = e.clientX;
@@ -4681,7 +4932,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     canvas.style.cursor = 'grabbing';
   });
 
-  window.addEventListener('mousemove', e => {
+  window.addEventListener('mousemove', (e) => {
     if (!guFotoIsDragging || !guFotoImage) return;
     const dx = e.clientX - guFotoStartX;
     const dy = e.clientY - guFotoStartY;
@@ -4697,7 +4948,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     if (guFotoImage) canvas.style.cursor = 'grab';
   });
 
-  canvas.addEventListener('wheel', e => {
+  canvas.addEventListener('wheel', (e) => {
     if (!guFotoImage) return;
     e.preventDefault();
     const delta = e.deltaY < 0 ? 0.1 : -0.1;
@@ -4706,7 +4957,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
   }, { passive: false });
 
   btnAddSetor?.addEventListener('click', async () => {
-    const nome = prompt('Nome do setor:');
+    const nome = prompt('Nome do setor');
     if (!nome) return;
 
     try {
@@ -4716,12 +4967,12 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
       const sel = document.getElementById('guSetor');
       if (sel) sel.innerHTML = optionsFromRows(cacheSetoresGestao, titleCaseNome(nome));
     } catch (err) {
-      alert('Erro ao adicionar setor: ' + (err?.message || err));
+      alert(`Erro ao adicionar setor: ${err?.message || err}`);
     }
   });
 
   btnAddFuncao?.addEventListener('click', async () => {
-    const nome = prompt('Nome da função:');
+    const nome = prompt('Nome da função');
     if (!nome) return;
 
     try {
@@ -4731,12 +4982,12 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
       const sel = document.getElementById('guFuncao');
       if (sel) sel.innerHTML = optionsFromRows(cacheFuncoesGestao, titleCaseNome(nome), 'Selecione...');
     } catch (err) {
-      alert('Erro ao adicionar função: ' + (err?.message || err));
+      alert(`Erro ao adicionar função: ${err?.message || err}`);
     }
   });
 
   btnAddLocalTrabalho?.addEventListener('click', async () => {
-    const nome = prompt('Nome do Centro de Custo:');
+    const nome = prompt('Nome do local de trabalho');
     if (!nome) return;
 
     try {
@@ -4744,9 +4995,9 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
       const locaisResp = await apiGet('/api/gestao-usuarios-centro-custo');
       cacheLocaisTrabalhoGestao = Array.isArray(locaisResp?.items) ? locaisResp.items : [];
       const sel = document.getElementById('guLocalTrabalho');
-      if (sel) sel.innerHTML = optionsFromRows(cacheLocaisTrabalhoGestao, titleCaseNome(nome), 'Selecione...');
+      if (sel) sel.innerHTML = optionsFromRows(cacheLocaisTrabalhoGestao, titleCaseNome(nome), 'Selecione o local de trabalho');
     } catch (err) {
-      alert('Erro ao adicionar Centro de Custo: ' + (err?.message || err));
+      alert(`Erro ao adicionar local de trabalho: ${err?.message || err}`);
     }
   });
 
@@ -4754,14 +5005,13 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     try {
       await abrirModalUnidadeTrabalho();
     } catch (err) {
-      alert('Erro ao abrir gerenciamento de Unidade de Trabalho: ' + (err?.message || err));
+      alert(`Erro ao abrir gerenciamento de Unidade de Trabalho: ${err?.message || err}`);
     }
   });
 
-
   btnTrocarSenha?.addEventListener('click', async () => {
     setSenhaMsg('');
-    const userId = (u.ID ?? u.id);
+    const userId = u.ID ?? u.id;
     const senhaAtual = inputValue('guSenhaAtual').toString();
     const novaSenha = inputValue('guNovaSenha').toString();
 
@@ -4779,6 +5029,7 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
       btnTrocarSenha.disabled = true;
       await apiSend(`/api/gestao-usuarios/${userId}/senha`, 'PATCH', { senhaAtual, novaSenha });
       setSenhaMsg('Senha alterada com sucesso.', 'ok');
+
       const a = document.getElementById('guSenhaAtual');
       const b = document.getElementById('guNovaSenha');
       if (a) a.value = '';
@@ -4801,43 +5052,56 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
     const perfil = inputValue('guPerfil').trim();
     const setor = inputValue('guSetor').trim();
     const funcao = inputValue('guFuncao').trim();
-    const data_admissao = inputValue('guDataAdmissao').trim();
-    const local_trabalho = inputValue('guLocalTrabalho').trim();
-    const unidade_trabalho = inputValue('guUnidadeTrabalho').trim();
+    const dataadmissao = inputValue('guDataAdmissao').trim();
+    const localtrabalho = inputValue('guLocalTrabalho').trim();
+    const unidadetrabalho = inputValue('guUnidadeTrabalho').trim();
+    const bateponto = document.getElementById('guBatePonto')?.checked ? 1 : 0;
+    const datainiciobateponto = inputValue('guDataInicioBatePonto').trim() || null;
     const status = inputValue('guStatus').trim();
 
     const cpf = somenteNumeros(inputValue('guCpf'));
     const rg = inputValue('guRg').trim();
     const cnh = inputValue('guCnh').trim();
-    const cnh_categoria = inputValue('guCnhCategoria').trim().toUpperCase();
-    const cnh_validade = inputValue('guCnhValidade').trim();
-    const data_nascimento = inputValue('guDataNascimento').trim();
-    const estado_civil = inputValue('guEstadoCivil').trim();
-    const telefone_pessoal = somenteNumeros(inputValue('guTelefonePessoal'));
+    const cnhcategoria = inputValue('guCnhCategoria').trim().toUpperCase();
+    const cnhvalidade = inputValue('guCnhValidade').trim();
+    const datanascimento = inputValue('guDataNascimento').trim();
+    const estadocivil = inputValue('guEstadoCivil').trim();
+    const telefonepessoal = somenteNumeros(inputValue('guTelefonePessoal'));
     const emailPessoalBruto = inputValue('guEmailPessoal').trim();
-    const email_pessoal = emailPessoalBruto ? normalizarEmail(emailPessoalBruto) : '';
-
+    const emailpessoal = emailPessoalBruto ? normalizarEmail(emailPessoalBruto) : '';
     const apelido = inputValue('guApelido').trim();
-    const numero_calcado = inputValue('guNumeroCalcado').trim();
-    const tamanho_camisa = inputValue('guTamanhoCamisa').trim();
-    const tamanho_calca = inputValue('guTamanhoCalca').trim();
+    const numerocalcado = inputValue('guNumeroCalcado').trim();
+    const tamanhocamisa = inputValue('guTamanhoCamisa').trim();
+    const tamanhocalca = inputValue('guTamanhoCalca').trim();
     const sexo = inputValue('guSexo').trim();
-    const tem_filhos = inputValue('guTemFilhos').trim().toUpperCase();
-    const quantidade_filhos = inputValue('guQuantidadeFilhos').trim();
+    const temfilhos = inputValue('guTemFilhos').trim().toUpperCase();
+    const quantidadefilhos = inputValue('guQuantidadeFilhos').trim();
 
-    const filhos = Array.from(document.querySelectorAll('#guTabelaFilhosBody tr')).map(tr => {
-      const nome = tr.querySelector('.gu-filho-nome')?.value?.trim() || '';
-      const data_nascimento = tr.querySelector('.gu-filho-data')?.value?.trim() || '';
-      return { nome, data_nascimento };
-    }).filter(f => f.nome || f.data_nascimento);
+    const filhos = Array.from(document.querySelectorAll('#guTabelaFilhosBody tr'))
+      .map((tr) => {
+        const nome = tr.querySelector('.gu-filho-nome')?.value?.trim();
+        const datanascimento = tr.querySelector('.gu-filho-data')?.value?.trim();
+        return { nome, datanascimento };
+      })
+      .filter((f) => f.nome || f.datanascimento);
 
-    if (!nome || !perfil || !setor || !status || !data_admissao) {
-      setErr('Preencha os campos obrigatórios da aba Corporativa: nome, perfil, setor, status e data admmissão.');
+    if (!nome || !perfil || !setor || !status || !dataadmissao) {
+      setErr('Preencha os campos obrigatórios da aba Corporativa: nome, perfil, setor, status e data admissão.');
       return;
     }
 
-    if (!data_nascimento || !cpf) {
+    if (!datanascimento || !cpf) {
       setErr('Preencha os campos obrigatórios da aba Pessoal: data de nascimento e CPF.');
+      return;
+    }
+
+    if (bateponto && !datainiciobateponto) {
+      setErr('Informe a data inicial para bater ponto.');
+      return;
+    }
+
+    if (bateponto && dataadmissao && datainiciobateponto && datainiciobateponto < dataadmissao) {
+      setErr('A data inicial para bater ponto não pode ser anterior à data de admissão.');
       return;
     }
 
@@ -4850,22 +5114,20 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
       }
 
       let fotoPayload = undefined;
-
       if (guFotoRemovida && fotoAtualRel) {
         fotoPayload = null;
       } else if (guFotoImage) {
         const blob = await canvasToBlob(canvas, 'image/jpeg', 0.9);
         const up = await apiUploadFotoUsuarioBlob(blob, 'foto-usuario.jpg');
-        fotoPayload = up?.item?.url || null;
+        fotoPayload = up?.item?.url ?? null;
       }
 
       let cnhArquivoPayload = undefined;
-
       if (guCnhArquivoRemovido && cnhArquivoAtualRel) {
         cnhArquivoPayload = null;
       } else if (guCnhArquivoFile) {
         const upCnh = await apiUploadCnhUsuarioArquivo(guCnhArquivoFile);
-        cnhArquivoPayload = upCnh?.item?.url || null;
+        cnhArquivoPayload = upCnh?.item?.url ?? null;
       }
 
       const payload = {
@@ -4875,37 +5137,38 @@ function abrirModalGestaoUsuario({ modo, usuario }) {
         perfil,
         setor,
         funcao: funcao || '',
-        data_admissao: data_admissao || '',
-        local_trabalho: local_trabalho || '',
-        unidade_trabalho: unidade_trabalho || '',
+        dataadmissao: dataadmissao || '',
+        localtrabalho: localtrabalho || '',
+        unidadetrabalho: unidadetrabalho || '',
+        bateponto,
+        datainiciobateponto: bateponto ? datainiciobateponto : null,
         status,
 
         cpf: cpf || '',
         rg: rg || '',
         cnh: cnh || '',
-        cnh_categoria: cnh_categoria || '',
-        cnh_validade: cnh_validade || '',
-        data_nascimento: data_nascimento || '',
-        estado_civil: estado_civil || '',
-        telefone_pessoal: telefone_pessoal || '',
-        email_pessoal: email_pessoal || '',
-
+        cnhcategoria: cnhcategoria || '',
+        cnhvalidade: cnhvalidade || '',
+        datanascimento: datanascimento || '',
+        estadocivil: estadocivil || '',
+        telefonepessoal: telefonepessoal || '',
+        emailpessoal: emailpessoal || '',
         apelido: apelido || '',
-        numero_calcado: numero_calcado || '',
-        tamanho_camisa: tamanho_camisa || '',
-        tamanho_calca: tamanho_calca || '',
+        numerocalcado: numerocalcado || '',
+        tamanhocamisa: tamanhocamisa || '',
+        tamanhocalca: tamanhocalca || '',
         sexo: sexo || '',
-        tem_filhos: tem_filhos || 'NÃO',
-        quantidade_filhos: tem_filhos === 'SIM' ? (quantidade_filhos || '') : '',
-        filhos: tem_filhos === 'SIM' ? filhos : []
+        temfilhos: temfilhos || 'NAO',
+        quantidadefilhos: temfilhos === 'SIM' ? quantidadefilhos : '',
+        filhos: temfilhos === 'SIM' ? filhos : []
       };
 
       if (fotoPayload !== undefined) payload.foto = fotoPayload;
-      if (cnhArquivoPayload !== undefined) payload.cnh_arquivo = cnhArquivoPayload;
+      if (cnhArquivoPayload !== undefined) payload.cnharquivo = cnhArquivoPayload;
 
       if (isNew) {
         const senha = inputValue('guSenha').toString();
-        payload.senha = '123456';
+        payload.senha = senha || '123456';
         await apiSend('/api/gestao-usuarios-adicionar', 'POST', payload);
       } else if (isEdit) {
         const userId = u.ID ?? u.id;
@@ -5387,7 +5650,7 @@ function gerarTemplateExcelUsuarios() {
       ['- CPF: Número do CPF (com ou sem máscara)'],
       ['- DATA ADMISSÃO: Data de admissão (DD/MM/YYYY)'],
       ['- FUNÇÃO: Cargo/Função do usuário'],
-      ['- CENTRO CUSTO: Centro de custo (almoxarifado, etc)'],
+      ['- CENTRO CUSTO: Estoque (almoxarifado, etc)'],
       ['- UNIDADE TRABALHO: Localidade de trabalho'],
       [''],
       ['Observações:'],
@@ -5407,7 +5670,6 @@ function gerarTemplateExcelUsuarios() {
   }
 }
 
-// Vincular o botão
 document.addEventListener('DOMContentLoaded', () => {
   const btnBaixar = document.getElementById('btnBaixarTemplateUsuario');
   if (btnBaixar) {
@@ -5770,8 +6032,6 @@ async function abrirModalTrocarFotoPerfil() {
   });
 }
 
-
-// ===== LIGAÇÕES =====
 
 document.addEventListener('click', (e) => {
   const item = e.target.closest('.menu-item[data-page]');
@@ -8589,7 +8849,7 @@ function setAbaEstoque(nome) {
   const classeInativa =
     'px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all';
 
-  // Centro de custo sempre funciona
+  // Estoque sempre funciona
   if (abaCentroCusto) {
     abaCentroCusto.setAttribute('aria-selected', centroCustoAtiva ? 'true' : 'false');
     abaCentroCusto.className = centroCustoAtiva ? classeAtiva : classeInativa;
@@ -8792,7 +9052,7 @@ document.addEventListener('click', async (e) => {
 
   const podeVerAlmoxarifado = await validarPermissaoEstoqueAlmoxarifado();
   
-  // Força centro de custo como padrão se não tem permissão
+  // Força Estoque como padrão se não tem permissão
   if (!podeVerAlmoxarifado) {
     setAbaEstoque('centro-custo');
   }
@@ -11483,8 +11743,8 @@ function abrirModalNovoCentrodeCusto() {
           <div class="w-full max-w-lg rounded-2xl border border-border bg-background shadow-2xl overflow-hidden">
             <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
               <div>
-                <h3 class="text-lg font-semibold text-foreground">Novo centro de custo</h3>
-                <p class="form-subtitle-sm">Cadastre um novo centro de custo.</p>
+                <h3 class="text-lg font-semibold text-foreground">Novo Estoque</h3>
+                <p class="form-subtitle-sm">Cadastre um novo Estoque.</p>
               </div>
 
               <button id="btnFecharNovoLocalArmazenagem" type="button"
@@ -12819,7 +13079,7 @@ function obterUsuarioLogado() {
 }
 
 
-// Tranferencia de armazenamento (Centro de Custo)
+// Tranferencia de armazenamento (Estoque)
 
 document.addEventListener('click', async e => {
   const btn = e.target.closest('.btnTransferenciaEstoque');
@@ -13158,7 +13418,7 @@ async function abrirModalTransferenciaEstoque(item) {
             <form id="formTransferenciaEstoque" class="rounded-2xl border border-border bg-white/40 p-5 space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label class="block form-label-sm text-foreground mb-2">Centro de custo</label>
+                  <label class="block form-label-sm text-foreground mb-2">Estoque</label>
                   <div class="flex flex-col sm:flex-row gap-2">
                     <select id="transferenciaLocalDestino" class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm" required>
                       <option value="">Selecione o local...</option>
@@ -13681,7 +13941,7 @@ function escapeHtmlString(value) {
   return escapeHtml(String(value ?? ''));
 }
 
-// Centro de custo
+// Estoque
 let cacheEstoqueCentroCusto = [];
 let cachePendenciasCentroCusto = [];
 let pendenciasCentroCustoFechadas = false;
@@ -13734,7 +13994,7 @@ function renderizarEstoqueCentroCusto(items) {
     tbody.innerHTML = `
       <tr>
         <td colspan="9" class="px-4 py-6 form-subtitle-sm text-center">
-          Nenhum material disponível no centro de custo.
+          Nenhum material disponível no Estoque.
         </td>
       </tr>`;
     return;
@@ -13826,7 +14086,7 @@ function renderizarEstoqueCentroCusto(items) {
               data-descricao="${escapeHtmlString(String(descricao))}"
               data-unidade="${escapeHtmlString(String(unidade))}"
               data-quantidade="${escapeHtmlString(String(saldo))}"
-              title="Transferir para outro centro de custo"
+              title="Transferir para outro Estoque"
             >
               <i class="fas fa-right-left"></i>
             </button>
@@ -13857,7 +14117,7 @@ function vincularEventosSaidaCentroCusto() {
       const unidade = String(el.dataset.unidade || 'UN').trim();
 
       if (!idProduto || !idLocal) {
-        alert('Não foi possível identificar o produto ou o centro de custo.');
+        alert('Não foi possível identificar o produto ou o Estoque.');
         return;
       }
 
@@ -13903,7 +14163,7 @@ async function abrirModalSaidaCentroCusto(item) {
           <div class="px-4 sm:px-5 py-4 border-b border-border flex items-start justify-between gap-3 shrink-0">
             <div class="min-w-0">
               <h3 class="text-base sm:text-lg font-semibold text-foreground">Saída de material</h3>
-              <p class="text-xs text-muted-foreground">Registre a utilização do material neste centro de custo.</p>
+              <p class="text-xs text-muted-foreground">Registre a utilização do material neste Estoque.</p>
             </div>
             <button
               type="button"
@@ -14812,7 +15072,7 @@ function abrirModalPendenciasCentroCusto() {
             <div>
               <h3 class="text-lg font-semibold text-foreground">Pendências de recebimento</h3>
               <p class="form-subtitle-sm">
-                Transferências que ainda precisam ser recebidas pelo seu centro de custo.
+                Transferências que ainda precisam ser recebidas pelo seu Estoque.
               </p>
             </div>
 
@@ -14967,7 +15227,7 @@ function vincularEventosTransferenciaCentroCusto() {
       const unidade = String(el.dataset.unidade || 'UN');
 
       if (!idProduto || !idLocal) {
-        alert('Não foi possível identificar o produto ou o centro de custo de origem.');
+        alert('Não foi possível identificar o produto ou o Estoque de origem.');
         return;
       }
 
@@ -15060,16 +15320,16 @@ async function abrirModalTransferenciaCentroCusto(item) {
             <form id="formTransferenciaCentroCusto" class="rounded-2xl border border-border bg-white/40 p-5 space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <label class="block form-label-sm text-foreground mb-2">Centro de custo destino</label>
+                  <label class="block form-label-sm text-foreground mb-2">Estoque destino</label>
                   <div class="flex flex-col sm:flex-row gap-2">
                     <select id="transferenciaCentroCustoDestino"
                       class="w-full rounded-xl border border-border bg-white/80 form-control-sm text-sm" required>
-                      <option value="">Selecione o centro de custo...</option>
+                      <option value="">Selecione o Estoque...</option>
                     </select>
 
                     <button type="button" id="btnNovoDestinoCentroCusto"
                       class="w-10 h-10 rounded-xl border border-border bg-white/70 hover:bg-white transition-all flex items-center justify-center"
-                      title="Novo centro de custo">
+                      title="Novo Estoque">
                       <i class="fas fa-plus"></i>
                     </button>
                   </div>
@@ -15174,7 +15434,7 @@ async function abrirModalTransferenciaCentroCusto(item) {
             }).join('')
         : '';
 
-      select.innerHTML = `<option value="">Selecione o centro de custo...</option>${options}`;
+      select.innerHTML = `<option value="">Selecione o Estoque...</option>${options}`;
     } catch (err) {
       console.error(err);
       select.innerHTML = '<option value="">Erro ao carregar centros de custo</option>';
@@ -15299,7 +15559,7 @@ async function abrirModalTransferenciaCentroCusto(item) {
       await carregarDestinos(String(novoLocal.id ?? novoLocal.ID ?? ''));
     } catch (err) {
       console.error(err);
-      alert(err?.message || 'Erro ao cadastrar centro de custo.');
+      alert(err?.message || 'Erro ao cadastrar Estoque.');
     }
   });
 
@@ -15313,7 +15573,7 @@ async function abrirModalTransferenciaCentroCusto(item) {
     const saldoAtual = parseDecimalBr(document.getElementById('transferenciaCentroCustoSaldoDisponivel')?.textContent || '0');
 
     if (!idLocalDestino) {
-      alert('Selecione o centro de custo de destino.');
+      alert('Selecione o Estoque de destino.');
       return;
     }
 
@@ -15479,10 +15739,12 @@ const PERFIL_FIELDS = [
   'pedidos_incluir',
   'pedidos_editar',
   'pedidos_excluir',
+
   'clientes',
   'clientes_incluir',
   'clientes_editar',
   'clientes_excluir',
+
   'marketing',
   'email_automaticos',
   'agendar_sala_reuniao',
@@ -15491,19 +15753,32 @@ const PERFIL_FIELDS = [
   'aprovar_reserva_carro',
   'aprovar_reserva_carro_gestor',
   'excluir_reserva_carro',
+  'monitor_ping',
+
   'gestao_usuarios',
   'gestao_usuarios_cadastro',
   'gestao_usuarios_incluir',
   'gestao_usuarios_editar',
   'gestao_usuarios_excluir',
+
   'estoque',
   'estoque_almoxarifado',
   'estoque_fazenda',
   'estoque_cadastrar',
   'estoque_transferir',
   'estoque_receber',
+
   'perfil_acesso',
-  'monitor_ping'
+
+  'fiscal',
+  'dfe_certificado',
+
+  'recursos_humanos',
+  'cadastro_calendario',
+  'jornada',
+  'vinculo_jornada',
+  'solicitacoes',
+  'cadastro_equipamento'
 ];
 
 
@@ -15530,6 +15805,7 @@ function boolBadge(v) {
 
 function resumirPermissoes(perfil) {
   const modulos = [];
+
   if (Number(perfil.pedidos) === 1) modulos.push('Pedidos');
   if (Number(perfil.clientes) === 1) modulos.push('Clientes');
   if (Number(perfil.marketing) === 1) modulos.push('Marketing');
@@ -15538,6 +15814,9 @@ function resumirPermissoes(perfil) {
   if (Number(perfil.estoque) === 1) modulos.push('Estoque');
   if (Number(perfil.perfil_acesso) === 1) modulos.push('Perfil de Acesso');
   if (Number(perfil.monitor_ping) === 1) modulos.push('Monitor Ping');
+  if (Number(perfil.fiscal) === 1) modulos.push('Fiscal');
+  if (Number(perfil.recursos_humanos) === 1) modulos.push('RH');
+
   return modulos.length ? modulos.join(', ') : 'Sem permissões';
 }
 
@@ -15729,7 +16008,7 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
                     <label class="flex items-center gap-2"><input type="checkbox" id="aprovar_reserva_carro"> <span>Aprovar reserva de carro (Frota)</span></label>
                     <label class="flex items-center gap-2"><input type="checkbox" id="aprovar_reserva_carro_gestor"> <span>Aprovar reserva de carro (Gestor)</span></label>
                     <label class="flex items-center gap-2"><input type="checkbox" id="excluir_reserva_carro"> <span>Excluir reserva de carro</span></label>
-                    <label class="flex items-center gap-2"><input type="checkbox" id="monitor_ping"><span>Monitor de Ping</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="monitor_ping"> <span>Monitor de Ping</span></label>
                   </div>
                 </div>
 
@@ -15807,8 +16086,41 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
                   </div>
                 </div>
 
-              </div>
+                <div class="rounded-2xl border border-border bg-white/40 overflow-hidden">
+                  <button type="button" class="tree-toggle w-full flex items-center justify-between form-control-sm hover:bg-white/40 transition" data-target="grupo-fiscal">
+                    <div class="flex items-center gap-3">
+                      <span class="tree-icon text-xs transition-transform -rotate-90">▼</span>
+                      <label class="flex items-center gap-2 font-semibold cursor-pointer">
+                        <input type="checkbox" id="fiscal" data-children="dfe_certificado">
+                        <span>Fiscal</span>
+                      </label>
+                    </div>
+                  </button>
+                  <div id="grupo-fiscal" class="tree-children hidden border-t border-border px-6 py-3 space-y-2">
+                    <label class="flex items-center gap-2"><input type="checkbox" id="dfe_certificado" data-parent="fiscal"> <span>DF-e Certificado A1</span></label>
+                  </div>
+                </div>
 
+                <div class="rounded-2xl border border-border bg-white/40 overflow-hidden">
+                  <button type="button" class="tree-toggle w-full flex items-center justify-between form-control-sm hover:bg-white/40 transition" data-target="grupo-rh">
+                    <div class="flex items-center gap-3">
+                      <span class="tree-icon text-xs transition-transform -rotate-90">▼</span>
+                      <label class="flex items-center gap-2 font-semibold cursor-pointer">
+                        <input type="checkbox" id="recursos_humanos" data-children="cadastro_calendario,jornada,vinculo_jornada,solicitacoes,cadastro_equipamento">
+                        <span>Recursos Humanos</span>
+                      </label>
+                    </div>
+                  </button>
+                  <div id="grupo-rh" class="tree-children hidden border-t border-border px-6 py-3 space-y-2">
+                    <label class="flex items-center gap-2"><input type="checkbox" id="cadastro_calendario" data-parent="recursos_humanos"> <span>Feriados</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="jornada" data-parent="recursos_humanos"> <span>Jornada</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="vinculo_jornada" data-parent="recursos_humanos"> <span>Vínculo usuário jornada</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="solicitacoes" data-parent="recursos_humanos"> <span>Solicitações</span></label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="cadastro_equipamento" data-parent="recursos_humanos"> <span>Cadastro equipamento</span></label>
+                  </div>
+                </div>
+
+              </div>
 
               <p id="perfilErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
 
@@ -15918,7 +16230,7 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
 
   if (perfil) preencherFormPerfil(perfil);
 
-  ['pedidos', 'clientes', 'gestao_usuarios', 'estoque'].forEach(syncParent);
+  ['pedidos', 'clientes', 'gestao_usuarios', 'estoque', 'fiscal', 'recursos_humanos'].forEach(syncParent);
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -16167,6 +16479,24 @@ async function usuarioEhCriadorReserva(item) {
   }
 }
 
+function obterUsuarioLogado() {
+  try {
+    return String(sessionStorage.getItem('usuario') || '').trim();
+  } catch (err) {
+    console.error('Erro ao obter usuário logado:', err);
+    return '';
+  }
+}
+
+function obterUsuarioIdLogado() {
+  try {
+    return Number(sessionStorage.getItem('id') || 0);
+  } catch (err) {
+    console.error('Erro ao obter ID do usuário logado:', err);
+    return 0;
+  }
+}
+
 function usuarioPodeAprovarReservaCarro() {
   const valor =
     sessionStorage.getItem('aprovarreservacarro') ??
@@ -16293,21 +16623,36 @@ function reposicionarMenuAcoesAgendamentoPortal() {
     return;
   }
 
-  const rect = botao.getBoundingClientRect();
-  const larguraMenu = 220;
+  const rectBotao = botao.getBoundingClientRect();
+  const rectMenu = menu.getBoundingClientRect();
   const margem = 12;
+  const gap = 8;
 
-  let left = window.scrollX + rect.right - larguraMenu;
-  let top = window.scrollY + rect.bottom + 8;
-
+  let left = rectBotao.right - rectMenu.width;
   if (left < margem) left = margem;
-  if (left + larguraMenu > window.scrollX + window.innerWidth - margem) {
-    left = window.scrollX + window.innerWidth - larguraMenu - margem;
+  if (left + rectMenu.width > window.innerWidth - margem) {
+    left = window.innerWidth - rectMenu.width - margem;
+  }
+
+  const espacoAbaixo = window.innerHeight - rectBotao.bottom;
+  const espacoAcima = rectBotao.top;
+  const abreAcima = rectMenu.height + gap > espacoAbaixo && espacoAcima > espacoAbaixo;
+
+  let top;
+  if (abreAcima) {
+    top = rectBotao.top - rectMenu.height - gap;
+    if (top < margem) top = margem;
+  } else {
+    top = rectBotao.bottom + gap;
+    if (top + rectMenu.height > window.innerHeight - margem) {
+      top = Math.max(margem, window.innerHeight - rectMenu.height - margem);
+    }
   }
 
   menu.style.left = `${left}px`;
   menu.style.top = `${top}px`;
 }
+
 
 function abrirMenuAcoesAgendamentoPortal(idReserva, htmlAcoes, botaoId) {
   const menuExistente = document.getElementById('menuAcoesAgendamentoPortal');
@@ -16320,7 +16665,7 @@ function abrirMenuAcoesAgendamentoPortal(idReserva, htmlAcoes, botaoId) {
   const menu = document.createElement('div');
   menu.id = 'menuAcoesAgendamentoPortal';
   menu.setAttribute('data-botao-id', botaoId);
-  menu.className = 'fixed z-[9999] min-w-[220px] overflow-hidden rounded-2xl border border-border bg-white shadow-2xl';
+  menu.className = 'fixed z-[9999] min-w-[220px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-2xl border border-border bg-white shadow-2xl';
 
   menu.innerHTML = htmlAcoes || `
     <div class="px-4 py-3 text-sm text-muted-foreground">
@@ -16335,9 +16680,21 @@ function abrirMenuAcoesAgendamentoPortal(idReserva, htmlAcoes, botaoId) {
   botao?.setAttribute('aria-expanded', 'true');
 }
 
-function toggleMenuAcoesAgendamentoPortal(idReserva, botaoId) {
-  const htmlAcoes = menusAcoesAgendamentoCache[String(idReserva)] || '';
-  abrirMenuAcoesAgendamentoPortal(idReserva, htmlAcoes, botaoId);
+function toggleMenuAcoesAgendamentoPortal(id, botaoId) {
+  const botao = document.getElementById(botaoId);
+  if (!botao) return;
+
+  const menuExistente = document.getElementById('menuAcoesAgendamentoPortal');
+  const mesmoBotaoAberto = menuExistente?.getAttribute('data-botao-id') === botaoId;
+
+  removerMenuAcoesAgendamentoPortal();
+
+  if (mesmoBotaoAberto) return;
+
+  const htmlAcoes = menusAcoesAgendamentoCache[String(id)];
+  if (!htmlAcoes) return;
+
+  abrirMenuAcoesAgendamentoPortal(id, htmlAcoes, botaoId);
 }
 
 document.addEventListener('click', (event) => {
@@ -16470,8 +16827,8 @@ function renderTabelaAgendamentos() {
             ${escapeHtml(item.status_solicitacao || item.statussolicitacao || 'PENDENTE')}
           </span>
         </td>
-        <td class="px-4 py-3">
-          <div class="flex justify-end">
+        <td class="px-4 py-3 overflow-visible">
+          <div class="relative flex justify-end overflow-visible">
             <button
               id="${botaoId}"
               type="button"
@@ -18031,7 +18388,8 @@ async function abrirModalReservaCarro(reserva = null) {
   ).trim();
 
   function fechar() {
-    removerModalReservaCarro();
+    document.getElementById('carroModal')?.remove();
+    document.getElementById('carroModalOverlay')?.remove();
   }
 
   function set_erro(msg) {
@@ -19968,6 +20326,14 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
                   Confirmar aprovação
                 </button>
                 <button
+                  id="btnRecusarReserva"
+                  type="button"
+                  class="sm:flex-1 rounded-xl bg-red-600 text-white px-4 py-3 font-medium hover:bg-red-700 transition-all"
+                  onclick="acaoRecusarReservaCarroMenu(${idReserva})"
+                >
+                  Recusar solicitação
+                </button>
+                <button
                   id="btnCancelarAprovacaoReserva"
                   type="button"
                   class="sm:flex-1 rounded-xl border border-border bg-white/50 px-4 py-3 font-medium hover:bg-white/70 transition-all"
@@ -20724,6 +21090,8 @@ async function acaoRecusarReservaCarro(idReserva, statusRecebido = '') {
       return;
     }
 
+    removerModalAprovacaoReservaCarro();
+    removerModalAprovacaoGestorReservaCarro();
     await abrirModalRecusaReservaCarro(idReserva, statusAtual);
   } catch (err) {
     alert(err?.message || 'Erro ao validar permissão.');
@@ -24140,93 +24508,172 @@ function abrirModalPingMonitor(modo, monitor = null) {
 
   const overlay = document.createElement('div');
   overlay.id = 'pingMonitorOverlay';
-  overlay.className = 'fixed inset-0 bg-black40 backdrop-blur-sm z-90';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-90';
   document.body.appendChild(overlay);
 
   const modal = document.createElement('div');
   modal.id = 'pingMonitorModal';
-  modal.className = 'fixed inset-0 z-100 flex items-start justify-center p-4 md:p-8 overflow-auto';
+  modal.className = 'fixed inset-0 z-100 flex items-start justify-center p-3 md:p-6 overflow-auto';
   modal.innerHTML = `
-    <div class="w-full max-w-4xl mx-auto">
+    <div class="w-full max-w-3xl mx-auto">
       <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
-        <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+        <div class="px-4 py-4 md:px-5 md:py-4 border-b border-border flex items-start justify-between gap-3">
           <div>
-            <h3 class="form-title-sm font-semibold text-foreground">${isEdit ? 'Editar monitor' : 'Novo monitor'}</h3>
-            <p class="form-subtitle-sm">Cadastre IP, equipamento, local e contatos de alerta.</p>
+            <h3 class="text-base md:text-lg font-semibold text-foreground">
+              ${isEdit ? 'Editar monitor' : 'Novo monitor'}
+            </h3>
+            <p class="text-xs md:text-sm text-muted-foreground">
+              Cadastre IP, equipamento, local e contatos de alerta.
+            </p>
           </div>
-          <button id="btnFecharPingMonitor" type="button" class="w-10 h-10 rounded-xl bg-white60 border border-border hover:bg-white transition-all flex items-center justify-center">
+
+          <button
+            id="btnFecharPingMonitor"
+            type="button"
+            class="w-9 h-9 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center shrink-0"
+            title="Fechar"
+          >
             <i class="fas fa-times"></i>
           </button>
         </div>
 
-        <form id="formPingMonitor" class="p-6 space-y-5">
+        <form id="formPingMonitor" class="p-4 md:p-5 space-y-4">
           <input type="hidden" id="pingId" value="${monitor?.ID ?? ''}">
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="space-y-1">
               <label class="form-label-sm">IP</label>
-              <input id="pingIp" class="w-full rounded-xl border border-border bg-white70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary30" value="${escapeHtml(monitor?.IP ?? '')}" required>
+              <input
+                id="pingIp"
+                class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary30"
+                value="${escapeHtml(monitor?.IP ?? '')}"
+                required
+              >
             </div>
+
             <div class="space-y-1">
               <label class="form-label-sm">Equipamento</label>
-              <input id="pingEquipamento" class="w-full rounded-xl border border-border bg-white70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary30" value="${escapeHtml(monitor?.EQUIPAMENTO ?? '')}" required>
+              <input
+                id="pingEquipamento"
+                class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary30"
+                value="${escapeHtml(monitor?.EQUIPAMENTO ?? '')}"
+                required
+              >
             </div>
+
             <div class="space-y-1">
               <label class="form-label-sm">Local</label>
-              <input id="pingLocalizacao" class="w-full rounded-xl border border-border bg-white70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary30" value="${escapeHtml(monitor?.LOCALIZACAO ?? '')}" required>
+              <input
+                id="pingLocalizacao"
+                class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary30"
+                value="${escapeHtml(monitor?.LOCALIZACAO ?? '')}"
+                required
+              >
             </div>
+
             <div class="space-y-1">
-              <label class="form-label-sm">Intervalo em minutos</label>
-              <input id="pingIntervalo" type="number" min="1" class="w-full rounded-xl border border-border bg-white70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary30" value="${escapeHtml(String(monitor?.INTERVALO_MINUTOS ?? 5))}" required>
+              <label class="form-label-sm">Intervalo (min)</label>
+              <input
+                id="pingIntervalo"
+                type="number"
+                min="1"
+                class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary30"
+                value="${escapeHtml(String(monitor?.INTERVALOMINUTOS ?? monitor?.INTERVALO_MINUTOS ?? 5))}"
+                required
+              >
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label class="flex items-center gap-3 rounded-2xl border border-border bg-white60 p-4">
-              <input id="pingAtivo" type="checkbox" ${String(monitor?.ATIVO ?? '1') === '1' ? 'checked' : ''} class="w-4 h-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 p-3">
+              <input
+                id="pingAtivo"
+                type="checkbox"
+                ${String(monitor?.ATIVO ?? '1') === '1' ? 'checked' : ''}
+                class="w-4 h-4"
+              >
               <div>
                 <div class="font-medium text-sm">Ativo</div>
                 <div class="text-xs text-muted-foreground">Executa a verificação automática.</div>
               </div>
             </label>
 
-            <label class="flex items-center gap-3 rounded-2xl border border-border bg-white60 p-4">
-              <input id="pingWhatsApp" type="checkbox" ${String(monitor?.ENVIAR_WHATSAPP ?? '1') === '1' ? 'checked' : ''} class="w-4 h-4">
+            <label class="flex items-center gap-3 rounded-xl border border-border bg-white/60 p-3">
+              <input
+                id="pingWhatsApp"
+                type="checkbox"
+                ${String(monitor?.ENVIARWHATSAPP ?? monitor?.ENVIAR_WHATSAPP ?? '1') === '1' ? 'checked' : ''}
+                class="w-4 h-4"
+              >
               <div>
                 <div class="font-medium text-sm">Enviar WhatsApp</div>
-                <div class="text-xs text-muted-foreground">Notifica na mudança de status.</div>
+                <div class="text-xs text-muted-foreground">Notifica mudança de status.</div>
               </div>
             </label>
           </div>
 
-          <div class="space-y-2">
+          <div class="space-y-1">
             <label class="form-label-sm">Observação</label>
-            <textarea id="pingObs" rows="3" class="w-full rounded-xl border border-border bg-white70 px-3 py-2 outline-none focus:ring-2 focus:ring-primary30">${escapeHtml(monitor?.OBSERVACAO ?? '')}</textarea>
+            <textarea
+              id="pingObs"
+              rows="2"
+              class="w-full rounded-xl border border-border bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary30"
+            >${escapeHtml(monitor?.OBSERVACAO ?? '')}</textarea>
           </div>
 
-          <div class="rounded-2xl border border-border bg-white60 p-4 space-y-3">
-            <div class="flex items-center justify-between gap-3">
-              <h4 class="font-semibold">Contatos de alerta</h4>
+          <div class="rounded-2xl border border-border bg-white/60 p-4 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h4 class="font-semibold text-sm md:text-base">Contatos de alerta</h4>
+                <p class="text-xs text-muted-foreground">
+                  Adicione um usuário da base ou um contato manual.
+                </p>
+              </div>
+
               <div class="flex items-center gap-2">
-                <button id="btnAddContatoUsuario" type="button" class="px-3 py-2 rounded-xl border border-border bg-white70 text-sm hover:bg-white">
+                <button
+                  id="btnAddContatoUsuario"
+                  type="button"
+                  class="px-3 py-2 rounded-xl border border-border bg-white/70 text-sm hover:bg-white transition-all"
+                >
                   + Usuário
                 </button>
-                <button id="btnAddContatoManual" type="button" class="px-3 py-2 rounded-xl border border-border bg-white70 text-sm hover:bg-white">
+                <button
+                  id="btnAddContatoManual"
+                  type="button"
+                  class="px-3 py-2 rounded-xl border border-border bg-white/70 text-sm hover:bg-white transition-all"
+                >
                   + Manual
                 </button>
               </div>
             </div>
 
-            <div id="pingContatosBox" class="space-y-3"></div>
+            <div
+              id="pingContatosVazio"
+              class="rounded-xl border border-dashed border-border bg-white/40 px-4 py-5 text-center text-sm text-muted-foreground"
+            >
+              Nenhum contato adicionado. Clique em <strong>+ Usuário</strong> ou <strong>+ Manual</strong>.
+            </div>
+
+            <div id="pingContatosBox" class="space-y-2"></div>
           </div>
 
           <div id="pingMonitorErro" class="hidden text-sm text-destructive whitespace-pre-line"></div>
 
-          <div class="flex flex-col sm:flex-row gap-3">
-            <button id="btnSalvarPingMonitor" type="submit" class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90">
+          <div class="flex flex-col sm:flex-row gap-2 pt-1">
+            <button
+              id="btnSalvarPingMonitor"
+              type="submit"
+              class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-2.5 text-sm font-medium hover:opacity-90"
+            >
               Salvar
             </button>
-            <button id="btnCancelarPingMonitor" type="button" class="sm:flex-1 rounded-xl border border-border bg-white60 px-4 py-3 font-medium hover:bg-white70">
+
+            <button
+              id="btnCancelarPingMonitor"
+              type="button"
+              class="sm:flex-1 rounded-xl border border-border bg-white/60 px-4 py-2.5 text-sm font-medium hover:bg-white/70"
+            >
               Cancelar
             </button>
           </div>
@@ -24241,6 +24688,32 @@ function abrirModalPingMonitor(modo, monitor = null) {
   overlay.addEventListener('click', fechar);
   modal.querySelector('#btnFecharPingMonitor')?.addEventListener('click', fechar);
   modal.querySelector('#btnCancelarPingMonitor')?.addEventListener('click', fechar);
+
+  const box = modal.querySelector('#pingContatosBox');
+  const vazio = modal.querySelector('#pingContatosVazio');
+
+  const atualizarEstadoVazio = () => {
+    if (!box || !vazio) return;
+    vazio.classList.toggle('hidden', box.children.length > 0);
+  };
+
+  modal.querySelector('#btnAddContatoUsuario')?.addEventListener('click', async () => {
+    await adicionarLinhaContatoUsuario(box);
+    atualizarEstadoVazio();
+  });
+
+  modal.querySelector('#btnAddContatoManual')?.addEventListener('click', () => {
+    adicionarLinhaContatoManual(box, { tipoContato: 'MANUAL' });
+    atualizarEstadoVazio();
+  });
+
+  box?.addEventListener('click', (e) => {
+    if (e.target.closest('.btn-remover-contato')) {
+      setTimeout(atualizarEstadoVazio, 0);
+    }
+  });
+
+  atualizarEstadoVazio();
 }
 
 function adicionarLinhaContatoManual(container, dados = {}) {
@@ -24276,7 +24749,7 @@ function adicionarLinhaContatoManual(container, dados = {}) {
 }
 
 async function adicionarLinhaContatoUsuario(container, contato = null) {
-  const base = sessionStorage.getItem("apibase");
+  const base = sessionStorage.getItem("api_base") || sessionStorage.getItem("apibase");
   const resp = await fetch(`${base}/api/usuarios`);
   const json = await resp.json().catch(() => null);
 
@@ -24284,8 +24757,12 @@ async function adicionarLinhaContatoUsuario(container, contato = null) {
     throw new Error(json?.message || "Erro ao carregar usuários.");
   }
 
+
   const usuarios = Array.isArray(json?.items) ? json.items : [];
-  const usersValidos = usuarios.filter(u => String(u.TELEFONE || "").trim());
+
+  const usersValidos = usuarios.filter(u =>
+    String(u.telefone ?? u.TELEFONE ?? "").trim()
+  );
 
   const row = document.createElement("div");
   row.className = "grid grid-cols-1 md:grid-cols-12 gap-2 rounded-xl border border-border bg-white/70 p-3";
@@ -24297,11 +24774,11 @@ async function adicionarLinhaContatoUsuario(container, contato = null) {
         <option value="">Selecione...</option>
         ${usersValidos.map(u => `
           <option
-            value="${u.id}"
-            data-nome="${escapeHtml(u.nome || "")}"
-            data-telefone="${escapeHtml(u.TELEFONE || "")}"
+            value="${u.id ?? u.ID ?? ""}"
+            data-nome="${escapeHtml(u.nome ?? u.NOME ?? "")}"
+            data-telefone="${escapeHtml(u.telefone ?? u.TELEFONE ?? "")}"
           >
-            ${escapeHtml(u.nome || "")} - ${escapeHtml(u.TELEFONE || "")}
+            ${escapeHtml(u.nome ?? u.NOME ?? "")} - ${escapeHtml(u.telefone ?? u.TELEFONE ?? "")}
           </option>
         `).join("")}
       </select>
@@ -24338,8 +24815,8 @@ async function adicionarLinhaContatoUsuario(container, contato = null) {
 
   select.addEventListener("change", atualizarCampos);
 
-  if (contato?.USUARIO_ID) {
-    select.value = String(contato.USUARIO_ID);
+  if (contato?.USUARIO_ID || contato?.USUARIOID) {
+    select.value = String(contato.USUARIO_ID ?? contato.USUARIOID);
     atualizarCampos();
   }
 
@@ -24520,12 +24997,6 @@ document.addEventListener('click', async e => {
   if (!btnNovo) return;
 
   abrirModalPingMonitor('new', null);
-
-  const box = document.getElementById('pingContatosBox');
-  document.getElementById('btnAddContatoManual')?.addEventListener('click', () => adicionarLinhaContatoManual(box));
-  document.getElementById('btnAddContatoUsuario')?.addEventListener('click', () => adicionarLinhaContatoUsuario(box));
-
-  adicionarLinhaContatoManual(box, { tipoContato: 'MANUAL' });
 });
 
 document.addEventListener("click", async (e) => {
@@ -24603,14 +25074,6 @@ document.addEventListener('click', async e => {
       }
     }
 
-    document.getElementById("btnAddContatoManual")?.addEventListener("click", () => {
-      adicionarLinhaContatoManual(box, { tipoContato: "MANUAL" });
-    });
-
-    document.getElementById("btnAddContatoUsuario")?.addEventListener("click", async () => {
-      await adicionarLinhaContatoUsuario(box);
-    });
-
     return;
   }
 
@@ -24633,3 +25096,6820 @@ document.addEventListener('click', async e => {
   }
 });
 
+// DF-e Certificado
+
+let cacheDfeNotas = [];
+let cacheDfeFiltradas = [];
+let dfeSessionId = null;
+
+function setDfeMsg(msg = '', type = 'info') {
+  const el = document.getElementById('dfeMsg');
+  if (!el) return;
+  if (!msg) {
+    el.className = 'form-subtitle-sm hidden';
+    el.textContent = '';
+    return;
+  }
+  const mapa = {
+    info: 'text-info',
+    success: 'text-success',
+    warning: 'text-warning',
+    error: 'text-destructive'
+  };
+  el.className = `form-subtitle-sm ${mapa[type] || 'text-info'}`;
+  el.textContent = msg;
+}
+
+function normalizarSomenteNumeros(v) {
+  return String(v || '').replace(/\D+/g, '');
+}
+
+function formatarDataHoraDfe(v) {
+  if (!v) return '-';
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return v;
+  return d.toLocaleString('pt-BR');
+}
+
+function atualizarResumoDfe(meta = {}) {
+  document.getElementById('dfeResumoTotal').textContent = String(cacheDfeFiltradas.length);
+  document.getElementById('dfeResumoSelecionadas').textContent = String(cacheDfeFiltradas.filter(x => x.selecionada).length);
+  document.getElementById('dfeResumoUltNsu').textContent = meta.ultNSU || '-';
+  document.getElementById('dfeResumoMaxNsu').textContent = meta.maxNSU || '-';
+}
+
+function renderDfeNotas(meta = {}) {
+  const tbody = document.getElementById('tbodyDfeNotas');
+  if (!tbody) return;
+
+  if (!cacheDfeFiltradas.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">Nenhuma nota encontrada.</td></tr>';
+    atualizarResumoDfe(meta);
+    return;
+  }
+
+  tbody.innerHTML = cacheDfeFiltradas.map((item, idx) => `
+    <tr>
+      <td class="px-4 py-3"><input type="checkbox" class="dfe-check-item" data-idx="${idx}" ${item.selecionada ? 'checked' : ''}></td>
+      <td class="px-4 py-3">${escapeHtml(item.nsu || '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(item.chave || '-')}</td>
+      <td class="px-4 py-3">
+        <div class="font-medium">${escapeHtml(item.emitente || '-')}</div>
+        <div class="text-xs text-muted-foreground">${escapeHtml(item.emitenteCnpj || '-')}</div>
+      </td>
+      <td class="px-4 py-3">${escapeHtml(formatarDataHoraDfe(item.dataEmissao))}</td>
+      <td class="px-4 py-3">${escapeHtml(formatarMoedaBR(item.valorTotal))}</td>
+      <td class="px-4 py-3">${escapeHtml(item.tipo || 'resumo')}</td>
+      <td class="px-4 py-3">
+        <div class="flex justify-end gap-2">
+          <button type="button" class="btnVisualizarXmlDfe w-10 h-10 rounded-xl border border-border bg-white/80 hover:bg-white transition-all" data-idx="${idx}" title="Visualizar XML">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button type="button" class="btnBaixarXmlDfe w-10 h-10 rounded-xl border border-border bg-white/80 hover:bg-white transition-all" data-idx="${idx}" title="Baixar XML">
+            <i class="fas fa-download"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  atualizarResumoDfe(meta);
+}
+
+function aplicarFiltroDfe(meta = {}) {
+  const emitente = (document.getElementById('filtroEmitenteDfe')?.value || '').trim().toLowerCase();
+  const chave = (document.getElementById('filtroChaveDfe')?.value || '').trim().toLowerCase();
+  const dtIni = document.getElementById('filtroDataIniDfe')?.value || '';
+  const dtFim = document.getElementById('filtroDataFimDfe')?.value || '';
+
+  cacheDfeFiltradas = cacheDfeNotas.filter(item => {
+    const txtEmit = `${item.emitente || ''} ${item.emitenteCnpj || ''}`.toLowerCase();
+    const txtChave = `${item.chave || ''} ${item.nsu || ''}`.toLowerCase();
+    const dataBase = String(item.dataEmissao || '').slice(0, 10);
+    if (emitente && !txtEmit.includes(emitente)) return false;
+    if (chave && !txtChave.includes(chave)) return false;
+    if (dtIni && dataBase && dataBase < dtIni) return false;
+    if (dtFim && dataBase && dataBase > dtFim) return false;
+    return true;
+  });
+
+  renderDfeNotas(meta);
+}
+
+async function consultarDfeComCertificado() {
+  const file = document.getElementById('dfeCertFile')?.files?.[0];
+  const senha = document.getElementById('dfeCertSenha')?.value || '';
+  const documento = normalizarSomenteNumeros(document.getElementById('dfeDocumento')?.value || '');
+  const tpAmb = document.getElementById('dfeTpAmb')?.value || '1';
+  const cUFAutor = document.getElementById('dfeUfAutor')?.value || '29';
+  const ultNSU = (document.getElementById('dfeUltNsu')?.value || '000000000000000').trim();
+  const limite = Number(document.getElementById('dfeLimite')?.value || 15);
+
+  if (!file) return setDfeMsg('Selecione o certificado A1 (.pfx ou .p12).', 'warning');
+  if (!senha) return setDfeMsg('Informe a senha do certificado.', 'warning');
+
+  if (documento && documento.length !== 11 && documento.length !== 14) {
+    return setDfeMsg('Informe um CPF com 11 dígitos, um CNPJ com 14 dígitos ou deixe o campo em branco.', 'warning');
+  }
+
+  try {
+    const consultaSemDocumento = !documento;
+    setDfeMsg(
+      consultaSemDocumento
+        ? 'Consultando os últimos 15 documentos disponíveis para o certificado...'
+        : 'Consultando DF-e para o CNPJ informado...',
+      'info'
+    );
+
+    const fd = new FormData();
+    fd.append('certificado', file);
+    fd.append('senha', senha);
+    fd.append('documento', documento);
+    fd.append('tpAmb', tpAmb);
+    fd.append('cUFAutor', cUFAutor);
+    fd.append('ultNSU', ultNSU);
+    fd.append('limite', String(limite));
+
+    const resp = await fetch(`${APIBASE}/api/dfe/consultar`, {
+      method: 'POST',
+      body: fd
+    });
+
+    const data = await resp.json().catch(() => ({}));
+
+
+    if (!resp.ok || !data.success) {
+      throw new Error(data?.message || 'Erro ao consultar DF-e.');
+    }
+
+    dfeSessionId = data.sessionId;
+    cacheDfeNotas = Array.isArray(data.items) ? data.items.map(x => ({ ...x, selecionada: false })) : [];
+    cacheDfeFiltradas = [...cacheDfeNotas];
+
+    document.getElementById('dfeUltNsu').value = data.meta?.ultNSU || ultNSU;
+    renderDfeNotas(data.meta || {});
+    setDfeMsg(data.message || `Consulta concluída com sucesso. ${cacheDfeNotas.length} documento(s) retornado(s).`, 'success');
+  } catch (err) {
+    console.error(err);
+    dfeSessionId = null;
+    cacheDfeNotas = [];
+    cacheDfeFiltradas = [];
+    renderDfeNotas();
+    setDfeMsg(err.message || 'Falha ao consultar DF-e.', 'error');
+  }
+}
+
+async function visualizarXmlDfe(item) {
+  if (!dfeSessionId || !item?.nsu) {
+    return setDfeMsg('Faça uma nova consulta antes de visualizar o XML.', 'warning');
+  }
+
+  try {
+    const resp = await fetch(`${APIBASE}/api/dfe/xml/${encodeURIComponent(dfeSessionId)}/${encodeURIComponent(item.nsu)}`);
+    const data = await resp.json().catch(() => ({}));
+
+    if (resp.status === 440 || data?.expired) {
+      dfeSessionId = null;
+      return setDfeMsg('Sua sessão expirou. Refaça a consulta para visualizar o XML.', 'warning');
+    }
+
+    if (!resp.ok || !data.success) {
+      throw new Error(data?.message || 'Erro ao carregar XML.');
+    }
+
+    const win = window.open('', '_blank', 'width=1000,height=700');
+    if (!win) throw new Error('O navegador bloqueou a janela de visualização.');
+
+    win.document.open();
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>XML DF-e</title><style>body{font-family:monospace;white-space:pre-wrap;padding:16px;background:#f8f8f8;color:#111}pre{white-space:pre-wrap;word-break:break-word}</style></head><body><pre>${escapeHtml(data.xml || '')}</pre></body></html>`);
+    win.document.close();
+  } catch (err) {
+    setDfeMsg(err.message || 'Falha ao visualizar XML.', 'error');
+  }
+}
+
+async function baixarXmlDfe(item) {
+  if (!dfeSessionId || !item?.nsu) return setDfeMsg('Sessão DF-e inválida para download.', 'warning');
+  window.open(`${APIBASE}/api/dfe/xml-download/${encodeURIComponent(dfeSessionId)}/${encodeURIComponent(item.nsu)}`, '_blank');
+}
+
+async function baixarSelecionadasDfe() {
+  if (!dfeSessionId) {
+    return setDfeMsg('Faça uma nova consulta antes de gerar o ZIP.', 'warning');
+  }
+
+  const nsus = cacheDfeFiltradas.filter(x => x.selecionada).map(x => x.nsu).filter(Boolean);
+  if (!nsus.length) {
+    return setDfeMsg('Selecione ao menos uma nota para download.', 'warning');
+  }
+
+  try {
+    const resp = await fetch(`${APIBASE}/api/dfe/xml-lote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: dfeSessionId, nsus })
+    });
+
+    if (resp.status === 440) {
+      const data = await resp.json().catch(() => ({}));
+      dfeSessionId = null;
+      throw new Error(data?.message || 'Sua sessão expirou. Refaça a consulta.');
+    }
+
+    if (!resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      throw new Error(data?.message || 'Erro ao gerar ZIP.');
+    }
+
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dfe-selecionadas.zip';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    setDfeMsg('Download do ZIP iniciado com sucesso.', 'success');
+  } catch (err) {
+    setDfeMsg(err.message || 'Erro no download em lote.', 'error');
+  }
+}
+
+document.addEventListener('click', async (e) => {
+  if (e.target.closest('#btnConsultarDFe')) {
+    await consultarDfeComCertificado();
+    return;
+  }
+  if (e.target.closest('#btnAplicarFiltroDfe')) {
+    aplicarFiltroDfe();
+    return;
+  }
+  if (e.target.closest('#btnLimparFiltroDfe')) {
+    ['filtroEmitenteDfe','filtroChaveDfe','filtroDataIniDfe','filtroDataFimDfe'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    cacheDfeFiltradas = [...cacheDfeNotas];
+    renderDfeNotas();
+    return;
+  }
+  if (e.target.closest('#btnBaixarSelecionadasDFe')) {
+    await baixarSelecionadasDfe();
+    return;
+  }
+  const btnView = e.target.closest('.btnVisualizarXmlDfe');
+  if (btnView) {
+    const item = cacheDfeFiltradas[Number(btnView.dataset.idx)];
+    await visualizarXmlDfe(item);
+    return;
+  }
+  const btnDown = e.target.closest('.btnBaixarXmlDfe');
+  if (btnDown) {
+    const item = cacheDfeFiltradas[Number(btnDown.dataset.idx)];
+    await baixarXmlDfe(item);
+    return;
+  }
+});
+
+document.addEventListener('change', (e) => {
+  if (e.target.matches('.dfe-check-item')) {
+    const idx = Number(e.target.dataset.idx);
+    if (!Number.isFinite(idx) || !cacheDfeFiltradas[idx]) return;
+    const nsu = cacheDfeFiltradas[idx].nsu;
+    cacheDfeFiltradas[idx].selecionada = e.target.checked;
+    cacheDfeNotas = cacheDfeNotas.map(item => item.nsu === nsu ? { ...item, selecionada: e.target.checked } : item);
+    atualizarResumoDfe();
+    return;
+  }
+  if (e.target.matches('#dfeSelectAll')) {
+    const checked = !!e.target.checked;
+    const nsus = new Set(cacheDfeFiltradas.map(x => x.nsu));
+    cacheDfeFiltradas = cacheDfeFiltradas.map(x => ({ ...x, selecionada: checked }));
+    cacheDfeNotas = cacheDfeNotas.map(x => nsus.has(x.nsu) ? { ...x, selecionada: checked } : x);
+    renderDfeNotas();
+  }
+});
+
+// seção Recursos Humanos
+
+
+let APIBASE_LOCAL = 'http://10.211.100.69:8099';
+let equipamentosCache = [];
+let termoFiltroEquipamentos = '';
+
+function getApiBase() {
+  APIBASE = sessionStorage.getItem('api_base') || APIBASE || '';
+  return String(APIBASE || '').trim().replace(/\/+$/, '');
+}
+
+function getApiBaseLocal() {
+  APIBASE_LOCAL = sessionStorage.getItem('api_base_local') || APIBASE_LOCAL || '';
+  return String(APIBASE_LOCAL || '').trim().replace(/\/+$/, '');
+}
+
+function montarApiUrl(path) {
+  const base = getApiBase();
+  if (!path.startsWith('/')) path = `/${path}`;
+  return `${base}${path}`;
+}
+
+function montarApiUrlLocal(path) {
+  const base = getApiBaseLocal();
+  if (!path.startsWith('/')) path = `/${path}`;
+  return `${base}${path}`;
+}
+
+async function apiFetch(path, options = {}) {
+  const url = montarApiUrl(path);
+
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    },
+    ...options
+  });
+
+  const contentType = response.headers.get('content-type') || '';
+  let data = null;
+
+  if (contentType.includes('application/json')) {
+    data = await response.json();
+  } else {
+    data = await response.text();
+  }
+
+  if (!response.ok) {
+    const message =
+      data?.message ||
+      data?.error ||
+      (typeof data === 'string' && data) ||
+      `Erro HTTP ${response.status}`;
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+async function apiFetchLocal(path, options = {}) {
+  const base = getApiBaseLocal();
+
+  if (!base) {
+    throw new Error('API local não configurada. Defina sessionStorage.setItem("api_base_local", "http://IP-DA-SUA-MAQUINA:8099")');
+  }
+
+  const url = montarApiUrlLocal(path);
+
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    },
+    ...options
+  });
+
+  const contentType = response.headers.get('content-type') || '';
+  let data = null;
+
+  if (contentType.includes('application/json')) {
+    data = await response.json();
+  } else {
+    data = await response.text();
+  }
+
+  if (!response.ok) {
+    const message =
+      data?.message ||
+      data?.error ||
+      (typeof data === 'string' && data) ||
+      `Erro HTTP ${response.status}`;
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+function escapeHtml(valor) {
+  return String(valor ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function normalizarTextoEquipamento(valor) {
+  return String(valor ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function abrirSecaoCadastroEquipamento() {
+  const itemMenu = document.querySelector('.menu-item[data-page="secao-cadastro-equipamento"]');
+  if (!itemMenu) return;
+
+  if (typeof DefinirPaginaAtiva === 'function') {
+    DefinirPaginaAtiva('secao-cadastro-equipamento', itemMenu);
+  } else {
+    document.querySelectorAll('.page-content').forEach(secao => secao.classList.remove('active'));
+    document.getElementById('secao-cadastro-equipamento')?.classList.add('active');
+
+    document.querySelectorAll('.menu-item').forEach(item => {
+      item.classList.remove('bg-secondary', 'active');
+    });
+
+    itemMenu.classList.add('bg-secondary', 'active');
+  }
+
+  const grupo = itemMenu.closest('.menu-group');
+  if (grupo) {
+    grupo.classList.add('open');
+    grupo.querySelector('.menu-group-toggle')?.classList.add('active');
+  }
+}
+
+function setEquipamentosMsg(msg = '', erro = false) {
+  const el = document.getElementById('equipamentosMsg');
+  if (!el) return;
+
+  if (!msg) {
+    el.textContent = '';
+    el.classList.add('hidden');
+    el.classList.remove('text-destructive', 'text-emerald-700');
+    return;
+  }
+
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  el.classList.remove('text-destructive', 'text-emerald-700');
+  el.classList.add(erro ? 'text-destructive' : 'text-emerald-700');
+}
+
+function badgeStatusEquipamento(status) {
+  const s = String(status ?? '').trim().toLowerCase();
+
+  if (s === 'ativo') {
+    return '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-emerald-200 bg-emerald-50 text-emerald-700">Ativo</span>';
+  }
+
+  if (s === 'inativo') {
+    return '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-slate-200 bg-slate-100 text-slate-700">Inativo</span>';
+  }
+
+  if (s === 'manutenção' || s === 'manutencao') {
+    return '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-700">Manutenção</span>';
+  }
+
+  return '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-border bg-white/70 text-muted-foreground">Não informado</span>';
+}
+
+function obterDescricaoTipoAfd(tipoAfd) {
+  return String(tipoAfd ?? '') === '671' ? 'Portaria 671' : 'Legado / 1510';
+}
+
+function obterDescricaoProtocoloEquipamento(protocolo) {
+  return String(protocolo ?? '').toLowerCase() === 'https' ? 'HTTPS' : 'HTTP';
+}
+
+function obterTextoFiltroEquipamento(item) {
+  return normalizarTextoEquipamento([
+    item.codigo,
+    item.descricao,
+    item.numeroSerie,
+    item.local,
+    item.ip,
+    item.status,
+    item.usuario,
+    item.tipoAfd,
+    item.protocolo
+  ].join(' '));
+}
+
+function filtrarEquipamentos(lista, termo) {
+  const termoNormalizado = normalizarTextoEquipamento(termo);
+  if (!termoNormalizado) return Array.isArray(lista) ? lista : [];
+  return (Array.isArray(lista) ? lista : []).filter(item =>
+    obterTextoFiltroEquipamento(item).includes(termoNormalizado)
+  );
+}
+
+function atualizarResumoFiltroEquipamentos(total, filtrados) {
+  const el = document.getElementById('equipamentosFiltroResumo');
+  if (!el) return;
+
+  if (!total) {
+    el.textContent = 'Nenhum equipamento cadastrado.';
+    return;
+  }
+
+  if (!termoFiltroEquipamentos.trim()) {
+    el.textContent = `${total} equipamento(s) cadastrado(s).`;
+    return;
+  }
+
+  el.textContent = `${filtrados} de ${total} equipamento(s) exibido(s).`;
+}
+
+function renderTabelaEquipamentos() {
+  const tbody = document.getElementById('tbodyEquipamentos');
+  if (!tbody) return;
+
+  const itens = filtrarEquipamentos(equipamentosCache, termoFiltroEquipamentos);
+  atualizarResumoFiltroEquipamentos(equipamentosCache.length, itens.length);
+
+  if (!equipamentosCache.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="11" class="px-4 py-6 form-subtitle-sm text-center">
+          Nenhum equipamento cadastrado.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  if (!itens.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="11" class="px-4 py-6 form-subtitle-sm text-center">
+          Nenhum equipamento encontrado para o filtro informado.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = itens.map(item => `
+    <tr class="hover:bg-white/40 transition-all">
+      <td class="px-4 py-3 font-medium">${escapeHtml(item.codigo || '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(item.descricao || '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(item.numeroSerie || '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(item.local || '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(item.ip || '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(obterDescricaoProtocoloEquipamento(item.protocolo || 'http'))}</td>
+      <td class="px-4 py-3">${escapeHtml(item.usuario || '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(item.porta || (String(item.protocolo).toLowerCase() === 'https' ? 443 : 80))}</td>
+      <td class="px-4 py-3">${escapeHtml(obterDescricaoTipoAfd(item.tipoAfd || '671'))}</td>
+      <td class="px-4 py-3">${badgeStatusEquipamento(item.status)}</td>
+      <td class="px-4 py-3">
+        <div class="flex justify-end gap-2">
+          <button
+            type="button"
+            class="btnEditarEquipamento w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all"
+            data-id="${escapeHtml(item.id)}"
+            title="Editar"
+            aria-label="Editar equipamento"
+          >
+            <i class="fas fa-pen"></i>
+          </button>
+
+          <button
+            type="button"
+            class="btnExcluirEquipamento w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-destructive hover:text-white transition-all"
+            data-id="${escapeHtml(item.id)}"
+            title="Excluir"
+            aria-label="Excluir equipamento"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function carregarEquipamentos() {
+  const data = await apiFetch('/api/equipamentos');
+  equipamentosCache = Array.isArray(data?.items) ? data.items : [];
+  renderTabelaEquipamentos();
+}
+
+function removerModalEquipamento() {
+  document.getElementById('equipamentoOverlay')?.remove();
+  document.getElementById('equipamentoModal')?.remove();
+}
+
+function validarIPv4(ip) {
+  const partes = String(ip || '').trim().split('.');
+  if (partes.length !== 4) return false;
+
+  return partes.every(parte => {
+    if (!/^\d+$/.test(parte)) return false;
+    const n = Number(parte);
+    return n >= 0 && n <= 255;
+  });
+}
+
+function abrirModalEquipamento(modo = 'novo', dados = null) {
+  removerModalEquipamento();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'equipamentoOverlay';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[190]';
+
+  const modal = document.createElement('div');
+  modal.id = 'equipamentoModal';
+  modal.className = 'fixed inset-0 z-[200]';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  const isEdit = modo === 'editar';
+  const protocoloAtual = String(dados?.protocolo ?? 'http').toLowerCase();
+  const portaPadrao = dados?.porta ?? (protocoloAtual === 'https' ? 443 : 80);
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-y-auto no-scrollbar">
+      <div class="min-h-full flex items-start justify-center p-4 md:p-8">
+        <div class="w-full max-w-5xl mx-auto">
+          <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden bg-white">
+            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-semibold text-foreground">${isEdit ? 'Editar equipamento' : 'Novo equipamento'}</h3>
+                <p class="text-sm text-muted-foreground">Preencha os dados do relógio de ponto.</p>
+              </div>
+
+              <button
+                id="btnFecharEquipamentoModal"
+                type="button"
+                class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+                aria-label="Fechar"
+                title="Fechar"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <form id="formEquipamentoModal" class="px-6 py-6 space-y-5" autocomplete="off">
+              <input type="hidden" id="equipamentoEditandoId" value="${escapeHtml(dados?.id ?? '')}" />
+
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="space-y-2">
+                  <label for="equipamentoCodigo" class="form-label-sm">Código</label>
+                  <input
+                    id="equipamentoCodigo"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    placeholder="Ex.: REP-001"
+                    value="${escapeHtml(dados?.codigo ?? '')}"
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="equipamentoDescricao" class="form-label-sm">Descrição</label>
+                  <input
+                    id="equipamentoDescricao"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    placeholder="Ex.: Relógio de ponto portaria"
+                    value="${escapeHtml(dados?.descricao ?? '')}"
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="equipamentoNumeroSerie" class="form-label-sm">Número de série</label>
+                  <input
+                    id="equipamentoNumeroSerie"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    placeholder="Informe o número de série"
+                    value="${escapeHtml(dados?.numeroSerie ?? '')}"
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="equipamentoStatus" class="form-label-sm">Status</label>
+                  <select
+                    id="equipamentoStatus"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="">Selecione</option>
+                    <option value="Ativo" ${String(dados?.status ?? '') === 'Ativo' ? 'selected' : ''}>Ativo</option>
+                    <option value="Inativo" ${String(dados?.status ?? '') === 'Inativo' ? 'selected' : ''}>Inativo</option>
+                    <option value="Manutenção" ${String(dados?.status ?? '') === 'Manutenção' ? 'selected' : ''}>Manutenção</option>
+                  </select>
+                </div>
+
+                <div class="space-y-2 md:col-span-2">
+                  <label for="equipamentoLocal" class="form-label-sm">Local / setor</label>
+                  <input
+                    id="equipamentoLocal"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    placeholder="Ex.: Portaria principal"
+                    value="${escapeHtml(dados?.local ?? '')}"
+                  />
+                </div>
+
+                <div class="space-y-2 md:col-span-2">
+                  <label for="equipamentoIp" class="form-label-sm">IP / identificação de rede</label>
+                  <input
+                    id="equipamentoIp"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    placeholder="Ex.: 192.168.0.120"
+                    value="${escapeHtml(dados?.ip ?? '')}"
+                  />
+                </div>
+
+                <div class="space-y-2 md:col-span-1">
+                  <label for="equipamentoProtocolo" class="form-label-sm">Protocolo</label>
+                  <select
+                    id="equipamentoProtocolo"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="http" ${protocoloAtual === 'http' ? 'selected' : ''}>HTTP</option>
+                    <option value="https" ${protocoloAtual === 'https' ? 'selected' : ''}>HTTPS</option>
+                  </select>
+                </div>
+
+                <div class="space-y-2 md:col-span-1">
+                  <label for="equipamentoPorta" class="form-label-sm">Porta</label>
+                  <input
+                    id="equipamentoPorta"
+                    type="number"
+                    min="1"
+                    max="65535"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    placeholder="${protocoloAtual === 'https' ? '443' : '80'}"
+                    value="${escapeHtml(String(portaPadrao))}"
+                  />
+                </div>
+
+                <div class="space-y-2 md:col-span-1">
+                  <label for="equipamentoUsuario" class="form-label-sm">Usuário do equipamento</label>
+                  <input
+                    id="equipamentoUsuario"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    placeholder="Ex.: admin"
+                    value="${escapeHtml(dados?.usuario ?? 'admin')}"
+                  />
+                </div>
+
+                <div class="space-y-2 md:col-span-1">
+                  <label for="equipamentoSenha" class="form-label-sm">Senha do equipamento</label>
+                  <input
+                    id="equipamentoSenha"
+                    type="password"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    placeholder="Informe a senha"
+                    value="${escapeHtml(dados?.senha ?? 'admin')}"
+                  />
+                </div>
+
+                <div class="space-y-2 md:col-span-2">
+                  <label for="equipamentoTipoAfd" class="form-label-sm">Tipo de AFD</label>
+                  <select
+                    id="equipamentoTipoAfd"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="671" ${String(dados?.tipoAfd ?? '671') === '671' ? 'selected' : ''}>Portaria 671</option>
+                    <option value="1510" ${String(dados?.tipoAfd ?? '') === '1510' ? 'selected' : ''}>Legado / 1510</option>
+                  </select>
+                </div>
+              </div>
+
+              <p id="equipamentoModalErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
+
+              <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                <button
+                  id="btnSalvarEquipamentoModal"
+                  type="submit"
+                  class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
+                >
+                  ${isEdit ? 'Salvar alterações' : 'Salvar equipamento'}
+                </button>
+
+                <button
+                  id="btnCancelarEquipamentoModal"
+                  type="button"
+                  class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(modal);
+
+  const form = document.getElementById('formEquipamentoModal');
+  const btnFechar = document.getElementById('btnFecharEquipamentoModal');
+  const btnCancelar = document.getElementById('btnCancelarEquipamentoModal');
+  const campoCodigo = document.getElementById('equipamentoCodigo');
+  const erroEl = document.getElementById('equipamentoModalErro');
+  const btnTestar = document.getElementById('btnTestarComunicacaoEquipamento');
+  const testeResultadoEl = document.getElementById('equipamentoTesteResultado');
+  const campoProtocolo = document.getElementById('equipamentoProtocolo');
+  const campoPorta = document.getElementById('equipamentoPorta');
+
+  function fechar() {
+    removerModalEquipamento();
+  }
+
+  function setErro(msg = '') {
+    if (!erroEl) return;
+    erroEl.textContent = msg;
+    erroEl.classList.toggle('hidden', !msg);
+  }
+
+  function setTesteResultado(msg = '', tipo = 'info') {
+    if (!testeResultadoEl) return;
+
+    testeResultadoEl.textContent = msg;
+    testeResultadoEl.className = 'sm:flex-1 text-sm self-center';
+
+    if (tipo === 'success') {
+      testeResultadoEl.classList.add('text-emerald-700');
+      return;
+    }
+
+    if (tipo === 'error') {
+      testeResultadoEl.classList.add('text-destructive');
+      return;
+    }
+
+    testeResultadoEl.classList.add('text-muted-foreground');
+  }
+
+  function atualizarPortaPadraoPorProtocolo() {
+    if (!campoProtocolo || !campoPorta) return;
+
+    const protocolo = String(campoProtocolo.value || 'http').toLowerCase();
+    const portaAtual = String(campoPorta.value || '').trim();
+
+    if (!portaAtual || portaAtual === '80' || portaAtual === '443') {
+      campoPorta.value = protocolo === 'https' ? '443' : '80';
+      campoPorta.placeholder = protocolo === 'https' ? '443' : '80';
+    }
+  }
+
+  function coletarPayload() {
+    const id = document.getElementById('equipamentoEditandoId').value.trim();
+    const codigo = document.getElementById('equipamentoCodigo').value.trim();
+    const descricao = document.getElementById('equipamentoDescricao').value.trim();
+    const numeroSerie = document.getElementById('equipamentoNumeroSerie').value.trim();
+    const status = document.getElementById('equipamentoStatus').value.trim();
+    const local = document.getElementById('equipamentoLocal').value.trim();
+    const ip = document.getElementById('equipamentoIp').value.trim();
+    const protocolo = document.getElementById('equipamentoProtocolo').value.trim().toLowerCase();
+    const usuario = document.getElementById('equipamentoUsuario').value.trim();
+    const senha = document.getElementById('equipamentoSenha').value.trim();
+    const porta = document.getElementById('equipamentoPorta').value.trim();
+    const tipoAfd = document.getElementById('equipamentoTipoAfd').value.trim();
+
+    if (!codigo) throw new Error('Informe o código do equipamento.');
+    if (!descricao) throw new Error('Informe a descrição do equipamento.');
+    if (!status) throw new Error('Selecione o status do equipamento.');
+    if (!ip) throw new Error('Informe o IP do equipamento.');
+    if (!validarIPv4(ip)) throw new Error('Informe um IP válido. Ex.: 192.168.0.120');
+    if (!usuario) throw new Error('Informe o usuário do equipamento.');
+    if (!senha) throw new Error('Informe a senha do equipamento.');
+    if (!tipoAfd) throw new Error('Selecione o tipo de AFD.');
+
+    const protocoloFinal = protocolo === 'https' ? 'https' : 'http';
+
+    return {
+      id: id || String(Date.now()),
+      codigo,
+      descricao,
+      numeroSerie,
+      status,
+      local,
+      ip,
+      protocolo: protocoloFinal,
+      usuario,
+      senha,
+      porta: Number(porta) || (protocoloFinal === 'https' ? 443 : 80),
+      tipoAfd
+    };
+  }
+
+  async function testarComunicacaoEquipamento() {
+    setErro('');
+    setTesteResultado('');
+
+    try {
+      const payload = coletarPayload();
+
+      btnTestar.disabled = true;
+      btnTestar.classList.add('opacity-60', 'pointer-events-none');
+      setTesteResultado('Testando comunicação pela API local...', 'info');
+
+      const data = await apiFetchLocal('/api-local/equipamentos/testar-comunicacao', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      const about = data?.about || {};
+      const serie = about?.serial ?? about?.serial_number ?? about?.nSerie ?? about?.sn ?? '';
+      const modelo = about?.name ?? about?.model ?? about?.product ?? '';
+
+      const partes = [data?.message || 'Comunicação realizada com sucesso.'];
+      if (modelo) partes.push(`Modelo: ${modelo}.`);
+      if (serie) partes.push(`Série: ${serie}.`);
+
+      setTesteResultado(partes.join(' '), 'success');
+    } catch (error) {
+      setTesteResultado(error.message, 'error');
+    } finally {
+      btnTestar.disabled = false;
+      btnTestar.classList.remove('opacity-60', 'pointer-events-none');
+    }
+  }
+
+  overlay.addEventListener('click', fechar);
+  btnFechar?.addEventListener('click', fechar);
+  btnCancelar?.addEventListener('click', fechar);
+  btnTestar?.addEventListener('click', testarComunicacaoEquipamento);
+  campoProtocolo?.addEventListener('change', atualizarPortaPadraoPorProtocolo);
+
+  form?.addEventListener('submit', async e => {
+    e.preventDefault();
+    setErro('');
+    setTesteResultado('');
+
+    try {
+      const payload = coletarPayload();
+
+      if (isEdit) {
+        await apiFetch(`/api/equipamentos/${encodeURIComponent(payload.id)}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+        setEquipamentosMsg('Equipamento atualizado com sucesso.');
+      } else {
+        await apiFetch('/api/equipamentos', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        setEquipamentosMsg('Equipamento cadastrado com sucesso.');
+      }
+
+      await carregarEquipamentos();
+      fechar();
+    } catch (error) {
+      setErro(error.message);
+    }
+  });
+
+  campoCodigo?.focus();
+}
+
+async function excluirEquipamentoLocal(id) {
+  const item = equipamentosCache.find(eq => String(eq.id) === String(id));
+  if (!item) return;
+
+  const confirmou = confirm(`Deseja excluir o equipamento "${item.descricao}"?`);
+  if (!confirmou) return;
+
+  try {
+    await apiFetch(`/api/equipamentos/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+
+    setEquipamentosMsg('Equipamento removido com sucesso.');
+    await carregarEquipamentos();
+  } catch (error) {
+    setEquipamentosMsg(error.message, true);
+  }
+}
+
+function configurarFiltroEquipamentos() {
+  const input = document.getElementById('inputFiltroEquipamentos');
+  const btnLimpar = document.getElementById('btnLimparFiltroEquipamentos');
+
+  if (!input || input.dataset.bound === 'true') return;
+  input.dataset.bound = 'true';
+
+  input.addEventListener('input', e => {
+    termoFiltroEquipamentos = e.target.value || '';
+    btnLimpar?.classList.toggle('hidden', !termoFiltroEquipamentos.trim());
+    renderTabelaEquipamentos();
+  });
+
+  btnLimpar?.addEventListener('click', () => {
+    input.value = '';
+    termoFiltroEquipamentos = '';
+    btnLimpar.classList.add('hidden');
+    input.focus();
+    renderTabelaEquipamentos();
+  });
+}
+
+function vincularEventosEquipamentos() {
+  document.getElementById('btnNovoEquipamento')?.addEventListener('click', () => {
+    setEquipamentosMsg('');
+    abrirModalEquipamento('novo');
+  });
+
+  document.getElementById('btnAtualizarEquipamentos')?.addEventListener('click', async () => {
+    try {
+      await carregarEquipamentos();
+      setEquipamentosMsg('Lista de equipamentos atualizada.');
+    } catch (error) {
+      setEquipamentosMsg(error.message, true);
+    }
+  });
+
+  document.addEventListener('click', e => {
+    const btnEditar = e.target.closest('.btnEditarEquipamento');
+    if (btnEditar) {
+      const id = btnEditar.getAttribute('data-id');
+      const item = equipamentosCache.find(eq => String(eq.id) === String(id));
+      if (!item) return;
+      setEquipamentosMsg('');
+      abrirModalEquipamento('editar', item);
+      return;
+    }
+
+    const btnExcluir = e.target.closest('.btnExcluirEquipamento');
+    if (btnExcluir) {
+      const id = btnExcluir.getAttribute('data-id');
+      excluirEquipamentoLocal(id);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  configurarFiltroEquipamentos();
+  vincularEventosEquipamentos();
+
+  try {
+    await carregarEquipamentos();
+  } catch (error) {
+    setEquipamentosMsg(error.message, true);
+  }
+});
+
+
+// ===============================
+// CADASTRO DE CALENDÁRIOS
+// ===============================
+
+function getApiUrl(path = '') {
+  const base = String(APIBASE || '').trim().replace(/\/+$/, '');
+  const rota = String(path || '').trim();
+  if (!base) return rota;
+  if (!rota) return base;
+  return `${base}${rota.startsWith('/') ? rota : `/${rota}`}`;
+}
+
+function getUsuarioLogadoNome() {
+  try {
+    const usuario = JSON.parse(sessionStorage.getItem('usuario_logado') || '{}');
+    return usuario?.nome || usuario?.NOME || usuario?.email || 'SISTEMA';
+  } catch {
+    return 'SISTEMA';
+  }
+}
+
+function removerModalCalendario() {
+  document.getElementById('calendarioOverlay')?.remove();
+  document.getElementById('calendarioModal')?.remove();
+}
+
+function setCalendariosMsg(msg = '', tipo = 'success') {
+  const el = document.getElementById('calendariosMsg');
+  if (!el) return;
+
+  el.textContent = msg;
+  el.className = 'form-subtitle-sm';
+
+  if (!msg) {
+    el.classList.add('hidden');
+    return;
+  }
+
+  el.classList.remove('hidden');
+
+  if (tipo === 'error') {
+    el.classList.add('text-red-600');
+  } else if (tipo === 'warning') {
+    el.classList.add('text-amber-600');
+  } else {
+    el.classList.add('text-emerald-600');
+  }
+}
+
+function getStatusBadgeCalendario(status) {
+  const valor = String(status ?? '').trim().toLowerCase();
+
+  if (valor === 'ativo') {
+    return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">Ativo</span>`;
+  }
+
+  if (valor === 'inativo') {
+    return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">Inativo</span>`;
+  }
+
+  return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">${escapeHtml(status || 'Não informado')}</span>`;
+}
+
+function formatarDataBR(data) {
+  const s = String(data ?? '').trim();
+  if (!s) return '';
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return s;
+  return `${m[3]}/${m[2]}/${m[1]}`;
+}
+
+function normalizarHora(valor) {
+  const s = String(valor ?? '').trim();
+  if (!s) return '';
+  if (/^\d{2}:\d{2}:\d{2}$/.test(s)) return s.slice(0, 5);
+  return s;
+}
+
+function montarPeriodoTexto(item) {
+  const tipoRecorrencia = String(item.TIPORECORRENCIA ?? item.tipoRecorrencia ?? '').trim().toUpperCase();
+  const tipoPeriodo = String(item.TIPOPERIODO ?? item.tipoPeriodo ?? '').trim().toLowerCase();
+  const dataInicial = String(item.DATAINICIAL ?? item.dataInicial ?? '').trim();
+  const dataFinal = String(item.DATAFINAL ?? item.dataFinal ?? '').trim();
+  const repeteTodoAno = String(item.REPETETODOANO ?? item.repeteTodoAno ?? '').trim().toUpperCase() === 'S';
+  const periodoLegado = String(item.PERIODO ?? item.periodo ?? '').trim();
+
+  const dataInicialTroca = String(item.DATAINICIALTROCA ?? item.dataInicialTroca ?? '').trim();
+  const dataFinalTroca = String(item.DATAFINALTROCA ?? item.dataFinalTroca ?? '').trim();
+  const novaDataInicial = String(item.NOVADATAINICIAL ?? item.novaDataInicial ?? '').trim();
+  const novaDataFinal = String(item.NOVADATAFINAL ?? item.novaDataFinal ?? '').trim();
+
+  if (tipoRecorrencia === 'TROCA_FERIADO') {
+    return `Troca: ${formatarDataBR(dataInicialTroca)} até ${formatarDataBR(dataFinalTroca)} → ${formatarDataBR(novaDataInicial)} até ${formatarDataBR(novaDataFinal)}`;
+  }
+
+  if (tipoPeriodo === 'data' && dataInicial) {
+    return `${formatarDataBR(dataInicial)}${repeteTodoAno ? ' • Repete todo ano' : ' • Único'}`;
+  }
+
+  if (tipoPeriodo === 'intervalo' && dataInicial && dataFinal) {
+    return `${formatarDataBR(dataInicial)} até ${formatarDataBR(dataFinal)}${repeteTodoAno ? ' • Repete todo ano' : ' • Único'}`;
+  }
+
+  return periodoLegado || '-';
+}
+
+async function carregarUnidadesTrabalhoCalendario() {
+  const resp = await fetch(getApiUrl('/api/gestao-usuarios-locais-trabalho'));
+  const data = await resp.json();
+
+  if (!resp.ok || !data?.success) {
+    throw new Error(data?.message || 'Erro ao carregar unidades de trabalho.');
+  }
+
+  return Array.isArray(data?.items) ? data.items : [];
+}
+
+async function carregarCalendarios() {
+  const tbody = document.getElementById('tbodyCalendarios');
+  if (!tbody) return;
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
+        Carregando calendários...
+      </td>
+    </tr>
+  `;
+
+  try {
+    const resp = await fetch(getApiUrl('/api/calendarios'));
+    const data = await resp.json();
+
+    if (!resp.ok || !data?.success) {
+      throw new Error(data?.message || 'Erro ao carregar calendários.');
+    }
+
+    const items = Array.isArray(data?.items) ? data.items : [];
+
+    if (!items.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
+            Nenhum calendário cadastrado.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = items.map(item => `
+      <tr class="hover:bg-white/40 transition-all">
+        <td class="px-4 py-3 form-control-sm font-medium">${escapeHtml(String(item.ID ?? item.id ?? ''))}</td>
+        <td class="px-4 py-3 form-control-sm">${escapeHtml(item.UNIDADETRABALHO ?? item.unidadeTrabalho ?? '')}</td>
+        <td class="px-4 py-3 form-control-sm">${escapeHtml(montarPeriodoTexto(item))}</td>
+        <td class="px-4 py-3 form-control-sm">${escapeHtml(normalizarHora(item.HORAINICIO ?? item.horaInicio ?? ''))}</td>
+        <td class="px-4 py-3 form-control-sm">${escapeHtml(normalizarHora(item.HORAFIM ?? item.horaFim ?? ''))}</td>
+        <td class="px-4 py-3 form-control-sm">${escapeHtml(item.OBSERVACAO ?? item.observacao ?? '')}</td>
+        <td class="px-4 py-3 form-control-sm">${getStatusBadgeCalendario(item.STATUS ?? item.status ?? '')}</td>
+        <td class="px-4 py-3">
+          <div class="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              class="w-9 h-9 rounded-xl border border-border bg-white/70 hover:bg-white transition-all flex items-center justify-center"
+              title="Editar calendário"
+              onclick="editarCalendario('${escapeHtml(String(item.ID ?? item.id ?? ''))}')"
+            >
+              <i class="fas fa-pen"></i>
+            </button>
+
+            <button
+              type="button"
+              class="w-9 h-9 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 transition-all flex items-center justify-center"
+              title="Excluir calendário"
+              onclick="excluirCalendario('${escapeHtml(String(item.ID ?? item.id ?? ''))}')"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center text-red-600">
+          ${escapeHtml(error.message || 'Erro ao carregar calendários.')}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+async function editarCalendario(id) {
+  try {
+    const resp = await fetch(getApiUrl(`/api/calendarios/${encodeURIComponent(id)}`));
+    const data = await resp.json();
+
+    if (!resp.ok || !data?.success || !data?.item) {
+      throw new Error(data?.message || 'Calendário não encontrado.');
+    }
+
+    const item = data.item;
+
+    abrirModalCalendario('editar', {
+      id: item.ID ?? item.id,
+      unidadeTrabalho: item.UNIDADETRABALHO ?? item.unidadeTrabalho ?? '',
+      tipoPeriodo: item.TIPOPERIODO ?? item.tipoPeriodo ?? 'data',
+      tipoRecorrencia: item.TIPORECORRENCIA ?? ((String(item.REPETETODOANO ?? 'N').toUpperCase() === 'S') ? 'ANUAL' : 'UNICO'),
+      dataInicial: item.DATAINICIAL ?? item.dataInicial ?? '',
+      dataFinal: item.DATAFINAL ?? item.dataFinal ?? '',
+      repeteTodoAno: String(item.REPETETODOANO ?? item.repeteTodoAno ?? 'N').toUpperCase() === 'S',
+      dataInicialTroca: item.DATAINICIALTROCA ?? item.dataInicialTroca ?? '',
+      dataFinalTroca: item.DATAFINALTROCA ?? item.dataFinalTroca ?? '',
+      novaDataInicial: item.NOVADATAINICIAL ?? item.novaDataInicial ?? '',
+      novaDataFinal: item.NOVADATAFINAL ?? item.novaDataFinal ?? '',
+      horaInicio: normalizarHora(item.HORAINICIO ?? item.horaInicio ?? '00:00'),
+      horaFim: normalizarHora(item.HORAFIM ?? item.horaFim ?? '23:59'),
+      status: item.STATUS ?? item.status ?? 'Ativo',
+      periodo: item.PERIODO ?? item.periodo ?? '',
+      observacao: item.OBSERVACAO ?? item.observacao ?? ''
+    });
+  } catch (error) {
+    setCalendariosMsg(error.message || 'Erro ao carregar calendário.', 'error');
+  }
+}
+
+async function excluirCalendario(id) {
+  const confirmou = confirm('Deseja realmente excluir este calendário?');
+  if (!confirmou) return;
+
+  try {
+    const resp = await fetch(getApiUrl(`/api/calendarios/${encodeURIComponent(id)}`), {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        usuario: getUsuarioLogadoNome()
+      })
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok || !data?.success) {
+      throw new Error(data?.message || 'Erro ao excluir calendário.');
+    }
+
+    setCalendariosMsg(data?.message || 'Calendário excluído com sucesso.');
+    await carregarCalendarios();
+  } catch (error) {
+    setCalendariosMsg(error.message || 'Erro ao excluir calendário.', 'error');
+  }
+}
+
+async function abrirModalCalendario(modo = 'novo', dados = null) {
+  removerModalCalendario();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'calendarioOverlay';
+  overlay.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-[190]';
+
+  const modal = document.createElement('div');
+  modal.id = 'calendarioModal';
+  modal.className = 'fixed inset-0 z-[200]';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  const isEdit = modo === 'editar';
+
+  let unidades = [];
+  try {
+    unidades = await carregarUnidadesTrabalhoCalendario();
+  } catch (error) {
+    setCalendariosMsg(error.message || 'Erro ao carregar unidades de trabalho.', 'error');
+  }
+
+  const opcoesUnidades = unidades.map(item => {
+    const nome = String(item.NOME ?? item.nome ?? '').trim();
+    const id = String(item.ID ?? item.id ?? '').trim();
+    const selected = String(dados?.unidadeTrabalho ?? '') === nome ? 'selected' : '';
+    return `<option value="${escapeHtml(nome)}" data-id="${escapeHtml(id)}" ${selected}>${escapeHtml(nome)}</option>`;
+  }).join('');
+
+  const tipoPeriodoInicial = String(dados?.tipoPeriodo ?? '').trim().toLowerCase();
+  const tipoRecorrenciaInicial = String(dados?.tipoRecorrencia ?? 'UNICO').trim().toUpperCase();
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-y-auto no-scrollbar">
+      <div class="min-h-full flex items-start justify-center p-3 sm:p-4 md:p-6 lg:p-8">
+        <div class="w-full max-w-6xl mx-auto">
+          <div class="glass rounded-2xl md:rounded-3xl shadow-2xl border border-border overflow-hidden bg-white">
+            <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-border flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg sm:text-xl font-semibold text-foreground">
+                  ${isEdit ? 'Editar calendário' : 'Novo calendário'}
+                </h3>
+                <p class="text-sm text-muted-foreground">
+                  Cadastre períodos por unidade de trabalho e horário.
+                </p>
+              </div>
+
+              <button
+                id="btnFecharCalendarioModal"
+                type="button"
+                class="shrink-0 w-10 h-10 rounded-xl bg-white/70 border border-border hover:bg-white transition-all flex items-center justify-center"
+                aria-label="Fechar"
+                title="Fechar"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <form id="formCalendarioModal" class="px-4 sm:px-6 py-5 sm:py-6 space-y-5" autocomplete="off">
+              <input type="hidden" id="calendarioEditandoId" value="${escapeHtml(dados?.id ?? '')}" />
+
+              <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+                <div class="space-y-2 xl:col-span-12">
+                  <label for="calendarioUnidadeTrabalho" class="form-label-sm">Unidade de trabalho</label>
+                  <select
+                    id="calendarioUnidadeTrabalho"
+                    class="w-full min-h-[44px] rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="Todas Unidades" ${String(dados?.unidadeTrabalho ?? '') === 'Todas Unidades' ? 'selected' : ''}>Todas Unidades</option>
+                    ${opcoesUnidades}
+                  </select>
+                </div>
+
+                
+
+                <div class="space-y-2 xl:col-span-6">
+                  <label for="calendarioTipoRecorrencia" class="form-label-sm">Recorrência</label>
+                  <select
+                    id="calendarioTipoRecorrencia"
+                    class="w-full min-h-[44px] rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="UNICO" ${tipoRecorrenciaInicial === 'UNICO' ? 'selected' : ''}>Evento único</option>
+                    <option value="ANUAL" ${tipoRecorrenciaInicial === 'ANUAL' ? 'selected' : ''}>Repete todo ano</option>
+                    <option value="TROCA_FERIADO" ${tipoRecorrenciaInicial === 'TROCA_FERIADO' ? 'selected' : ''}>Troca de feriado</option>
+                  </select>
+                </div>
+
+                <div class="space-y-2 xl:col-span-6">
+                  <label for="calendarioTipoPeriodo" class="form-label-sm">Tipo de período</label>
+                  <select
+                    id="calendarioTipoPeriodo"
+                    class="w-full min-h-[44px] rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="data" ${tipoPeriodoInicial === 'data' ? 'selected' : ''}>Data única</option>
+                    <option value="intervalo" ${tipoPeriodoInicial === 'intervalo' ? 'selected' : ''}>Intervalo de datas</option>
+                  </select>
+                </div>
+
+                <div id="grupoCamposPeriodoNormal" class="hidden xl:col-span-12">
+                  <div class="rounded-2xl border border-border bg-slate-50/60 p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-12 gap-4 items-end">
+                      <div class="space-y-2 md:col-span-1 xl:col-span-4" id="grupoCalendarioDataInicial">
+                        <label for="calendarioDataInicial" class="form-label-sm" id="labelCalendarioDataInicial">Data</label>
+                        <input
+                          id="calendarioDataInicial"
+                          type="date"
+                          class="w-full min-h-[44px] rounded-xl border border-border bg-white/80 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(dados?.dataInicial ?? '')}"
+                        />
+                      </div>
+
+                      <div class="space-y-2 hidden md:col-span-1 xl:col-span-4" id="grupoCalendarioDataFinal">
+                        <label for="calendarioDataFinal" class="form-label-sm">Data final</label>
+                        <input
+                          id="calendarioDataFinal"
+                          type="date"
+                          class="w-full min-h-[44px] rounded-xl border border-border bg-white/80 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(dados?.dataFinal ?? '')}"
+                        />
+                      </div>
+
+                      <div class="space-y-2 md:col-span-1 xl:col-span-2" id="grupoCalendarioHoraInicio">
+                        <label for="calendarioHoraInicio" class="form-label-sm">Hora início</label>
+                        <input
+                          id="calendarioHoraInicio"
+                          type="time"
+                          class="w-full min-h-[44px] rounded-xl border border-border bg-white/80 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(dados?.horaInicio ?? '00:00')}"
+                        />
+                      </div>
+
+                      <div class="space-y-2 md:col-span-1 xl:col-span-2" id="grupoCalendarioHoraFim">
+                        <label for="calendarioHoraFim" class="form-label-sm">Hora fim</label>
+                        <input
+                          id="calendarioHoraFim"
+                          type="time"
+                          class="w-full min-h-[44px] rounded-xl border border-border bg-white/80 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(dados?.horaFim ?? '23:59')}"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="grupoTrocaFeriado" class="hidden xl:col-span-12">
+                  <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 space-y-4">
+                    <div>
+                      <p class="form-label-sm font-semibold text-amber-700">Troca de feriado</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end">
+                      <div class="space-y-2 md:col-span-1 xl:col-span-3">
+                        <label for="calendarioDataInicialTroca" class="form-label-sm" id="labelCalendarioDataInicialTroca">Data início feriado</label>
+                        <input
+                          id="calendarioDataInicialTroca"
+                          type="date"
+                          class="w-full min-h-[44px] rounded-xl border border-border bg-white/80 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(dados?.dataInicialTroca ?? '')}"
+                        />
+                      </div>
+
+                      <div class="space-y-2 hidden md:col-span-1 xl:col-span-3" id="grupoCalendarioDataFinalTroca">
+                        <label for="calendarioDataFinalTroca" class="form-label-sm">Data final feriado</label>
+                        <input
+                          id="calendarioDataFinalTroca"
+                          type="date"
+                          class="w-full min-h-[44px] rounded-xl border border-border bg-white/80 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(dados?.dataFinalTroca ?? '')}"
+                        />
+                      </div>
+
+                      <div class="space-y-2 md:col-span-1 xl:col-span-3">
+                        <label for="calendarioNovaDataInicial" class="form-label-sm" id="labelCalendarioNovaDataInicial">Nova data inicial</label>
+                        <input
+                          id="calendarioNovaDataInicial"
+                          type="date"
+                          class="w-full min-h-[44px] rounded-xl border border-border bg-white/80 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(dados?.novaDataInicial ?? '')}"
+                        />
+                      </div>
+
+                      <div class="space-y-2 hidden md:col-span-1 xl:col-span-3" id="grupoCalendarioNovaDataFinal">
+                        <label for="calendarioNovaDataFinal" class="form-label-sm">Nova data final</label>
+                        <input
+                          id="calendarioNovaDataFinal"
+                          type="date"
+                          class="w-full min-h-[44px] rounded-xl border border-border bg-white/80 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(dados?.novaDataFinal ?? '')}"
+                        />
+                      </div>
+
+                      <div class="space-y-2 md:col-span-1 xl:col-span-3" id="grupoHoraInicioTroca">
+                        <label for="calendarioHoraInicioTroca" class="form-label-sm">Hora início</label>
+                        <input
+                          id="calendarioHoraInicioTroca"
+                          type="time"
+                          class="w-full min-h-[44px] rounded-xl border border-border bg-white/80 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(dados?.horaInicio ?? '00:00')}"
+                        />
+                      </div>
+
+                      <div class="space-y-2 md:col-span-1 xl:col-span-3" id="grupoHoraFimTroca">
+                        <label for="calendarioHoraFimTroca" class="form-label-sm">Hora fim</label>
+                        <input
+                          id="calendarioHoraFimTroca"
+                          type="time"
+                          class="w-full min-h-[44px] rounded-xl border border-border bg-white/80 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                          value="${escapeHtml(dados?.horaFim ?? '23:59')}"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-2 xl:col-span-12">
+                  <label for="calendarioObservacao" class="form-label-sm">Observação</label>
+                  <textarea
+                    id="calendarioObservacao"
+                    rows="3"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                    placeholder="Digite uma observação sobre o calendário..."
+                  >${escapeHtml(dados?.observacao ?? '')}</textarea>
+                </div>
+
+                <div class="space-y-2 xl:col-span-4">
+                  <label for="calendarioStatus" class="form-label-sm">Status</label>
+                  <select
+                    id="calendarioStatus"
+                    class="w-full min-h-[44px] rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="Ativo" ${String(dados?.status ?? 'Ativo') === 'Ativo' ? 'selected' : ''}>Ativo</option>
+                    <option value="Inativo" ${String(dados?.status ?? '') === 'Inativo' ? 'selected' : ''}>Inativo</option>
+                  </select>
+                </div>
+              </div>
+
+              <p id="calendarioModalErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
+
+              <div class="pt-2 flex flex-col-reverse sm:flex-row gap-3">
+                <button
+                  id="btnCancelarCalendarioModal"
+                  type="button"
+                  class="sm:flex-1 min-h-[46px] rounded-xl border border-border bg-white/60 form-control-sm font-medium hover:bg-white/80 transition-all"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  id="btnSalvarCalendarioModal"
+                  type="submit"
+                  class="sm:flex-1 min-h-[46px] rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
+                >
+                  ${isEdit ? 'Salvar alterações' : 'Salvar calendário'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(modal);
+
+  const form = document.getElementById('formCalendarioModal');
+  const btnFechar = document.getElementById('btnFecharCalendarioModal');
+  const btnCancelar = document.getElementById('btnCancelarCalendarioModal');
+  const erroEl = document.getElementById('calendarioModalErro');
+
+  const campoTipoPeriodo = document.getElementById('calendarioTipoPeriodo');
+  const campoTipoRecorrencia = document.getElementById('calendarioTipoRecorrencia');
+
+  const grupoCamposPeriodoNormal = document.getElementById('grupoCamposPeriodoNormal');
+  const grupoDataInicial = document.getElementById('grupoCalendarioDataInicial');
+  const grupoDataFinal = document.getElementById('grupoCalendarioDataFinal');
+  const labelDataInicial = document.getElementById('labelCalendarioDataInicial');
+  const campoDataInicial = document.getElementById('calendarioDataInicial');
+  const campoDataFinal = document.getElementById('calendarioDataFinal');
+
+  const campoHoraInicio = document.getElementById('calendarioHoraInicio');
+  const campoHoraFim = document.getElementById('calendarioHoraFim');
+
+  const grupoTrocaFeriado = document.getElementById('grupoTrocaFeriado');
+  const grupoDataFinalTroca = document.getElementById('grupoCalendarioDataFinalTroca');
+  const grupoNovaDataFinal = document.getElementById('grupoCalendarioNovaDataFinal');
+  const labelDataInicialTroca = document.getElementById('labelCalendarioDataInicialTroca');
+
+  const campoDataInicialTroca = document.getElementById('calendarioDataInicialTroca');
+  const campoDataFinalTroca = document.getElementById('calendarioDataFinalTroca');
+  const campoNovaDataInicial = document.getElementById('calendarioNovaDataInicial');
+  const campoNovaDataFinal = document.getElementById('calendarioNovaDataFinal');
+  const campoHoraInicioTroca = document.getElementById('calendarioHoraInicioTroca');
+  const campoHoraFimTroca = document.getElementById('calendarioHoraFimTroca');
+
+  function fechar() {
+    removerModalCalendario();
+  }
+
+  function setErro(msg = '') {
+    if (!erroEl) return;
+    erroEl.textContent = msg;
+    erroEl.classList.toggle('hidden', !msg);
+  }
+
+  function limparCamposNormais() {
+    if (campoDataInicial) campoDataInicial.value = '';
+    if (campoDataFinal) campoDataFinal.value = '';
+  }
+
+  function limparCamposTroca() {
+    if (campoDataInicialTroca) campoDataInicialTroca.value = '';
+    if (campoDataFinalTroca) campoDataFinalTroca.value = '';
+    if (campoNovaDataInicial) campoNovaDataInicial.value = '';
+    if (campoNovaDataFinal) campoNovaDataFinal.value = '';
+  }
+
+  function atualizarLayoutCalendario() {
+    const tipoPeriodo = String(campoTipoPeriodo?.value ?? '').trim().toLowerCase();
+    const tipoRecorrencia = String(campoTipoRecorrencia?.value ?? 'UNICO').trim().toUpperCase();
+
+    const isTroca = tipoRecorrencia === 'TROCA_FERIADO';
+    const isIntervalo = tipoPeriodo === 'intervalo';
+    const isData = tipoPeriodo === 'data';
+    const tipoSelecionado = !!tipoPeriodo;
+
+    grupoCamposPeriodoNormal?.classList.add('hidden');
+    grupoTrocaFeriado?.classList.add('hidden');
+
+    if (!tipoSelecionado) return;
+
+    if (!isTroca) {
+      grupoCamposPeriodoNormal?.classList.remove('hidden');
+
+      if (labelDataInicial) {
+        labelDataInicial.textContent = isIntervalo ? 'Data inicial' : 'Data';
+      }
+
+      grupoDataInicial?.classList.remove('hidden');
+      grupoDataFinal?.classList.toggle('hidden', !isIntervalo);
+
+      if (isData && campoDataFinal) {
+        campoDataFinal.value = '';
+      }
+    } else {
+      grupoTrocaFeriado?.classList.remove('hidden');
+
+      if (labelDataInicialTroca) {
+        labelDataInicialTroca.textContent = isIntervalo ? 'Data inicial feriado' : 'Data início feriado';
+      }
+
+      grupoDataFinalTroca?.classList.toggle('hidden', !isIntervalo);
+      grupoNovaDataFinal?.classList.toggle('hidden', !isIntervalo);
+
+      if (isData) {
+        if (campoDataFinalTroca) campoDataFinalTroca.value = '';
+        if (campoNovaDataFinal) campoNovaDataFinal.value = '';
+      }
+    }
+  }
+
+  overlay.addEventListener('click', fechar);
+  btnFechar?.addEventListener('click', fechar);
+  btnCancelar?.addEventListener('click', fechar);
+
+  campoTipoPeriodo?.addEventListener('change', atualizarLayoutCalendario);
+
+  campoTipoRecorrencia?.addEventListener('change', () => {
+    const tipoRecorrencia = String(campoTipoRecorrencia?.value ?? 'UNICO').trim().toUpperCase();
+
+    if (tipoRecorrencia === 'TROCA_FERIADO') {
+      limparCamposNormais();
+    } else {
+      limparCamposTroca();
+    }
+
+    atualizarLayoutCalendario();
+  });
+
+  atualizarLayoutCalendario();
+
+  form?.addEventListener('submit', async e => {
+    e.preventDefault();
+    setErro('');
+
+    const id = String(document.getElementById('calendarioEditandoId')?.value ?? '').trim();
+    const unidadeTrabalho = String(document.getElementById('calendarioUnidadeTrabalho')?.value ?? '').trim();
+    const tipoPeriodo = String(document.getElementById('calendarioTipoPeriodo')?.value ?? '').trim().toLowerCase();
+    const tipoRecorrencia = String(document.getElementById('calendarioTipoRecorrencia')?.value ?? 'UNICO').trim().toUpperCase();
+
+    const observacao = String(document.getElementById('calendarioObservacao')?.value ?? '').trim();
+    const status = String(document.getElementById('calendarioStatus')?.value ?? 'Ativo').trim() || 'Ativo';
+
+    if (!unidadeTrabalho) {
+      setErro('Selecione a unidade de trabalho.');
+      return;
+    }
+
+    if (!tipoPeriodo || !['data', 'intervalo'].includes(tipoPeriodo)) {
+      setErro('Selecione o tipo de período.');
+      return;
+    }
+
+    if (!['UNICO', 'ANUAL', 'TROCA_FERIADO'].includes(tipoRecorrencia)) {
+      setErro('Selecione uma recorrência válida.');
+      return;
+    }
+
+    let periodo = '';
+    let repeteTodoAno = 'N';
+    let dataInicialPayload = null;
+    let dataFinalPayload = null;
+    let horaInicioPayload = '';
+    let horaFimPayload = '';
+
+    let dataInicialTrocaPayload = null;
+    let dataFinalTrocaPayload = null;
+    let novaDataInicialPayload = null;
+    let novaDataFinalPayload = null;
+
+    if (tipoRecorrencia === 'TROCA_FERIADO') {
+      const dataInicialTroca = String(campoDataInicialTroca?.value ?? '').trim();
+      const dataFinalTroca = String(campoDataFinalTroca?.value ?? '').trim();
+      const novaDataInicial = String(campoNovaDataInicial?.value ?? '').trim();
+      const novaDataFinal = String(campoNovaDataFinal?.value ?? '').trim();
+      const horaInicio = String(campoHoraInicioTroca?.value ?? '00:00').trim() || '00:00';
+      const horaFim = String(campoHoraFimTroca?.value ?? '23:59').trim() || '23:59';
+
+      if (!horaInicio) {
+        setErro('Informe a hora de início.');
+        return;
+      }
+
+      if (!horaFim) {
+        setErro('Informe a hora de fim.');
+        return;
+      }
+
+      if (!dataInicialTroca) {
+        setErro(tipoPeriodo === 'intervalo' ? 'Informe a data inicial do feriado.' : 'Informe a data início do feriado.');
+        return;
+      }
+
+      if (!novaDataInicial) {
+        setErro('Informe a nova data inicial.');
+        return;
+      }
+
+      if (tipoPeriodo === 'intervalo') {
+        if (!dataFinalTroca) {
+          setErro('Informe a data final do feriado.');
+          return;
+        }
+
+        if (!novaDataFinal) {
+          setErro('Informe a nova data final.');
+          return;
+        }
+
+        if (dataFinalTroca < dataInicialTroca) {
+          setErro('A data final do feriado não pode ser menor que a inicial.');
+          return;
+        }
+
+        if (novaDataFinal < novaDataInicial) {
+          setErro('A nova data final não pode ser menor que a nova data inicial.');
+          return;
+        }
+      }
+
+      periodo = tipoPeriodo === 'intervalo'
+        ? `Troca de feriado: ${formatarDataBR(dataInicialTroca)} até ${formatarDataBR(dataFinalTroca)} -> ${formatarDataBR(novaDataInicial)} até ${formatarDataBR(novaDataFinal)}`
+        : `Troca de feriado: ${formatarDataBR(dataInicialTroca)} -> ${formatarDataBR(novaDataInicial)}`;
+
+      repeteTodoAno = 'N';
+      dataInicialPayload = dataInicialTroca;
+      dataFinalPayload = tipoPeriodo === 'intervalo' ? dataFinalTroca : null;
+      horaInicioPayload = horaInicio;
+      horaFimPayload = horaFim;
+
+      dataInicialTrocaPayload = dataInicialTroca;
+      dataFinalTrocaPayload = tipoPeriodo === 'intervalo' ? dataFinalTroca : null;
+      novaDataInicialPayload = novaDataInicial;
+      novaDataFinalPayload = tipoPeriodo === 'intervalo' ? novaDataFinal : null;
+    } else {
+      const dataInicial = String(campoDataInicial?.value ?? '').trim();
+      const dataFinal = String(campoDataFinal?.value ?? '').trim();
+      const horaInicio = String(campoHoraInicio?.value ?? '00:00').trim() || '00:00';
+      const horaFim = String(campoHoraFim?.value ?? '23:59').trim() || '23:59';
+
+      if (!horaInicio) {
+        setErro('Informe a hora de início.');
+        return;
+      }
+
+      if (!horaFim) {
+        setErro('Informe a hora de fim.');
+        return;
+      }
+
+      if (!dataInicial) {
+        setErro(tipoPeriodo === 'intervalo' ? 'Informe a data inicial.' : 'Informe a data.');
+        return;
+      }
+
+      if (tipoPeriodo === 'intervalo') {
+        if (!dataFinal) {
+          setErro('Informe a data final.');
+          return;
+        }
+
+        if (dataFinal < dataInicial) {
+          setErro('A data final não pode ser menor que a data inicial.');
+          return;
+        }
+      }
+
+      repeteTodoAno = tipoRecorrencia === 'ANUAL' ? 'S' : 'N';
+      dataInicialPayload = dataInicial;
+      dataFinalPayload = tipoPeriodo === 'intervalo' ? dataFinal : null;
+      horaInicioPayload = horaInicio;
+      horaFimPayload = horaFim;
+
+      if (tipoPeriodo === 'data') {
+        periodo = tipoRecorrencia === 'ANUAL'
+          ? `Data única: ${formatarDataBR(dataInicial)} (repete todo ano)`
+          : `Data única: ${formatarDataBR(dataInicial)}`;
+      } else {
+        periodo = tipoRecorrencia === 'ANUAL'
+          ? `Intervalo: ${formatarDataBR(dataInicial)} até ${formatarDataBR(dataFinal)} (repete todo ano)`
+          : `Intervalo: ${formatarDataBR(dataInicial)} até ${formatarDataBR(dataFinal)}`;
+      }
+    }
+
+    const payload = {
+      unidadeTrabalho,
+      periodo,
+      tipoPeriodo,
+      tipoRecorrencia,
+      dataInicial: dataInicialPayload,
+      dataFinal: dataFinalPayload,
+      repeteTodoAno,
+      dataInicialTroca: dataInicialTrocaPayload,
+      dataFinalTroca: dataFinalTrocaPayload,
+      novaDataInicial: novaDataInicialPayload,
+      novaDataFinal: novaDataFinalPayload,
+      horaInicio: horaInicioPayload,
+      horaFim: horaFimPayload,
+      status,
+      observacao,
+      usuario: getUsuarioLogadoNome()
+    };
+
+    const url = id
+      ? getApiUrl(`/api/calendarios/${encodeURIComponent(id)}`)
+      : getApiUrl('/api/calendarios');
+
+    const method = id ? 'PUT' : 'POST';
+
+    const btnSalvar = document.getElementById('btnSalvarCalendarioModal');
+    btnSalvar.disabled = true;
+    btnSalvar.classList.add('opacity-60', 'pointer-events-none');
+
+    try {
+      const resp = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await resp.json();
+
+      if (!resp.ok || !data?.success) {
+        throw new Error(data?.message || 'Erro ao salvar calendário.');
+      }
+
+      fechar();
+      setCalendariosMsg(
+        data?.message || (id ? 'Calendário atualizado com sucesso.' : 'Calendário cadastrado com sucesso.')
+      );
+      await carregarCalendarios();
+    } catch (error) {
+      setErro(error.message || 'Erro ao salvar calendário.');
+    } finally {
+      btnSalvar.disabled = false;
+      btnSalvar.classList.remove('opacity-60', 'pointer-events-none');
+    }
+  });
+}
+
+function initSecaoCadastroCalendario() {
+  const btnNovo = document.getElementById('btnNovoCalendario');
+  const btnAtualizar = document.getElementById('btnAtualizarCalendarios');
+
+  if (!btnNovo) {
+    console.warn('Botão btnNovoCalendario não encontrado.');
+    return;
+  }
+
+  if (!btnNovo.dataset.bound) {
+    btnNovo.addEventListener('click', () => {
+      abrirModalCalendario('novo');
+    });
+    btnNovo.dataset.bound = '1';
+  }
+
+  if (btnAtualizar && !btnAtualizar.dataset.bound) {
+    btnAtualizar.addEventListener('click', async () => {
+      try {
+        await carregarCalendarios();
+        setCalendariosMsg('Lista atualizada com sucesso.');
+      } catch (error) {
+        setCalendariosMsg(error.message || 'Erro ao atualizar calendários.', 'error');
+      }
+    });
+    btnAtualizar.dataset.bound = '1';
+  }
+
+  carregarCalendarios();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initSecaoCadastroCalendario();
+});
+
+
+// =========================
+// JORNADA / VÍNCULO JORNADA
+// =========================
+
+let jornadasCache = [];
+let vinculosJornadaCache = [];
+let usuariosJornadaCache = [];
+let termoFiltroJornada = '';
+let termoFiltroVinculoJornada = '';
+
+function normalizarTextoJornada(valor) {
+  return String(valor ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function fmtHoraJornada(v) {
+  return String(v ?? '').trim();
+}
+
+function fmtDataJornada(v) {
+  if (!v) return '';
+  const s = String(v).slice(0, 10);
+  if (!s) return '';
+  const [ano, mes, dia] = s.split('-');
+  if (!ano || !mes || !dia) return String(v);
+  return `${dia}/${mes}/${ano}`;
+}
+
+function badgeStatusJornada(status) {
+  const s = String(status ?? '').trim().toUpperCase();
+  let cls = 'bg-muted/40 text-foreground border-border';
+
+  if (s === 'ATIVO') cls = 'bg-success/15 text-success border-success/20';
+  if (s === 'INATIVO') cls = 'bg-destructive/15 text-destructive border-destructive/20';
+
+  return `<span class="inline-flex items-center px-3 py-1 rounded-full border ${cls} text-xs font-semibold">${escapeHtml(s || '-')}</span>`;
+}
+
+function mostrarMsgJornada(msg, erro = false) {
+  const el = document.getElementById('jornadaMsg');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.classList.toggle('hidden', !msg);
+  el.classList.toggle('text-destructive', !!erro);
+  el.classList.toggle('text-success', !!msg && !erro);
+}
+
+function mostrarMsgVinculoJornada(msg, erro = false) {
+  const el = document.getElementById('vinculoJornadaMsg');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.classList.toggle('hidden', !msg);
+  el.classList.toggle('text-destructive', !!erro);
+  el.classList.toggle('text-success', !!msg && !erro);
+}
+
+function fmtDiasJornada(j) {
+  const dias = [];
+
+  if (String(j.TRABALHA_DOMINGO ?? 'N').toUpperCase() === 'S') dias.push('Dom');
+  if (String(j.TRABALHA_SEGUNDA ?? 'N').toUpperCase() === 'S') dias.push('Seg');
+  if (String(j.TRABALHA_TERCA ?? 'N').toUpperCase() === 'S') dias.push('Ter');
+  if (String(j.TRABALHA_QUARTA ?? 'N').toUpperCase() === 'S') dias.push('Qua');
+  if (String(j.TRABALHA_QUINTA ?? 'N').toUpperCase() === 'S') dias.push('Qui');
+  if (String(j.TRABALHA_SEXTA ?? 'N').toUpperCase() === 'S') dias.push('Sex');
+  if (String(j.TRABALHA_SABADO ?? 'N').toUpperCase() === 'S') dias.push('Sáb');
+
+  return dias.length ? dias.join(', ') : '-';
+}
+
+function obterTextoFiltroJornada(j) {
+  return normalizarTextoJornada([
+    j.DESCRICAO,
+    j.HORA_INICIO_EXPEDIENTE,
+    j.HORA_SAIDA_INTERVALO,
+    j.HORA_RETORNO_INTERVALO,
+    j.HORA_FIM_EXPEDIENTE,
+    j.CARGA_HORARIA,
+    j.STATUS,
+    j.OBSERVACAO,
+    fmtDiasJornada(j)
+  ].join(' '));
+}
+
+function obterTextoFiltroVinculoJornada(v) {
+  const usuariosTexto = Array.isArray(v.USUARIOS)
+    ? v.USUARIOS.map(u => [u.nome, u.email].filter(Boolean).join(' ')).join(' ')
+    : [v.USUARIO_NOME, v.USUARIO_EMAIL].join(' ');
+
+  return normalizarTextoJornada([
+    usuariosTexto,
+    v.JORNADA_DESCRICAO,
+    v.DATA_INICIO,
+    v.DATA_FIM,
+    v.STATUS
+  ].join(' '));
+}
+
+function atualizarResumoJornada(total, filtrados) {
+  const el = document.getElementById('jornadaFiltroResumo');
+  if (!el) return;
+
+  if (!total) {
+    el.textContent = 'Nenhuma jornada cadastrada.';
+    return;
+  }
+
+  if (!termoFiltroJornada.trim()) {
+    el.textContent = `${total} jornadas encontradas.`;
+    return;
+  }
+
+  el.textContent = `${filtrados} de ${total} jornadas exibidas.`;
+}
+
+function atualizarResumoVinculoJornada(total, filtrados) {
+  const el = document.getElementById('vinculoJornadaFiltroResumo');
+  if (!el) return;
+
+  if (!total) {
+    el.textContent = 'Nenhum vínculo cadastrado.';
+    return;
+  }
+
+  if (!termoFiltroVinculoJornada.trim()) {
+    el.textContent = `${total} vínculos encontrados.`;
+    return;
+  }
+
+  el.textContent = `${filtrados} de ${total} vínculos exibidos.`;
+}
+
+function renderTabelaJornada() {
+  const tbody = document.getElementById('tbodyJornada');
+  if (!tbody) return;
+
+  const filtradas = jornadasCache.filter(j =>
+    obterTextoFiltroJornada(j).includes(normalizarTextoJornada(termoFiltroJornada))
+  );
+
+  atualizarResumoJornada(jornadasCache.length, filtradas.length);
+
+  if (!jornadasCache.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="px-4 py-6 form-subtitle-sm text-center">
+          Nenhuma jornada cadastrada.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  if (!filtradas.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="px-4 py-6 form-subtitle-sm text-center">
+          Nenhuma jornada encontrada para o filtro informado.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = filtradas.map(j => `
+    <tr>
+      <td class="px-4 py-3">
+        <div class="font-medium">${escapeHtml(j.DESCRICAO ?? '')}</div>
+        <div class="text-xs text-muted-foreground truncate">${escapeHtml(j.OBSERVACAO ?? '')}</div>
+      </td>
+      <td class="px-4 py-3">${escapeHtml(fmtHoraJornada(j.HORA_INICIO_EXPEDIENTE))}</td>
+      <td class="px-4 py-3">${escapeHtml(fmtHoraJornada(j.HORA_SAIDA_INTERVALO))}</td>
+      <td class="px-4 py-3">${escapeHtml(fmtHoraJornada(j.HORA_RETORNO_INTERVALO))}</td>
+      <td class="px-4 py-3">${escapeHtml(fmtHoraJornada(j.HORA_FIM_EXPEDIENTE))}</td>
+      <td class="px-4 py-3">${escapeHtml(j.CARGA_HORARIA ?? '')}</td>
+      <td class="px-4 py-3">${escapeHtml(fmtDiasJornada(j))}</td>
+      <td class="px-4 py-3">${badgeStatusJornada(j.STATUS)}</td>
+      <td class="px-4 py-3">
+        <div class="flex justify-end gap-2">
+          <button
+            class="btnViewJornada w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all"
+            data-id="${escapeHtml(String(j.ID ?? ''))}"
+            title="Visualizar"
+            aria-label="Visualizar jornada"
+          >
+            <i class="fas fa-eye"></i>
+          </button>
+
+          <button
+            class="btnEditJornada w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all"
+            data-id="${escapeHtml(String(j.ID ?? ''))}"
+            title="Editar"
+            aria-label="Editar jornada"
+          >
+            <i class="fas fa-pen"></i>
+          </button>
+
+          <button
+            class="btnDelJornada w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all"
+            data-id="${escapeHtml(String(j.ID ?? ''))}"
+            title="Excluir"
+            aria-label="Excluir jornada"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function chaveAgrupamentoVinculoJornada(v) {
+  return [
+    String(v.JORNADA_ID ?? ''),
+    String(v.DATA_INICIO ?? ''),
+    String(v.DATA_FIM ?? ''),
+    String(v.STATUS ?? '').toUpperCase()
+  ].join('|');
+}
+
+function agruparVinculosJornada(lista) {
+  const mapa = new Map();
+
+  for (const item of (Array.isArray(lista) ? lista : [])) {
+    const chave = chaveAgrupamentoVinculoJornada(item);
+
+    if (!mapa.has(chave)) {
+      mapa.set(chave, {
+        IDS: [],
+        USUARIOS: [],
+        JORNADA_ID: item.JORNADA_ID,
+        JORNADA_DESCRICAO: item.JORNADA_DESCRICAO,
+        DATA_INICIO: item.DATA_INICIO,
+        DATA_FIM: item.DATA_FIM,
+        STATUS: item.STATUS,
+        HORA_INICIO_EXPEDIENTE: item.HORA_INICIO_EXPEDIENTE,
+        HORA_SAIDA_INTERVALO: item.HORA_SAIDA_INTERVALO,
+        HORA_RETORNO_INTERVALO: item.HORA_RETORNO_INTERVALO,
+        HORA_FIM_EXPEDIENTE: item.HORA_FIM_EXPEDIENTE
+      });
+    }
+
+    const grupo = mapa.get(chave);
+    grupo.IDS.push(item.ID);
+
+    const usuarioId = String(item.USUARIO_ID ?? '');
+    const jaExiste = grupo.USUARIOS.some(u => String(u.id) === usuarioId);
+
+    if (!jaExiste) {
+      grupo.USUARIOS.push({
+        id: item.USUARIO_ID,
+        nome: item.USUARIO_NOME ?? '',
+        email: item.USUARIO_EMAIL ?? '',
+        perfil: item.USUARIO_PERFIL ?? '',
+        setor: item.USUARIO_SETOR ?? ''
+      });
+    }
+  }
+
+  return [...mapa.values()].sort((a, b) => {
+    const jornadaA = String(a.JORNADA_DESCRICAO ?? '');
+    const jornadaB = String(b.JORNADA_DESCRICAO ?? '');
+    const cmp = jornadaA.localeCompare(jornadaB, 'pt-BR');
+    if (cmp !== 0) return cmp;
+    return String(b.DATA_INICIO ?? '').localeCompare(String(a.DATA_INICIO ?? ''));
+  });
+}
+
+function renderTabelaVinculoJornada() {
+  const tbody = document.getElementById('tbodyVinculoJornada');
+  if (!tbody) return;
+
+  const agrupados = agruparVinculosJornada(vinculosJornadaCache);
+
+  const filtrados = agrupados.filter(v =>
+    obterTextoFiltroVinculoJornada(v).includes(normalizarTextoJornada(termoFiltroVinculoJornada))
+  );
+
+  atualizarResumoVinculoJornada(agrupados.length, filtrados.length);
+
+  if (!agrupados.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="px-4 py-6 form-subtitle-sm text-center">
+          Nenhum vínculo cadastrado.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  if (!filtrados.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="px-4 py-6 form-subtitle-sm text-center">
+          Nenhum vínculo encontrado para o filtro informado.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = filtrados.map(v => {
+    const quantidadeUsuarios = Array.isArray(v.USUARIOS) ? v.USUARIOS.length : 0;
+
+    return `
+      <tr>
+        <td class="px-4 py-3 align-top">
+          <div class="font-medium">${quantidadeUsuarios}</div>
+          <div class="text-xs text-muted-foreground">
+            ${quantidadeUsuarios === 1 ? 'usuário vinculado' : 'usuários vinculados'}
+          </div>
+        </td>
+
+        <td class="px-4 py-3 align-top">
+          <div class="font-medium">${escapeHtml(v.JORNADA_DESCRICAO ?? '')}</div>
+          <div class="text-xs text-muted-foreground">
+            ${escapeHtml([
+              fmtHoraJornada(v.HORA_INICIO_EXPEDIENTE),
+              fmtHoraJornada(v.HORA_SAIDA_INTERVALO),
+              fmtHoraJornada(v.HORA_RETORNO_INTERVALO),
+              fmtHoraJornada(v.HORA_FIM_EXPEDIENTE)
+            ].filter(Boolean).join(' | '))}
+          </div>
+        </td>
+
+        <td class="px-4 py-3 align-top">${escapeHtml(fmtDataJornada(v.DATA_INICIO))}</td>
+        <td class="px-4 py-3 align-top">${escapeHtml(fmtDataJornada(v.DATA_FIM))}</td>
+        <td class="px-4 py-3 align-top">${badgeStatusJornada(v.STATUS)}</td>
+
+        <td class="px-4 py-3 align-top">
+          <div class="flex justify-end gap-2">
+            <button
+              class="btnEditGrupoVinculoJornada w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all"
+              data-ids="${escapeHtml((v.IDS || []).join(','))}"
+              title="Editar vínculo"
+              aria-label="Editar vínculo"
+            >
+              <i class="fas fa-pen"></i>
+            </button>
+
+            <button
+              class="btnDelGrupoVinculoJornada w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all"
+              data-ids="${escapeHtml((v.IDS || []).join(','))}"
+              title="Excluir vínculos"
+              aria-label="Excluir vínculos"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function carregarJornada() {
+  try {
+    mostrarMsgJornada('');
+
+    const tbody = document.getElementById('tbodyJornada');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" class="px-4 py-6 form-subtitle-sm text-center">
+            Carregando jornadas...
+          </td>
+        </tr>
+      `;
+    }
+
+    const resp = await apiGet('/api/jornadas');
+    jornadasCache = Array.isArray(resp?.items) ? resp.items : [];
+    renderTabelaJornada();
+  } catch (err) {
+    const tbody = document.getElementById('tbodyJornada');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" class="px-4 py-6 text-sm text-destructive text-center">
+            Erro ao carregar jornadas.
+          </td>
+        </tr>
+      `;
+    }
+
+    mostrarMsgJornada(err?.message || 'Erro ao carregar jornadas.', true);
+  }
+}
+
+async function carregarVinculosJornada() {
+  try {
+    mostrarMsgVinculoJornada('');
+
+    const tbody = document.getElementById('tbodyVinculoJornada');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="px-4 py-6 form-subtitle-sm text-center">
+            Carregando vínculos...
+          </td>
+        </tr>
+      `;
+    }
+
+    const resp = await apiGet('/api/jornadas-vinculos');
+    vinculosJornadaCache = Array.isArray(resp?.items) ? resp.items : [];
+    renderTabelaVinculoJornada();
+  } catch (err) {
+    const tbody = document.getElementById('tbodyVinculoJornada');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="px-4 py-6 text-sm text-destructive text-center">
+            Erro ao carregar vínculos.
+          </td>
+        </tr>
+      `;
+    }
+
+    mostrarMsgVinculoJornada(err?.message || 'Erro ao carregar vínculos.', true);
+  }
+}
+
+async function carregarUsuariosParaJornada() {
+  const resp = await apiGet('/api/usuarios');
+  usuariosJornadaCache = Array.isArray(resp?.items) ? resp.items : [];
+  return usuariosJornadaCache;
+}
+
+function removerModalJornada() {
+  document.getElementById('modalJornadaOverlay')?.remove();
+  document.getElementById('modalJornada')?.remove();
+}
+
+function removerModalVinculoJornada() {
+  document.getElementById('modalVinculoJornadaOverlay')?.remove();
+  document.getElementById('modalVinculoJornada')?.remove();
+}
+
+function obterUsuarioJornadaId(u) {
+  return String(u?.ID ?? u?.id ?? '').trim();
+}
+
+function obterUsuarioJornadaNome(u) {
+  return String(u?.NOME ?? u?.nome ?? '').trim();
+}
+
+function obterUsuarioJornadaEmail(u) {
+  return String(u?.EMAIL ?? u?.email ?? '').trim();
+}
+
+function obterUsuarioJornadaUnidade(u) {
+  return String(
+    u?.UNIDADE_TRABALHO ??
+    u?.unidadeTrabalho ??
+    u?.local_trabalho ??
+    u?.localTrabalho ??
+    ''
+  ).trim();
+}
+
+function obterUsuarioJornadaCentroCusto(u) {
+  return String(u?.setor ?? '').trim();
+}
+
+function obterOpcoesUnicasUsuarios(lista, getter) {
+  return [...new Set(
+    (Array.isArray(lista) ? lista : [])
+      .map(getter)
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+function renderTabelaUsuariosSelecionadosVinculo(modal, selecionados = []) {
+  const tbody = modal.querySelector('#tbodyUsuariosSelecionadosVinculoJornada');
+  const resumo = modal.querySelector('#resumoUsuariosSelecionadosVinculoJornada');
+  const btnLimpar = modal.querySelector('#btnLimparUsuariosSelecionadosJornada');
+
+  if (!tbody) return;
+
+  if (resumo) {
+    resumo.textContent = selecionados.length
+      ? `${selecionados.length} usuário(s) adicionado(s).`
+      : 'Nenhum usuário adicionado.';
+  }
+
+  if (btnLimpar) {
+    btnLimpar.classList.toggle('hidden', !selecionados.length);
+  }
+
+  if (!selecionados.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="px-4 py-6 text-center form-subtitle-sm">
+          Nenhum usuário adicionado para vínculo.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = selecionados.map(u => `
+    <tr>
+      <td class="px-4 py-3">
+        <div class="font-medium">${escapeHtml(obterUsuarioJornadaNome(u))}</div>
+        <div class="text-xs text-muted-foreground">${escapeHtml(obterUsuarioJornadaEmail(u))}</div>
+      </td>
+      <td class="px-4 py-3">${escapeHtml(obterUsuarioJornadaUnidade(u) || '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(obterUsuarioJornadaCentroCusto(u) || '-')}</td>
+      <td class="px-4 py-3">${escapeHtml(obterUsuarioJornadaId(u))}</td>
+      <td class="px-4 py-3">
+        <div class="flex justify-end">
+          <button
+            type="button"
+            class="btnRemoverUsuarioSelecionadoJornada w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all"
+            data-id="${escapeHtml(obterUsuarioJornadaId(u))}"
+            title="Remover usuário"
+            aria-label="Remover usuário"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filtrarUsuariosDisponiveisVinculo(lista, unidade, centroCusto, termo) {
+  const unidadeNorm = normalizarTextoJornada(unidade);
+  const centroNorm = normalizarTextoJornada(centroCusto);
+  const termoNorm = normalizarTextoJornada(termo);
+
+  return (Array.isArray(lista) ? lista : []).filter(u => {
+    const nome = obterUsuarioJornadaNome(u);
+    const email = obterUsuarioJornadaEmail(u);
+    const unidadeUsuario = obterUsuarioJornadaUnidade(u);
+    const centroUsuario = obterUsuarioJornadaCentroCusto(u);
+
+    const okUnidade = !unidadeNorm || normalizarTextoJornada(unidadeUsuario) === unidadeNorm;
+    const okCentro = !centroNorm || normalizarTextoJornada(centroUsuario) === centroNorm;
+    const texto = normalizarTextoJornada([nome, email, unidadeUsuario, centroUsuario].join(' '));
+    const okBusca = !termoNorm || texto.includes(termoNorm);
+
+    return okUnidade && okCentro && okBusca;
+  });
+}
+
+function obterUsuariosDisponiveisVinculo(modal, lista, selecionados = []) {
+  const filtroUnidade = modal.querySelector('#filtroUnidadeTrabalhoVinculoJornada')?.value || '';
+  const filtroCentro = modal.querySelector('#filtroCentroCustoVinculoJornada')?.value || '';
+  const filtroBusca = modal.querySelector('#inputBuscaUsuarioVinculoJornada')?.value || '';
+
+  const idsSelecionados = new Set(selecionados.map(u => obterUsuarioJornadaId(u)));
+
+  return filtrarUsuariosDisponiveisVinculo(lista, filtroUnidade, filtroCentro, filtroBusca)
+    .filter(u => !idsSelecionados.has(obterUsuarioJornadaId(u)));
+}
+
+function renderSelectUsuariosDisponiveisVinculo(modal, lista, selecionados = [], usuarioPreferidoId = '') {
+  const select = modal.querySelector('#vjUsuarioId');
+  if (!select) return [];
+
+  const valorAtualAntesDeRenderizar = String(
+    usuarioPreferidoId ||
+    select.dataset.selectedId ||
+    select.value ||
+    ''
+  ).trim();
+
+  const filtrados = obterUsuariosDisponiveisVinculo(modal, lista, selecionados);
+
+  select.innerHTML = `
+    <option value="">Selecione um colaborador...</option>
+    ${filtrados.map(u => `
+      <option value="${escapeHtml(obterUsuarioJornadaId(u))}">
+        ${escapeHtml(obterUsuarioJornadaNome(u))}
+      </option>
+    `).join('')}
+  `;
+
+  let valorFinal = '';
+
+  if (
+    valorAtualAntesDeRenderizar &&
+    filtrados.some(u => obterUsuarioJornadaId(u) === valorAtualAntesDeRenderizar)
+  ) {
+    valorFinal = valorAtualAntesDeRenderizar;
+    select.value = valorFinal;
+  } else if (valorAtualAntesDeRenderizar) {
+    const usuarioForaDoFiltro = lista.find(
+      u => obterUsuarioJornadaId(u) === valorAtualAntesDeRenderizar
+    );
+
+    if (usuarioForaDoFiltro) {
+      const optionExtra = document.createElement('option');
+      optionExtra.value = obterUsuarioJornadaId(usuarioForaDoFiltro);
+      optionExtra.textContent = `${obterUsuarioJornadaNome(usuarioForaDoFiltro)} (selecionado)`;
+      optionExtra.dataset.keepSelected = 'true';
+      select.appendChild(optionExtra);
+
+      valorFinal = optionExtra.value;
+      select.value = valorFinal;
+    }
+  }
+
+  select.dataset.selectedId = valorFinal;
+
+  const resumo = modal.querySelector('#resumoUsuariosDisponiveisVinculoJornada');
+  if (resumo) {
+    resumo.textContent = `${filtrados.length} colaborador(es) disponível(is) para adicionar.`;
+  }
+
+  const btnAdicionarTodos = modal.querySelector('#btnAdicionarTodosUsuariosVinculoJornada');
+  if (btnAdicionarTodos) {
+    btnAdicionarTodos.disabled = !filtrados.length;
+    btnAdicionarTodos.classList.toggle('opacity-50', !filtrados.length);
+    btnAdicionarTodos.classList.toggle('cursor-not-allowed', !filtrados.length);
+  }
+
+  return filtrados;
+}
+
+function obterUsuariosDoGrupoEdicao(item) {
+  if (Array.isArray(item?.USUARIOS) && item.USUARIOS.length) {
+    return item.USUARIOS
+      .map(u => {
+        const id = String(u?.id ?? u?.ID ?? '').trim();
+        return usuariosJornadaCache.find(x => obterUsuarioJornadaId(x) === id) || {
+          id,
+          nome: u?.nome ?? u?.NOME ?? '',
+          email: u?.email ?? u?.EMAIL ?? '',
+          setor: u?.setor ?? '',
+          UNIDADE_TRABALHO: u?.UNIDADE_TRABALHO ?? u?.unidadeTrabalho ?? ''
+        };
+      })
+      .filter(Boolean);
+  }
+
+  const ids = Array.isArray(item?.IDS) ? item.IDS.map(String) : [];
+  if (!ids.length) return [];
+
+  const grupo = vinculosJornadaCache.filter(v => ids.includes(String(v.ID)));
+  const mapa = new Map();
+
+  for (const v of grupo) {
+    const usuarioId = String(v.USUARIO_ID ?? '').trim();
+    if (!usuarioId || mapa.has(usuarioId)) continue;
+
+    const usuarioCache = usuariosJornadaCache.find(u => obterUsuarioJornadaId(u) === usuarioId);
+
+    mapa.set(usuarioId, usuarioCache || {
+      id: v.USUARIO_ID,
+      nome: v.USUARIO_NOME ?? '',
+      email: v.USUARIO_EMAIL ?? '',
+      setor: v.USUARIO_SETOR ?? '',
+      perfil: v.USUARIO_PERFIL ?? ''
+    });
+  }
+
+  return [...mapa.values()];
+}
+
+async function abrirModalJornada(modo = 'new', jornada = null) {
+  removerModalJornada();
+
+  const isEdit = modo === 'edit';
+  const isView = modo === 'view';
+  const item = jornada || {};
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modalJornadaOverlay';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[90]';
+  document.body.appendChild(overlay);
+
+  const modal = document.createElement('div');
+  modal.id = 'modalJornada';
+  modal.className = 'fixed inset-0 z-[100] pointer-events-none';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  const disabledAttr = isView ? 'disabled' : '';
+  const readonlyAttr = isView ? 'readonly' : '';
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-auto">
+      <div class="min-h-full flex items-start justify-center p-4 md:p-8">
+        <div class="w-full max-w-4xl mx-auto pointer-events-auto">
+          <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
+            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+              <div>
+                <h3 class="form-title-sm font-semibold text-foreground">
+                  ${isView ? 'Visualizar jornada' : isEdit ? 'Editar jornada' : 'Nova jornada'}
+                </h3>
+                <p class="form-subtitle-sm">Preencha os dados da jornada com os horários e dias da semana.</p>
+              </div>
+
+              <button
+                id="btnFecharModalJornada"
+                type="button"
+                class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+                aria-label="Fechar"
+                title="Fechar"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <form id="formJornada" class="px-6 py-6 space-y-4" autocomplete="off">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2 space-y-2">
+                  <label for="jrDescricao" class="form-label-sm">Descrição</label>
+                  <input
+                    id="jrDescricao"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    value="${escapeHtml(item.DESCRICAO ?? '')}"
+                    ${readonlyAttr}
+                    required
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="jrHoraEntrada1" class="form-label-sm">Entrada 1</label>
+                  <input
+                    id="jrHoraEntrada1"
+                    type="time"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    value="${escapeHtml(String(item.HORA_INICIO_EXPEDIENTE ?? '').slice(0, 5))}"
+                    ${disabledAttr}
+                    required
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="jrHoraSaida1" class="form-label-sm">Saída 1</label>
+                  <input
+                    id="jrHoraSaida1"
+                    type="time"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    value="${escapeHtml(String(item.HORA_SAIDA_INTERVALO ?? '').slice(0, 5))}"
+                    ${disabledAttr}
+                    required
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="jrHoraEntrada2" class="form-label-sm">Entrada 2</label>
+                  <input
+                    id="jrHoraEntrada2"
+                    type="time"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    value="${escapeHtml(String(item.HORA_RETORNO_INTERVALO ?? '').slice(0, 5))}"
+                    ${disabledAttr}
+                    required
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="jrHoraSaida2" class="form-label-sm">Saída 2</label>
+                  <input
+                    id="jrHoraSaida2"
+                    type="time"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    value="${escapeHtml(String(item.HORA_FIM_EXPEDIENTE ?? '').slice(0, 5))}"
+                    ${disabledAttr}
+                    required
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="jrCargaHoraria" class="form-label-sm">Carga horária</label>
+                  <input
+                    id="jrCargaHoraria"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    value="${escapeHtml(item.CARGA_HORARIA ?? '')}"
+                    placeholder="Ex. 08:00"
+                    ${readonlyAttr}
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="jrStatus" class="form-label-sm">Status</label>
+                  <select
+                    id="jrStatus"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    ${disabledAttr}
+                  >
+                    <option value="ATIVO" ${String(item.STATUS ?? 'ATIVO').toUpperCase() === 'ATIVO' ? 'selected' : ''}>ATIVO</option>
+                    <option value="INATIVO" ${String(item.STATUS ?? '').toUpperCase() === 'INATIVO' ? 'selected' : ''}>INATIVO</option>
+                  </select>
+                </div>
+
+                <div class="md:col-span-2 space-y-2">
+                  <label class="form-label-sm">Dias da semana</label>
+
+                  <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+                    <label class="flex items-center gap-2 rounded-xl border border-border bg-white/60 px-3 py-3 hover:bg-white/90 transition-all cursor-pointer">
+                      <input id="jrDomingo" type="checkbox" class="rounded border-border"
+                        ${String(item.TRABALHA_DOMINGO ?? 'N').toUpperCase() === 'S' ? 'checked' : ''}
+                        ${disabledAttr}>
+                      <span class="text-sm">Domingo</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 rounded-xl border border-border bg-white/60 px-3 py-3 hover:bg-white/90 transition-all cursor-pointer">
+                      <input id="jrSegunda" type="checkbox" class="rounded border-border"
+                        ${String(item.TRABALHA_SEGUNDA ?? 'S').toUpperCase() === 'S' ? 'checked' : ''}
+                        ${disabledAttr}>
+                      <span class="text-sm">Segunda</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 rounded-xl border border-border bg-white/60 px-3 py-3 hover:bg-white/90 transition-all cursor-pointer">
+                      <input id="jrTerca" type="checkbox" class="rounded border-border"
+                        ${String(item.TRABALHA_TERCA ?? 'S').toUpperCase() === 'S' ? 'checked' : ''}
+                        ${disabledAttr}>
+                      <span class="text-sm">Terça</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 rounded-xl border border-border bg-white/60 px-3 py-3 hover:bg-white/90 transition-all cursor-pointer">
+                      <input id="jrQuarta" type="checkbox" class="rounded border-border"
+                        ${String(item.TRABALHA_QUARTA ?? 'S').toUpperCase() === 'S' ? 'checked' : ''}
+                        ${disabledAttr}>
+                      <span class="text-sm">Quarta</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 rounded-xl border border-border bg-white/60 px-3 py-3 hover:bg-white/90 transition-all cursor-pointer">
+                      <input id="jrQuinta" type="checkbox" class="rounded border-border"
+                        ${String(item.TRABALHA_QUINTA ?? 'S').toUpperCase() === 'S' ? 'checked' : ''}
+                        ${disabledAttr}>
+                      <span class="text-sm">Quinta</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 rounded-xl border border-border bg-white/60 px-3 py-3 hover:bg-white/90 transition-all cursor-pointer">
+                      <input id="jrSexta" type="checkbox" class="rounded border-border"
+                        ${String(item.TRABALHA_SEXTA ?? 'S').toUpperCase() === 'S' ? 'checked' : ''}
+                        ${disabledAttr}>
+                      <span class="text-sm">Sexta</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 rounded-xl border border-border bg-white/60 px-3 py-3 hover:bg-white/90 transition-all cursor-pointer">
+                      <input id="jrSabado" type="checkbox" class="rounded border-border"
+                        ${String(item.TRABALHA_SABADO ?? 'N').toUpperCase() === 'S' ? 'checked' : ''}
+                        ${disabledAttr}>
+                      <span class="text-sm">Sábado</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="md:col-span-2 space-y-2">
+                  <label for="jrObservacao" class="form-label-sm">Observação</label>
+                  <textarea
+                    id="jrObservacao"
+                    rows="4"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    ${readonlyAttr}
+                  >${escapeHtml(item.OBSERVACAO ?? '')}</textarea>
+                </div>
+              </div>
+
+              <p id="jornadaFormErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
+
+              <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                ${
+                  isView
+                    ? ''
+                    : `
+                      <button
+                        id="btnSalvarJornada"
+                        type="submit"
+                        class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
+                      >
+                        ${isEdit ? 'Salvar alterações' : 'Salvar'}
+                      </button>
+                    `
+                }
+
+                <button
+                  id="btnCancelarModalJornada"
+                  type="button"
+                  class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all"
+                >
+                  ${isView ? 'Fechar' : 'Cancelar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const btnFechar = modal.querySelector('#btnFecharModalJornada');
+  const btnCancelar = modal.querySelector('#btnCancelarModalJornada');
+  const form = modal.querySelector('#formJornada');
+  const erroEl = modal.querySelector('#jornadaFormErro');
+  const btnSalvar = modal.querySelector('#btnSalvarJornada');
+
+  function fechar() {
+    removerModalJornada();
+    document.removeEventListener('keydown', onKeyDown);
+  }
+
+  function onKeyDown(e) {
+    if (e.key === 'Escape') fechar();
+  }
+
+  function setErro(msg) {
+    if (!erroEl) return;
+    erroEl.textContent = msg || '';
+    erroEl.classList.toggle('hidden', !msg);
+  }
+
+  function setLoading(loading) {
+    if (!btnSalvar) return;
+    btnSalvar.disabled = !!loading;
+    btnSalvar.textContent = loading ? 'Salvando...' : (isEdit ? 'Salvar alterações' : 'Salvar');
+  }
+
+  overlay.addEventListener('click', fechar);
+  btnFechar?.addEventListener('click', fechar);
+  btnCancelar?.addEventListener('click', fechar);
+  document.addEventListener('keydown', onKeyDown);
+
+  if (!isView) {
+    form?.addEventListener('submit', async e => {
+      e.preventDefault();
+      setErro('');
+
+      const payload = {
+        descricao: modal.querySelector('#jrDescricao')?.value?.trim(),
+        horaEntrada1: modal.querySelector('#jrHoraEntrada1')?.value,
+        horaSaida1: modal.querySelector('#jrHoraSaida1')?.value,
+        horaEntrada2: modal.querySelector('#jrHoraEntrada2')?.value,
+        horaSaida2: modal.querySelector('#jrHoraSaida2')?.value,
+        cargaHoraria: modal.querySelector('#jrCargaHoraria')?.value?.trim(),
+        status: modal.querySelector('#jrStatus')?.value || 'ATIVO',
+        observacao: modal.querySelector('#jrObservacao')?.value?.trim(),
+        trabalhaDomingo: modal.querySelector('#jrDomingo')?.checked ? 'S' : 'N',
+        trabalhaSegunda: modal.querySelector('#jrSegunda')?.checked ? 'S' : 'N',
+        trabalhaTerca: modal.querySelector('#jrTerca')?.checked ? 'S' : 'N',
+        trabalhaQuarta: modal.querySelector('#jrQuarta')?.checked ? 'S' : 'N',
+        trabalhaQuinta: modal.querySelector('#jrQuinta')?.checked ? 'S' : 'N',
+        trabalhaSexta: modal.querySelector('#jrSexta')?.checked ? 'S' : 'N',
+        trabalhaSabado: modal.querySelector('#jrSabado')?.checked ? 'S' : 'N'
+      };
+
+      if (!payload.descricao) {
+        setErro('Informe a descrição da jornada.');
+        return;
+      }
+
+      if (!payload.horaEntrada1 || !payload.horaSaida1 || !payload.horaEntrada2 || !payload.horaSaida2) {
+        setErro('Informe os 4 horários da jornada: entrada 1, saída 1, entrada 2 e saída 2.');
+        return;
+      }
+
+      const diasSelecionados = [
+        payload.trabalhaDomingo,
+        payload.trabalhaSegunda,
+        payload.trabalhaTerca,
+        payload.trabalhaQuarta,
+        payload.trabalhaQuinta,
+        payload.trabalhaSexta,
+        payload.trabalhaSabado
+      ];
+
+      if (!diasSelecionados.includes('S')) {
+        setErro('Selecione ao menos um dia da semana para a jornada.');
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        if (isEdit) {
+          await apiSend(`/api/jornadas/${item.ID}`, 'PUT', payload);
+          mostrarMsgJornada('Jornada atualizada com sucesso.');
+        } else {
+          await apiSend('/api/jornadas', 'POST', payload);
+          mostrarMsgJornada('Jornada cadastrada com sucesso.');
+        }
+
+        fechar();
+        await carregarJornada();
+      } catch (err) {
+        setErro(err?.message || 'Erro ao salvar jornada.');
+      } finally {
+        setLoading(false);
+      }
+    });
+  }
+}
+
+async function abrirModalVinculoJornada(modo = 'new', vinculo = null) {
+  removerModalVinculoJornada();
+
+  const isEdit = modo === 'edit';
+  const item = vinculo || {};
+
+  try {
+    if (!usuariosJornadaCache.length) await carregarUsuariosParaJornada();
+    if (!jornadasCache.length) await carregarJornada();
+    if (!vinculosJornadaCache.length) await carregarVinculosJornada();
+  } catch (err) {
+    alert(err?.message || 'Erro ao carregar dados do vínculo.');
+    return;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modalVinculoJornadaOverlay';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[90]';
+  document.body.appendChild(overlay);
+
+  const modal = document.createElement('div');
+  modal.id = 'modalVinculoJornada';
+  modal.className = 'fixed inset-0 z-[100] pointer-events-none';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  const statusAtual = String(item.STATUS ?? 'ATIVO').toUpperCase();
+  const jornadaIdAtual = String(item.JORNADA_ID ?? '');
+
+  const jornadasOptions = [
+    `<option value="">Selecione a jornada...</option>`,
+    ...jornadasCache.map(j => `
+      <option value="${escapeHtml(String(j.ID ?? ''))}" ${String(j.ID ?? '') === jornadaIdAtual ? 'selected' : ''}>
+        ${escapeHtml(j.DESCRICAO ?? '')}
+      </option>
+    `)
+  ].join('');
+
+  const opcoesUnidade = obterOpcoesUnicasUsuarios(usuariosJornadaCache, obterUsuarioJornadaUnidade);
+  const opcoesCentro = obterOpcoesUnicasUsuarios(usuariosJornadaCache, obterUsuarioJornadaCentroCusto);
+
+  modal.innerHTML = `
+    <div class="w-full h-full overflow-auto">
+      <div class="min-h-full flex items-start justify-center p-4 md:p-8">
+        <div class="w-full max-w-6xl mx-auto pointer-events-auto">
+          <div class="glass rounded-2xl shadow-2xl border border-border overflow-hidden">
+            <div class="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+              <div>
+                <h3 class="form-title-sm font-semibold text-foreground">
+                  ${isEdit ? 'Editar vínculo' : 'Novo vínculo de usuário com jornada'}
+                </h3>
+                <p class="form-subtitle-sm">Selecione a jornada, filtre os colaboradores e adicione à lista antes de salvar.</p>
+              </div>
+
+              <button
+                id="btnFecharModalVinculoJornada"
+                type="button"
+                class="w-10 h-10 rounded-xl bg-white/60 border border-border hover:bg-white transition-all flex items-center justify-center"
+                aria-label="Fechar"
+                title="Fechar"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <form id="formVinculoJornada" class="px-6 py-6 space-y-5" autocomplete="off">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="space-y-2">
+                  <label for="vjDataInicio" class="form-label-sm">Data início</label>
+                  <input
+                    id="vjDataInicio"
+                    type="date"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    value="${escapeHtml(String(item.DATA_INICIO ?? '').slice(0, 10))}"
+                    required
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="vjDataFim" class="form-label-sm">Data fim</label>
+                  <input
+                    id="vjDataFim"
+                    type="date"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    value="${escapeHtml(String(item.DATA_FIM ?? '').slice(0, 10))}"
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label for="vjStatus" class="form-label-sm">Status</label>
+                  <select
+                    id="vjStatus"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="ATIVO" ${statusAtual === 'ATIVO' ? 'selected' : ''}>ATIVO</option>
+                    <option value="INATIVO" ${statusAtual === 'INATIVO' ? 'selected' : ''}>INATIVO</option>
+                  </select>
+                </div>
+
+                <div class="md:col-span-3 space-y-2">
+                  <label for="vjJornadaId" class="form-label-sm">Jornada</label>
+                  <select
+                    id="vjJornadaId"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    required
+                  >
+                    ${jornadasOptions}
+                  </select>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-white/50 p-4 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <div>
+                    <h4 class="font-semibold text-foreground">Adicionar colaboradores</h4>
+                    <p class="form-subtitle-sm">Filtre por local de trabalho ou setor e adicione à lista.</p>
+                  </div>
+
+                  <p id="resumoUsuariosDisponiveisVinculoJornada" class="text-sm text-muted-foreground"></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="space-y-2">
+                    <label for="filtroUnidadeTrabalhoVinculoJornada" class="form-label-sm">Local de trabalho</label>
+                    <select
+                      id="filtroUnidadeTrabalhoVinculoJornada"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      <option value="">Todas</option>
+                      ${opcoesUnidade.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('')}
+                    </select>
+                  </div>
+
+                  <div class="space-y-2">
+                    <label for="filtroCentroCustoVinculoJornada" class="form-label-sm">Setor</label>
+                    <select
+                      id="filtroCentroCustoVinculoJornada"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      <option value="">Todos</option>
+                      ${opcoesCentro.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('')}
+                    </select>
+                  </div>
+
+                  <div class="space-y-2">
+                    <label for="inputBuscaUsuarioVinculoJornada" class="form-label-sm">Buscar colaborador</label>
+                    <input
+                      id="inputBuscaUsuarioVinculoJornada"
+                      type="text"
+                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                      placeholder="Nome ou e-mail..."
+                      autocomplete="off"
+                    />
+                  </div>
+
+                  <div class="md:col-span-3 space-y-2">
+                    <label for="vjUsuarioId" class="form-label-sm">Colaborador</label>
+                    <div class="flex flex-col lg:flex-row gap-2">
+                      <select
+                        id="vjUsuarioId"
+                        class="flex-1 rounded-xl border border-border bg-white/70 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                      >
+                        <option value="">Selecione um colaborador...</option>
+                      </select>
+
+                      <button
+                        id="btnAdicionarUsuarioVinculoJornada"
+                        type="button"
+                        class="px-4 h-11 rounded-xl bg-primary text-white hover:opacity-90 transition-all font-medium"
+                      >
+                        Adicionar
+                      </button>
+
+                      <button
+                        id="btnAdicionarTodosUsuariosVinculoJornada"
+                        type="button"
+                        class="px-4 h-11 rounded-xl border border-border bg-white/70 hover:bg-white transition-all font-medium"
+                      >
+                        Adicionar todos
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-white/50 p-4 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <div>
+                    <h4 class="font-semibold text-foreground">Usuários adicionados</h4>
+                    <p class="form-subtitle-sm">Revise a lista antes de salvar o vínculo.</p>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <p id="resumoUsuariosSelecionadosVinculoJornada" class="text-sm text-muted-foreground"></p>
+                    <button
+                      id="btnLimparUsuariosSelecionadosJornada"
+                      type="button"
+                      class="px-4 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all text-sm font-medium"
+                    >
+                      Limpar lista
+                    </button>
+                  </div>
+                </div>
+
+                <div class="overflow-auto rounded-xl border border-border">
+                  <table class="min-w-full text-sm">
+                    <thead class="bg-white/60">
+                      <tr>
+                        <th class="px-4 py-3 text-left">Usuário</th>
+                        <th class="px-4 py-3 text-left">Local</th>
+                        <th class="px-4 py-3 text-left">Setor</th>
+                        <th class="px-4 py-3 text-left">ID</th>
+                        <th class="px-4 py-3 text-right">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbodyUsuariosSelecionadosVinculoJornada"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <p id="vinculoJornadaFormErro" class="text-sm text-destructive hidden whitespace-pre-line"></p>
+
+              <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                <button
+                  id="btnSalvarVinculoJornada"
+                  type="submit"
+                  class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
+                >
+                  ${isEdit ? 'Salvar alterações' : 'Salvar vínculos'}
+                </button>
+
+                <button
+                  id="btnCancelarModalVinculoJornada"
+                  type="button"
+                  class="sm:flex-1 rounded-xl border border-border bg-white/50 form-control-sm font-medium hover:bg-white/70 transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const btnFechar = modal.querySelector('#btnFecharModalVinculoJornada');
+  const btnCancelar = modal.querySelector('#btnCancelarModalVinculoJornada');
+  const form = modal.querySelector('#formVinculoJornada');
+  const erroEl = modal.querySelector('#vinculoJornadaFormErro');
+  const btnSalvar = modal.querySelector('#btnSalvarVinculoJornada');
+  const selectUsuario = modal.querySelector('#vjUsuarioId');
+  const btnAdicionarUsuario = modal.querySelector('#btnAdicionarUsuarioVinculoJornada');
+  const btnAdicionarTodos = modal.querySelector('#btnAdicionarTodosUsuariosVinculoJornada');
+  const btnLimparLista = modal.querySelector('#btnLimparUsuariosSelecionadosJornada');
+  const selectUnidade = modal.querySelector('#filtroUnidadeTrabalhoVinculoJornada');
+  const selectCentro = modal.querySelector('#filtroCentroCustoVinculoJornada');
+  const inputBuscaUsuario = modal.querySelector('#inputBuscaUsuarioVinculoJornada');
+  const inputDataInicio = modal.querySelector('#vjDataInicio');
+  const inputDataFim = modal.querySelector('#vjDataFim');
+
+  let usuariosSelecionados = isEdit ? obterUsuariosDoGrupoEdicao(item) : [];
+  let usuarioSelectAtualId = '';
+
+  if (isEdit && usuariosSelecionados.length === 1) {
+    usuarioSelectAtualId = obterUsuarioJornadaId(usuariosSelecionados[0]);
+  }
+
+  function fechar() {
+    removerModalVinculoJornada();
+    document.removeEventListener('keydown', onKeyDown);
+  }
+
+  function onKeyDown(e) {
+    if (e.key === 'Escape') fechar();
+  }
+
+  function setErro(msg) {
+    if (!erroEl) return;
+    erroEl.textContent = msg || '';
+    erroEl.classList.toggle('hidden', !msg);
+  }
+
+  function setLoading(loading) {
+    if (!btnSalvar) return;
+    btnSalvar.disabled = !!loading;
+    btnSalvar.textContent = loading
+      ? 'Salvando...'
+      : (isEdit ? 'Salvar alterações' : 'Salvar vínculos');
+  }
+
+  function atualizarBlocoUsuarios(forcarUsuarioId = '') {
+    const idParaPreservar = String(
+      forcarUsuarioId ||
+      usuarioSelectAtualId ||
+      selectUsuario?.dataset?.selectedId ||
+      selectUsuario?.value ||
+      ''
+    ).trim();
+
+    renderSelectUsuariosDisponiveisVinculo(
+      modal,
+      usuariosJornadaCache,
+      usuariosSelecionados,
+      idParaPreservar
+    );
+
+    renderTabelaUsuariosSelecionadosVinculo(modal, usuariosSelecionados);
+  }
+
+  function adicionarUsuarioSelecionado() {
+    const usuarioId = String(selectUsuario?.value || '').trim();
+    if (!usuarioId) return;
+
+    const usuario = usuariosJornadaCache.find(
+      u => obterUsuarioJornadaId(u) === usuarioId
+    );
+    if (!usuario) return;
+
+    const jaExiste = usuariosSelecionados.some(
+      u => obterUsuarioJornadaId(u) === usuarioId
+    );
+
+    if (jaExiste) {
+      usuarioSelectAtualId = usuarioId;
+      selectUsuario.dataset.selectedId = usuarioId;
+      atualizarBlocoUsuarios(usuarioId);
+      return;
+    }
+
+    usuariosSelecionados.push(usuario);
+    usuarioSelectAtualId = usuarioId;
+    selectUsuario.dataset.selectedId = usuarioId;
+
+    atualizarBlocoUsuarios(usuarioId);
+  }
+
+  function adicionarTodosUsuariosFiltrados() {
+    const filtrados = obterUsuariosDisponiveisVinculo(modal, usuariosJornadaCache, usuariosSelecionados);
+    if (!filtrados.length) return;
+
+    const idsSelecionados = new Set(usuariosSelecionados.map(u => obterUsuarioJornadaId(u)));
+
+    for (const usuario of filtrados) {
+      const id = obterUsuarioJornadaId(usuario);
+      if (!idsSelecionados.has(id)) {
+        usuariosSelecionados.push(usuario);
+        idsSelecionados.add(id);
+      }
+    }
+
+    usuarioSelectAtualId = '';
+    if (selectUsuario) {
+      selectUsuario.value = '';
+      selectUsuario.dataset.selectedId = '';
+    }
+
+    atualizarBlocoUsuarios();
+  }
+
+  function removerUsuarioSelecionado(usuarioId) {
+    usuariosSelecionados = usuariosSelecionados.filter(
+      u => obterUsuarioJornadaId(u) !== String(usuarioId)
+    );
+
+    if (String(usuarioSelectAtualId) === String(usuarioId)) {
+      usuarioSelectAtualId = '';
+      if (selectUsuario) {
+        selectUsuario.dataset.selectedId = '';
+        selectUsuario.value = '';
+      }
+    }
+
+    atualizarBlocoUsuarios();
+  }
+
+  function limparListaUsuarios() {
+    usuariosSelecionados = [];
+    usuarioSelectAtualId = '';
+    if (selectUsuario) {
+      selectUsuario.dataset.selectedId = '';
+      selectUsuario.value = '';
+    }
+    atualizarBlocoUsuarios();
+  }
+
+  overlay.addEventListener('click', fechar);
+  btnFechar?.addEventListener('click', fechar);
+  btnCancelar?.addEventListener('click', fechar);
+  document.addEventListener('keydown', onKeyDown);
+
+  btnAdicionarUsuario?.addEventListener('click', adicionarUsuarioSelecionado);
+  btnAdicionarTodos?.addEventListener('click', adicionarTodosUsuariosFiltrados);
+  btnLimparLista?.addEventListener('click', limparListaUsuarios);
+
+  selectUnidade?.addEventListener('change', () => atualizarBlocoUsuarios());
+  selectCentro?.addEventListener('change', () => atualizarBlocoUsuarios());
+  inputBuscaUsuario?.addEventListener('input', () => atualizarBlocoUsuarios());
+
+  selectUsuario?.addEventListener('change', () => {
+    usuarioSelectAtualId = String(selectUsuario.value || '').trim();
+    selectUsuario.dataset.selectedId = usuarioSelectAtualId;
+  });
+
+  inputDataInicio?.addEventListener('change', async () => {
+    const selecionado = String(
+      usuarioSelectAtualId ||
+      selectUsuario?.dataset?.selectedId ||
+      selectUsuario?.value ||
+      ''
+    ).trim();
+
+    await carregarUsuariosParaJornada();
+    atualizarBlocoUsuarios(selecionado);
+  });
+
+  inputDataFim?.addEventListener('change', async () => {
+    const selecionado = String(
+      usuarioSelectAtualId ||
+      selectUsuario?.dataset?.selectedId ||
+      selectUsuario?.value ||
+      ''
+    ).trim();
+
+    await carregarUsuariosParaJornada();
+    atualizarBlocoUsuarios(selecionado);
+  });
+
+  selectUsuario?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      adicionarUsuarioSelecionado();
+    }
+  });
+
+  modal.addEventListener('click', e => {
+    const btnRemover = e.target.closest('.btnRemoverUsuarioSelecionadoJornada');
+    if (!btnRemover) return;
+    removerUsuarioSelecionado(btnRemover.dataset.id);
+  });
+
+  atualizarBlocoUsuarios();
+
+  form?.addEventListener('submit', async e => {
+    e.preventDefault();
+    setErro('');
+
+    const jornadaId = Number(modal.querySelector('#vjJornadaId')?.value || 0);
+    const dataInicio = modal.querySelector('#vjDataInicio')?.value;
+    const dataFim = modal.querySelector('#vjDataFim')?.value;
+    const status = modal.querySelector('#vjStatus')?.value || 'ATIVO';
+
+    if (!dataInicio) {
+      setErro('Informe a data de início.');
+      return;
+    }
+
+    if (!jornadaId) {
+      setErro('Selecione a jornada.');
+      return;
+    }
+
+    if (!usuariosSelecionados.length) {
+      setErro('Adicione ao menos um colaborador à lista.');
+      return;
+    }
+
+    if (dataFim && dataFim < dataInicio) {
+      setErro('A data fim não pode ser menor que a data início.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      if (isEdit) {
+        const idsOriginais = Array.isArray(item.IDS) ? item.IDS.map(Number).filter(Boolean) : [];
+
+        for (const idVinculo of idsOriginais) {
+          await apiSend(`/api/jornadas/vinculos/${idVinculo}`, 'DELETE');
+        }
+
+        const resp = await apiSend('/api/jornadas/vincular-usuarios', 'POST', {
+          usuarios: usuariosSelecionados.map(u => Number(obterUsuarioJornadaId(u))),
+          jornadaId,
+          dataInicio,
+          dataFim,
+          status
+        });
+
+        const inseridos = Array.isArray(resp?.inseridos) ? resp.inseridos : [];
+        const ignorados = Array.isArray(resp?.ignorados) ? resp.ignorados : [];
+
+        if (!inseridos.length && ignorados.length) {
+          throw new Error(
+            ignorados.map(i => `${i.nome || i.usuarioId}: ${i.motivo || 'Não foi possível vincular.'}`).join('\n')
+          );
+        }
+
+        if (ignorados.length) {
+          mostrarMsgVinculoJornada(
+            `Vínculo atualizado para ${inseridos.length} usuário(s). ${ignorados.length} foram ignorado(s).`,
+            true
+          );
+        } else {
+          mostrarMsgVinculoJornada(`Vínculo atualizado com sucesso para ${inseridos.length} usuário(s).`);
+        }
+      } else {
+        const usuarios = usuariosSelecionados
+          .map(u => Number(obterUsuarioJornadaId(u)))
+          .filter(v => Number.isInteger(v) && v > 0);
+
+        const resp = await apiSend('/api/jornadas/vincular-usuarios', 'POST', {
+          usuarios,
+          jornadaId,
+          dataInicio,
+          dataFim,
+          status
+        });
+
+        const inseridos = Array.isArray(resp?.inseridos) ? resp.inseridos : [];
+        const ignorados = Array.isArray(resp?.ignorados) ? resp.ignorados : [];
+
+        if (!inseridos.length && ignorados.length) {
+          throw new Error(
+            ignorados.map(i => `${i.nome || i.usuarioId}: ${i.motivo || 'Não foi possível vincular.'}`).join('\n')
+          );
+        }
+
+        if (ignorados.length) {
+          mostrarMsgVinculoJornada(
+            `Vínculos cadastrados com sucesso para ${inseridos.length} usuário(s). ${ignorados.length} foram ignorado(s).`,
+            true
+          );
+        } else {
+          mostrarMsgVinculoJornada(`Vínculos cadastrados com sucesso para ${inseridos.length} usuário(s).`);
+        }
+      }
+
+      fechar();
+      await Promise.all([
+        carregarVinculosJornada(),
+        carregarUsuariosParaJornada()
+      ]);
+    } catch (err) {
+      setErro(err?.message || 'Erro ao salvar vínculo.');
+    } finally {
+      setLoading(false);
+    }
+  });
+}
+
+function configurarFiltroJornada() {
+  const input = document.getElementById('inputFiltroJornada');
+  const btnLimpar = document.getElementById('btnLimparFiltroJornada');
+
+  if (!input) return;
+  if (input.dataset.bound === 'true') return;
+  input.dataset.bound = 'true';
+
+  input.addEventListener('input', () => {
+    termoFiltroJornada = input.value;
+    btnLimpar?.classList.toggle('hidden', !termoFiltroJornada.trim());
+    renderTabelaJornada();
+  });
+
+  btnLimpar?.addEventListener('click', () => {
+    input.value = '';
+    termoFiltroJornada = '';
+    btnLimpar.classList.add('hidden');
+    renderTabelaJornada();
+    input.focus();
+  });
+}
+
+function configurarFiltroVinculoJornada() {
+  const input = document.getElementById('inputFiltroVinculoJornada');
+  const btnLimpar = document.getElementById('btnLimparFiltroVinculoJornada');
+
+  if (!input) return;
+  if (input.dataset.bound === 'true') return;
+  input.dataset.bound = 'true';
+
+  input.addEventListener('input', () => {
+    termoFiltroVinculoJornada = input.value;
+    btnLimpar?.classList.toggle('hidden', !termoFiltroVinculoJornada.trim());
+    renderTabelaVinculoJornada();
+  });
+
+  btnLimpar?.addEventListener('click', () => {
+    input.value = '';
+    termoFiltroVinculoJornada = '';
+    btnLimpar.classList.add('hidden');
+    renderTabelaVinculoJornada();
+    input.focus();
+  });
+}
+
+async function carregarTelaJornada() {
+  showPage('secao-jornada');
+  configurarFiltroJornada();
+  await carregarJornada();
+}
+
+async function carregarTelaVinculoJornada() {
+  showPage('secao-vinculo-jornada');
+  configurarFiltroVinculoJornada();
+
+  await Promise.all([
+    carregarVinculosJornada(),
+    carregarJornada(),
+    carregarUsuariosParaJornada()
+  ]);
+}
+
+document.addEventListener('click', async e => {
+  const itemJornada = e.target.closest('.menu-item[data-page="secao-jornada"]');
+  if (itemJornada) {
+    await carregarTelaJornada();
+    return;
+  }
+
+  const itemVinculo = e.target.closest('.menu-item[data-page="secao-vinculo-jornada"]');
+  if (itemVinculo) {
+    await carregarTelaVinculoJornada();
+    return;
+  }
+
+  if (e.target.closest('#btnAtualizarJornada')) {
+    await carregarJornada();
+    return;
+  }
+
+  if (e.target.closest('#btnAtualizarVinculoJornada')) {
+    await carregarVinculosJornada();
+    return;
+  }
+
+  if (e.target.closest('#btnNovaJornada')) {
+    await abrirModalJornada('new');
+    return;
+  }
+
+  if (e.target.closest('#btnNovoVinculoJornada')) {
+    await abrirModalVinculoJornada('new');
+    return;
+  }
+
+  const btnViewJornada = e.target.closest('.btnViewJornada');
+  if (btnViewJornada) {
+    const id = btnViewJornada.dataset.id;
+    try {
+      const resp = await apiGet(`/api/jornadas/${id}`);
+      await abrirModalJornada('view', resp?.item);
+    } catch (err) {
+      alert(err?.message || 'Erro ao carregar jornada.');
+    }
+    return;
+  }
+
+  const btnEditJornada = e.target.closest('.btnEditJornada');
+  if (btnEditJornada) {
+    const id = btnEditJornada.dataset.id;
+    try {
+      const resp = await apiGet(`/api/jornadas/${id}`);
+      await abrirModalJornada('edit', resp?.item);
+    } catch (err) {
+      alert(err?.message || 'Erro ao carregar jornada.');
+    }
+    return;
+  }
+
+  const btnDelJornada = e.target.closest('.btnDelJornada');
+  if (btnDelJornada) {
+    const id = btnDelJornada.dataset.id;
+    if (!confirm('Deseja excluir esta jornada?')) return;
+
+    try {
+      await apiSend(`/api/jornadas/${id}`, 'DELETE');
+      mostrarMsgJornada('Jornada removida com sucesso.');
+      await carregarJornada();
+    } catch (err) {
+      alert(err?.message || 'Erro ao excluir jornada.');
+    }
+    return;
+  }
+
+  const btnEditGrupoVinculo = e.target.closest('.btnEditGrupoVinculoJornada');
+  if (btnEditGrupoVinculo) {
+    const ids = String(btnEditGrupoVinculo.dataset.ids || '')
+      .split(',')
+      .map(v => v.trim())
+      .filter(Boolean);
+
+    if (!ids.length) return;
+
+    const agrupados = agruparVinculosJornada(vinculosJornadaCache);
+    const grupo = agrupados.find(g => {
+      const grupoIds = Array.isArray(g.IDS) ? g.IDS.map(String) : [];
+      return grupoIds.length === ids.length && grupoIds.every(id => ids.includes(id));
+    });
+
+    if (!grupo) {
+      alert('Não foi possível localizar o grupo de vínculos para edição.');
+      return;
+    }
+
+    await abrirModalVinculoJornada('edit', grupo);
+    return;
+  }
+
+  const btnDelGrupoVinculo = e.target.closest('.btnDelGrupoVinculoJornada');
+  if (btnDelGrupoVinculo) {
+    const ids = String(btnDelGrupoVinculo.dataset.ids || '')
+      .split(',')
+      .map(v => v.trim())
+      .filter(Boolean);
+
+    if (!ids.length) return;
+    if (!confirm(`Deseja excluir ${ids.length} vínculo(s)?`)) return;
+
+    try {
+      for (const id of ids) {
+        await apiSend(`/api/jornadas/vinculos/${id}`, 'DELETE');
+      }
+
+      mostrarMsgVinculoJornada('Vínculo(s) removido(s) com sucesso.');
+      await carregarVinculosJornada();
+    } catch (err) {
+      alert(err?.message || 'Erro ao excluir vínculo(s).');
+    }
+    return;
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  configurarFiltroJornada();
+  configurarFiltroVinculoJornada();
+
+  document.getElementById('btnAtualizarJornada')?.addEventListener('click', carregarJornada);
+  document.getElementById('btnAtualizarVinculoJornada')?.addEventListener('click', carregarVinculosJornada);
+  document.getElementById('btnNovaJornada')?.addEventListener('click', () => abrirModalJornada('new'));
+  document.getElementById('btnNovoVinculoJornada')?.addEventListener('click', () => abrirModalVinculoJornada('new'));
+});
+
+
+
+
+
+// =========================
+// Solicitações de Ponto RH
+// =========================
+
+function obterElementosPainelSolicitacoes() {
+  return {
+    btnToggle: document.getElementById('btnTogglePainelSolicitacoes'),
+    labelToggle: document.getElementById('labelTogglePainelSolicitacoes'),
+    painelAux: document.getElementById('painelAuxSolicitacoes'),
+    painelTabela: document.getElementById('painelTabelaSolicitacoes')
+  };
+}
+
+function painelSolicitacoesEstaOculto(painelAux) {
+  return !painelAux || painelAux.classList.contains('hidden');
+}
+
+function atualizarEstadoPainelSolicitacoes(elementos, oculto) {
+  const { btnToggle, labelToggle, painelAux, painelTabela } = elementos;
+  if (!btnToggle || !painelAux || !painelTabela) return;
+
+  painelAux.classList.toggle('hidden', oculto);
+  painelTabela.classList.toggle('xl:col-span-12', oculto);
+  painelTabela.classList.toggle('xl:col-span-8', !oculto);
+  btnToggle.setAttribute('aria-expanded', oculto ? 'false' : 'true');
+
+  if (labelToggle) {
+    labelToggle.textContent = oculto ? 'Exibir painel' : 'Ocultar painel';
+  }
+}
+
+function alternarPainelSolicitacoes() {
+  const elementos = obterElementosPainelSolicitacoes();
+  if (!elementos.btnToggle || !elementos.painelAux || !elementos.painelTabela) return;
+
+  const ocultoAtual = painelSolicitacoesEstaOculto(elementos.painelAux);
+  atualizarEstadoPainelSolicitacoes(elementos, !ocultoAtual);
+}
+
+function inicializarTogglePainelSolicitacoes() {
+  const elementos = obterElementosPainelSolicitacoes();
+  if (!elementos.btnToggle || !elementos.painelAux || !elementos.painelTabela) return;
+
+  atualizarEstadoPainelSolicitacoes(
+    elementos,
+    painelSolicitacoesEstaOculto(elementos.painelAux)
+  );
+
+  elementos.btnToggle.addEventListener('click', alternarPainelSolicitacoes);
+}
+
+let referenciaPeriodoSolicitacoes = new Date();
+let dataSelecionadaSolicitacoes = null;
+let calendariosSolicitacoes = [];
+let feriadosPorDataSolicitacoes = {};
+let usuariosSolicitacoes = [];
+let inconsistenciasPorDataSolicitacoes = {};
+let usuariosPorDataSolicitacoes = {};
+let carregandoInconsistenciasVisiveisSolicitacoes = false;
+
+let ultimaDiferencaJustificativaSolicitacoes = {
+  minutos: 0,
+  formatada: '00:00',
+  excedeuTolerancia: false
+};
+
+let ultimaDataJustificativaSolicitacoes = '';
+
+function obterUsuarioSelecionadoIdSolicitacoes() {
+  const { selectUsuario } = obterElementosCalendarioSolicitacoes();
+  return String(selectUsuario?.value || '').trim();
+}
+
+function obterTemInconsistenciaPorUsuarioNaDataSolicitacoes(data, usuarioId) {
+  const dataIso = typeof data === 'string' ? data : formatarDataIsoSolicitacoes(data);
+  const idSelecionado = String(usuarioId || '').trim();
+
+  if (!dataIso || !idSelecionado) return false;
+
+  const lista = Array.isArray(usuariosPorDataSolicitacoes[dataIso])
+    ? usuariosPorDataSolicitacoes[dataIso]
+    : [];
+
+  const usuario = lista.find(item =>
+    String(item?.id ?? item?.ID ?? '').trim() === idSelecionado
+  );
+
+  if (!usuario) return false;
+
+  const dataRef = new Date(`${dataIso}T00:00:00`);
+  const diagnostico = obterDiagnosticoInconsistenciaSolicitacoes(usuario, dataRef);
+
+  return !!diagnostico?.inconsistente || !!diagnostico?.excedeuTolerancia;
+}
+
+function dataTemInconsistenciaSolicitacoes(data) {
+  const dataIso = formatarDataIsoSolicitacoes(data);
+  const usuarioSelecionadoId = obterUsuarioSelecionadoIdSolicitacoes();
+
+  if (usuarioSelecionadoId) {
+    return obterTemInconsistenciaPorUsuarioNaDataSolicitacoes(
+      dataIso,
+      usuarioSelecionadoId
+    );
+  }
+
+  return !!inconsistenciasPorDataSolicitacoes[dataIso];
+}
+
+
+function obterElementosCalendarioSolicitacoes() {
+  return {
+    titulo: document.getElementById('tituloPeriodoSolicitacoes'),
+    grid: document.getElementById('gridCalendarioSolicitacoes'),
+    btnAnterior: document.getElementById('btnPeriodoAnteriorSolicitacoes'),
+    btnProximo: document.getElementById('btnPeriodoProximoSolicitacoes'),
+    btnHoje: document.getElementById('btnHojeSolicitacoes'),
+    observacao: document.getElementById('observacaoFeriadoSolicitacoes'),
+    selectUsuario: document.getElementById('selectUsuarioSolicitacoes'),
+    resumoUsuario: document.getElementById('resumoUsuarioSolicitacoes'),
+    checkInconsistencias: document.getElementById('checkInconsistenciasSolicitacao'),
+    tbodyHorarios: document.getElementById('tbodyHorariosSolicitacao'),
+    tfootHorarios: document.getElementById('tfootHorariosSolicitacao')
+  };
+}
+
+function clonarDataSolicitacoes(data) {
+  return new Date(data.getFullYear(), data.getMonth(), data.getDate());
+}
+
+function obterInicioPeriodoFolhaSolicitacoes(dataReferencia) {
+  return new Date(dataReferencia.getFullYear(), dataReferencia.getMonth() - 1, 21);
+}
+
+function obterFimPeriodoFolhaSolicitacoes(dataReferencia) {
+  return new Date(dataReferencia.getFullYear(), dataReferencia.getMonth(), 20);
+}
+
+function obterPeriodoFolhaSolicitacoes(dataReferencia) {
+  return {
+    inicio: obterInicioPeriodoFolhaSolicitacoes(dataReferencia),
+    fim: obterFimPeriodoFolhaSolicitacoes(dataReferencia)
+  };
+}
+
+function obterListaDiasPeriodoFolhaSolicitacoes(dataReferencia) {
+  const { inicio, fim } = obterPeriodoFolhaSolicitacoes(dataReferencia);
+  const dias = [];
+  let cursor = clonarDataSolicitacoes(inicio);
+
+  while (cursor <= fim) {
+    dias.push(clonarDataSolicitacoes(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return dias;
+}
+
+function formatarTituloPeriodoFolhaSolicitacoes(dataReferencia) {
+  const { inicio, fim } = obterPeriodoFolhaSolicitacoes(dataReferencia);
+
+  const inicioTexto = inicio.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short'
+  });
+
+  const fimTexto = fim.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+
+  return `${inicioTexto} até ${fimTexto}`;
+}
+
+function formatarDataIsoSolicitacoes(data) {
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const dia = String(data.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
+function obterDataSelecionadaIsoSolicitacoes() {
+  if (!dataSelecionadaSolicitacoes) return '';
+  return formatarDataIsoSolicitacoes(dataSelecionadaSolicitacoes);
+}
+
+function obterHojeIsoSolicitacoes() {
+  return formatarDataIsoSolicitacoes(new Date());
+}
+
+function datasIguaisSolicitacoes(dataA, dataB) {
+  if (!dataA || !dataB) return false;
+
+  return (
+    dataA.getFullYear() === dataB.getFullYear() &&
+    dataA.getMonth() === dataB.getMonth() &&
+    dataA.getDate() === dataB.getDate()
+  );
+}
+
+function dataEstaNoPeriodoSolicitacoes(data, dataReferencia) {
+  if (!data) return false;
+
+  const { inicio, fim } = obterPeriodoFolhaSolicitacoes(dataReferencia);
+  return data >= inicio && data <= fim;
+}
+
+function dataPodeValidarInconsistenciaSolicitacoes(data) {
+  const dataIso = typeof data === 'string' ? data : formatarDataIsoSolicitacoes(data);
+  const hojeIso = obterHojeIsoSolicitacoes();
+  return !!dataIso && dataIso < hojeIso;
+}
+
+function obterDatasVisiveisParaValidarSolicitacoes() {
+  return obterListaDiasPeriodoFolhaSolicitacoes(referenciaPeriodoSolicitacoes)
+    .map(data => formatarDataIsoSolicitacoes(data))
+    .filter(dataIso => dataPodeValidarInconsistenciaSolicitacoes(dataIso));
+}
+
+function normalizarTextoSolicitacoes(valor) {
+  return String(valor || '').trim();
+}
+
+function normalizarTipoRecorrenciaSolicitacoes(valor) {
+  return normalizarTextoSolicitacoes(valor).toUpperCase().replaceAll('_', '');
+}
+
+function obterTipoRecorrenciaSolicitacoes(item) {
+  const tipo = normalizarTipoRecorrenciaSolicitacoes(item?.TIPORECORRENCIA);
+  if (tipo) return tipo;
+
+  return normalizarTextoSolicitacoes(item?.REPETETODOANO).toUpperCase() === 'S'
+    ? 'ANUAL'
+    : 'UNICO';
+}
+
+function normalizarHoraCalendarioSolicitacoes(valor) {
+  const texto = String(valor || '').trim();
+  if (!texto) return '';
+
+  if (/^\d{2}:\d{2}:\d{2}$/.test(texto)) {
+    return texto.slice(0, 5);
+  }
+
+  if (/^\d{4}$/.test(texto)) {
+    return `${texto.slice(0, 2)}:${texto.slice(2, 4)}`;
+  }
+
+  return texto.slice(0, 5);
+}
+
+function horarioEhIntegralSolicitacoes(horaInicio, horaFim) {
+  const inicio = normalizarHoraCalendarioSolicitacoes(horaInicio);
+  const fim = normalizarHoraCalendarioSolicitacoes(horaFim);
+
+  return inicio === '00:00' && (fim === '23:59' || fim === '24:00');
+}
+
+function dataDentroPeriodoFolhaSolicitacoes(data, periodoFolha) {
+  return data >= periodoFolha.inicio && data <= periodoFolha.fim;
+}
+
+function obterDatasOriginaisTrocaSolicitacoes(item) {
+  const datas = [];
+  const tipoRecorrencia = obterTipoRecorrenciaSolicitacoes(item);
+
+  if (tipoRecorrencia !== 'TROCAFERIADO') return datas;
+
+  const periodoFolha = obterPeriodoFolhaSolicitacoes(referenciaPeriodoSolicitacoes);
+  const inicioTroca = normalizarTextoSolicitacoes(item?.DATAINICIALTROCA || item?.DATAINICIAL);
+  const fimTroca = normalizarTextoSolicitacoes(
+    item?.DATAFINALTROCA || item?.DATAFINAL || item?.DATAINICIALTROCA || item?.DATAINICIAL
+  );
+
+  if (!inicioTroca) return datas;
+
+  let cursor = new Date(`${inicioTroca}T00:00:00`);
+  const fim = new Date(`${fimTroca}T00:00:00`);
+
+  while (cursor <= fim) {
+    if (dataDentroPeriodoFolhaSolicitacoes(cursor, periodoFolha)) {
+      datas.push(formatarDataIsoSolicitacoes(cursor));
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return datas;
+}
+
+function obterDatasCalendarioItemSolicitacoes(item) {
+  const datas = [];
+  const tipoRecorrencia = obterTipoRecorrenciaSolicitacoes(item);
+  const tipoPeriodo = normalizarTextoSolicitacoes(item?.TIPOPERIODO).toLowerCase();
+
+  const anoReferencia = referenciaPeriodoSolicitacoes.getFullYear();
+  const periodoFolha = obterPeriodoFolhaSolicitacoes(referenciaPeriodoSolicitacoes);
+
+  if (tipoRecorrencia === 'TROCAFERIADO') {
+    const inicioTroca = normalizarTextoSolicitacoes(item?.NOVADATAINICIAL);
+    const fimTroca = normalizarTextoSolicitacoes(item?.NOVADATAFINAL || item?.NOVADATAINICIAL);
+
+    if (inicioTroca) {
+      let cursor = new Date(`${inicioTroca}T00:00:00`);
+      const fim = new Date(`${fimTroca}T00:00:00`);
+
+      while (cursor <= fim) {
+        if (dataDentroPeriodoFolhaSolicitacoes(cursor, periodoFolha)) {
+          datas.push(formatarDataIsoSolicitacoes(cursor));
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    }
+
+    return datas;
+  }
+
+  const dataInicial = normalizarTextoSolicitacoes(item?.DATAINICIAL);
+  const dataFinal = normalizarTextoSolicitacoes(item?.DATAFINAL || item?.DATAINICIAL);
+
+  if (!dataInicial) return datas;
+
+  if (tipoRecorrencia === 'ANUAL') {
+    const partesInicial = dataInicial.split('-').map(Number);
+    const partesFinal = (dataFinal || dataInicial).split('-').map(Number);
+
+    const mesInicial = partesInicial[1];
+    const diaInicial = partesInicial[2];
+    const mesFinal = partesFinal[1];
+    const diaFinal = partesFinal[2];
+
+    const inicioAnual = new Date(anoReferencia, mesInicial - 1, diaInicial);
+    const fimAnual = new Date(anoReferencia, mesFinal - 1, diaFinal);
+
+    if (tipoPeriodo === 'intervalo') {
+      let cursor = clonarDataSolicitacoes(inicioAnual);
+
+      while (cursor <= fimAnual) {
+        if (dataDentroPeriodoFolhaSolicitacoes(cursor, periodoFolha)) {
+          datas.push(formatarDataIsoSolicitacoes(cursor));
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
+
+      return datas;
+    }
+
+    if (dataDentroPeriodoFolhaSolicitacoes(inicioAnual, periodoFolha)) {
+      datas.push(formatarDataIsoSolicitacoes(inicioAnual));
+    }
+
+    return datas;
+  }
+
+  if (tipoPeriodo === 'intervalo') {
+    let cursor = new Date(`${dataInicial}T00:00:00`);
+    const fim = new Date(`${dataFinal}T00:00:00`);
+
+    while (cursor <= fim) {
+      if (dataDentroPeriodoFolhaSolicitacoes(cursor, periodoFolha)) {
+        datas.push(formatarDataIsoSolicitacoes(cursor));
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return datas;
+  }
+
+  const dataUnica = new Date(`${dataInicial}T00:00:00`);
+  if (dataDentroPeriodoFolhaSolicitacoes(dataUnica, periodoFolha)) {
+    datas.push(dataInicial);
+  }
+
+  return datas;
+}
+
+function normalizarFeriadoCalendarioSolicitacoes(item, dataIso) {
+  const horaInicio = normalizarHoraCalendarioSolicitacoes(item?.HORAINICIO);
+  const horaFim = normalizarHoraCalendarioSolicitacoes(item?.HORAFIM);
+
+  return {
+    id: item?.ID,
+    data: dataIso,
+    periodo: normalizarTextoSolicitacoes(item?.PERIODO),
+    observacao: normalizarTextoSolicitacoes(item?.OBSERVACAO),
+    horaInicio,
+    horaFim,
+    tipoPeriodo: normalizarTextoSolicitacoes(item?.TIPOPERIODO),
+    tipoRecorrencia: obterTipoRecorrenciaSolicitacoes(item),
+    status: normalizarTextoSolicitacoes(item?.STATUS),
+    integral: horarioEhIntegralSolicitacoes(horaInicio, horaFim)
+  };
+}
+
+function montarMapaFeriadosSolicitacoes() {
+  const mapa = {};
+  const datasRemovidasPorTroca = new Set();
+  const itens = Array.isArray(calendariosSolicitacoes) ? calendariosSolicitacoes : [];
+
+  itens.forEach(item => {
+    const status = normalizarTextoSolicitacoes(item?.STATUS).toLowerCase();
+    const tipoRecorrencia = obterTipoRecorrenciaSolicitacoes(item);
+
+    if (status && status !== 'ativo') return;
+    if (tipoRecorrencia !== 'TROCAFERIADO') return;
+
+    const datasOriginais = obterDatasOriginaisTrocaSolicitacoes(item);
+    datasOriginais.forEach(dataIso => datasRemovidasPorTroca.add(dataIso));
+  });
+
+  itens.forEach(item => {
+    const status = normalizarTextoSolicitacoes(item?.STATUS).toLowerCase();
+    const tipoRecorrencia = obterTipoRecorrenciaSolicitacoes(item);
+
+    if (status && status !== 'ativo') return;
+
+    const datas = obterDatasCalendarioItemSolicitacoes(item);
+
+    datas.forEach(dataIso => {
+      if (tipoRecorrencia !== 'TROCAFERIADO' && datasRemovidasPorTroca.has(dataIso)) {
+        return;
+      }
+
+      if (!mapa[dataIso]) mapa[dataIso] = [];
+      mapa[dataIso].push(normalizarFeriadoCalendarioSolicitacoes(item, dataIso));
+    });
+  });
+
+  feriadosPorDataSolicitacoes = mapa;
+}
+
+function obterFeriadosDataSolicitacoes(data) {
+  const dataIso = formatarDataIsoSolicitacoes(data);
+  return feriadosPorDataSolicitacoes[dataIso] || [];
+}
+
+function dataTemFeriadoIntegralSolicitacoes(data) {
+  return obterFeriadosDataSolicitacoes(data).some(item => item.integral);
+}
+
+function dataTemFeriadoParcialSolicitacoes(data) {
+  const feriados = obterFeriadosDataSolicitacoes(data);
+  return feriados.length > 0 && !feriados.some(item => item.integral);
+}
+
+function marcarInconsistenciaDataSolicitacoes(dataIso, items) {
+  const lista = Array.isArray(items) ? items : [];
+  const dataRef = new Date(`${dataIso}T00:00:00`);
+
+  const temInconsistencia = lista.some(usuario => {
+    const diagnostico = obterDiagnosticoInconsistenciaSolicitacoes(usuario, dataRef);
+
+    return !!diagnostico?.inconsistente || !!diagnostico?.excedeuTolerancia;
+  });
+
+  inconsistenciasPorDataSolicitacoes[dataIso] = temInconsistencia;
+}
+
+
+async function carregarInconsistenciasDiasVisiveisSolicitacoes() {
+  if (carregandoInconsistenciasVisiveisSolicitacoes) return;
+
+  const datas = obterDatasVisiveisParaValidarSolicitacoes();
+
+  if (!datas.length) {
+    renderizarCalendarioSolicitacoes();
+    return;
+  }
+
+  carregandoInconsistenciasVisiveisSolicitacoes = true;
+
+  try {
+    await Promise.all(
+      datas.map(async dataIso => {
+        try {
+          const resposta = await fetch(`${API_BASE}/api/solicitacoes/usuarios-dia?data=${encodeURIComponent(dataIso)}`);
+          const json = await resposta.json();
+
+          if (!resposta.ok || !json?.success) {
+            usuariosPorDataSolicitacoes[dataIso] = [];
+            inconsistenciasPorDataSolicitacoes[dataIso] = false;
+            return;
+          }
+
+          const items = Array.isArray(json.items) ? json.items : [];
+          usuariosPorDataSolicitacoes[dataIso] = items;
+          marcarInconsistenciaDataSolicitacoes(dataIso, items);
+        } catch (error) {
+          console.error('Erro ao verificar inconsistências do dia:', dataIso, error);
+          usuariosPorDataSolicitacoes[dataIso] = [];
+          inconsistenciasPorDataSolicitacoes[dataIso] = false;
+        }
+      })
+    );
+  } finally {
+    carregandoInconsistenciasVisiveisSolicitacoes = false;
+    renderizarCalendarioSolicitacoes();
+  }
+}
+
+function obterClasseDiaCalendarioSolicitacoes(data) {
+  const hoje = new Date();
+  const ehHoje = datasIguaisSolicitacoes(data, hoje);
+  const ehSelecionada = datasIguaisSolicitacoes(data, dataSelecionadaSolicitacoes);
+  const temIntegral = dataTemFeriadoIntegralSolicitacoes(data);
+  const temParcial = dataTemFeriadoParcialSolicitacoes(data);
+  const temInconsistencia = dataTemInconsistenciaSolicitacoes(data);
+
+  const statusJustificativa = obterStatusJustificativaDiaSolicitacoes(data);
+  const temPendenciaSemJustificativa = !!statusJustificativa.temPendenciaSemJustificativa;
+  const temPendenciaComJustificativa = !!statusJustificativa.temPendenciaComJustificativa;
+  const todosResolvidosPorRh = !!statusJustificativa.todosResolvidosPorRh;
+
+  if (ehSelecionada && temPendenciaSemJustificativa && temIntegral) {
+    return 'h-7 rounded-md text-white text-10px font-medium border border-red-700 bg-[linear-gradient(135deg,#dc2626_0%,#dc2626_50%,#f59e0b_50%,#f59e0b_100%)]';
+  }
+
+  if (ehSelecionada && temPendenciaSemJustificativa && temParcial) {
+    return 'h-7 rounded-md text-white text-10px font-medium border border-red-700 bg-[linear-gradient(135deg,#dc2626_0%,#dc2626_50%,#2563eb_50%,#2563eb_100%)]';
+  }
+
+  if (ehSelecionada && temPendenciaSemJustificativa) {
+    return 'h-7 rounded-md bg-red-600 text-white text-10px font-medium border border-red-700';
+  }
+
+  if (ehSelecionada && todosResolvidosPorRh && temIntegral) {
+    return 'h-7 rounded-md text-emerald-950 text-10px font-semibold border border-emerald-500 bg-[linear-gradient(135deg,#bbf7d0_0%,#bbf7d0_50%,#fed7aa_50%,#fed7aa_100%)]';
+  }
+
+  if (ehSelecionada && todosResolvidosPorRh && temParcial) {
+    return 'h-7 rounded-md text-emerald-950 text-10px font-semibold border border-emerald-500 bg-[linear-gradient(135deg,#bbf7d0_0%,#bbf7d0_50%,#bfdbfe_50%,#bfdbfe_100%)]';
+  }
+
+  if (ehSelecionada && todosResolvidosPorRh) {
+    return 'h-7 rounded-md bg-emerald-400 text-emerald-950 text-10px font-semibold border border-emerald-500';
+  }
+
+  if (ehSelecionada && temPendenciaComJustificativa && temIntegral) {
+    return 'h-7 rounded-md text-white text-10px font-medium border border-blue-700 bg-[linear-gradient(135deg,#2563eb_0%,#2563eb_50%,#f59e0b_50%,#f59e0b_100%)]';
+  }
+
+  if (ehSelecionada && temPendenciaComJustificativa && temParcial) {
+    return 'h-7 rounded-md text-white text-10px font-medium border border-blue-700 bg-[linear-gradient(135deg,#2563eb_0%,#2563eb_50%,#60a5fa_50%,#60a5fa_100%)]';
+  }
+
+  if (ehSelecionada && temPendenciaComJustificativa) {
+    return 'h-7 rounded-md bg-blue-600 text-white text-10px font-medium border border-blue-700';
+  }
+
+  if (ehSelecionada && temIntegral) {
+    return 'h-7 rounded-md bg-orange-500 text-white text-10px font-medium border border-orange-600';
+  }
+
+  if (ehSelecionada && temParcial) {
+    return 'h-7 rounded-md bg-blue-500 text-white text-10px font-medium border border-blue-600';
+  }
+
+  if (ehSelecionada) {
+    return 'h-7 rounded-md bg-primary text-white text-10px font-medium border border-primary';
+  }
+
+  if (temPendenciaSemJustificativa && temIntegral) {
+    return 'h-7 rounded-md text-red-800 text-10px font-semibold border border-red-300 animate-pulse bg-[linear-gradient(135deg,#fee2e2_0%,#fee2e2_50%,#fed7aa_50%,#fed7aa_100%)] hover:opacity-90 transition-all';
+  }
+
+  if (temPendenciaSemJustificativa && temParcial) {
+    return 'h-7 rounded-md text-red-800 text-10px font-semibold border border-red-300 animate-pulse bg-[linear-gradient(135deg,#fee2e2_0%,#fee2e2_50%,#dbeafe_50%,#dbeafe_100%)] hover:opacity-90 transition-all';
+  }
+
+  if (temPendenciaSemJustificativa) {
+    return 'h-7 rounded-md bg-red-100 text-red-700 border border-red-300 text-10px font-medium hover:bg-red-200 transition-all';
+  }
+
+  if (todosResolvidosPorRh && temIntegral) {
+    return 'h-7 rounded-md text-emerald-900 text-10px font-semibold border border-emerald-300 bg-[linear-gradient(135deg,#dcfce7_0%,#dcfce7_50%,#fed7aa_50%,#fed7aa_100%)] hover:opacity-90 transition-all';
+  }
+
+  if (todosResolvidosPorRh && temParcial) {
+    return 'h-7 rounded-md text-emerald-900 text-10px font-semibold border border-emerald-300 bg-[linear-gradient(135deg,#dcfce7_0%,#dcfce7_50%,#bfdbfe_50%,#bfdbfe_100%)] hover:opacity-90 transition-all';
+  }
+
+  if (todosResolvidosPorRh) {
+    return 'h-7 rounded-md bg-emerald-100 text-emerald-700 border border-emerald-300 text-10px font-medium hover:bg-emerald-200 transition-all';
+  }
+
+  if (temPendenciaComJustificativa && temIntegral) {
+    return 'h-7 rounded-md text-slate-800 text-10px font-semibold border border-blue-300 bg-[linear-gradient(135deg,#dbeafe_0%,#dbeafe_50%,#fed7aa_50%,#fed7aa_100%)] hover:opacity-90 transition-all';
+  }
+
+  if (temPendenciaComJustificativa && temParcial) {
+    return 'h-7 rounded-md text-slate-800 text-10px font-semibold border border-blue-300 bg-[linear-gradient(135deg,#dbeafe_0%,#dbeafe_50%,#bfdbfe_50%,#bfdbfe_100%)] hover:opacity-90 transition-all';
+  }
+
+  if (temPendenciaComJustificativa) {
+    return 'h-7 rounded-md bg-blue-100 text-blue-700 border border-blue-300 text-10px font-medium hover:bg-blue-200 transition-all';
+  }
+
+  if (temInconsistencia && temIntegral) {
+    return 'h-7 rounded-md text-red-800 text-10px font-semibold border border-red-300 animate-pulse bg-[linear-gradient(135deg,#fee2e2_0%,#fee2e2_50%,#fed7aa_50%,#fed7aa_100%)] hover:opacity-90 transition-all';
+  }
+
+  if (temInconsistencia && temParcial) {
+    return 'h-7 rounded-md text-red-800 text-10px font-semibold border border-red-300 animate-pulse bg-[linear-gradient(135deg,#fee2e2_0%,#fee2e2_50%,#dbeafe_50%,#dbeafe_100%)] hover:opacity-90 transition-all';
+  }
+
+  if (temInconsistencia) {
+    return 'h-7 rounded-md bg-red-100 text-red-700 border border-red-300 text-10px font-medium hover:bg-red-200 transition-all';
+  }
+
+  if (temIntegral) {
+    return 'h-7 rounded-md bg-orange-100 text-orange-700 border border-orange-300 text-10px font-medium hover:bg-orange-200 transition-all';
+  }
+
+  if (temParcial) {
+    return 'h-7 rounded-md bg-blue-100 text-blue-700 border border-blue-300 text-10px font-medium hover:bg-blue-200 transition-all';
+  }
+
+  if (ehHoje) {
+    return 'h-7 rounded-md bg-primary/10 text-primary border border-primary/30 text-10px font-medium';
+  }
+
+  return 'h-7 rounded-md bg-white/80 border border-border text-10px text-foreground hover:bg-white transition-all';
+}
+
+function atualizarObservacaoFeriadoSolicitacoes() {
+  const { observacao } = obterElementosCalendarioSolicitacoes();
+  if (!observacao) return;
+
+  if (!dataSelecionadaSolicitacoes) {
+    observacao.textContent = 'Selecione um dia para visualizar observações do feriado.';
+    observacao.className = 'rounded-xl bg-muted/30 px-3 py-2 text-xs text-muted-foreground';
+    return;
+  }
+
+  const feriados = obterFeriadosDataSolicitacoes(dataSelecionadaSolicitacoes);
+
+  if (!feriados.length) {
+    observacao.textContent = 'Nenhum feriado cadastrado para o dia selecionado.';
+    observacao.className = 'rounded-xl bg-muted/30 px-3 py-2 text-xs text-muted-foreground';
+    return;
+  }
+
+  const linhas = feriados.map(item => {
+    const horario = item.horaInicio && item.horaFim ? `${item.horaInicio} às ${item.horaFim}` : '';
+    const periodo = item.periodo || 'Feriado';
+    const obs = item.observacao || 'Sem observação';
+    return horario ? `${periodo} (${horario}) - ${obs}` : `${periodo} - ${obs}`;
+  });
+
+  observacao.textContent = linhas.join(' | ');
+  observacao.className = 'rounded-xl bg-orange-50 px-3 py-2 text-xs text-orange-700 border border-orange-200';
+}
+
+function escapeHtmlSolicitacoes(texto) {
+  return String(texto || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function parseJsonDatasetSolicitacoes(valor, fallback) {
+  try {
+    return valor ? JSON.parse(valor) : fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function formatarHoraSimplesSolicitacoes(valor) {
+  const texto = String(valor || '').trim();
+  if (!texto) return '—';
+  if (texto.length >= 5) return texto.slice(0, 5);
+  return texto;
+}
+
+function horaTextoParaMinutosSolicitacoes(valor) {
+  const texto = String(valor || '').trim();
+  if (!texto || texto === '—') return null;
+
+  const partes = texto.split(':').map(Number);
+  const horas = partes[0] || 0;
+  const minutos = partes[1] || 0;
+
+  return (horas * 60) + minutos;
+}
+
+function minutosParaHoraTextoSolicitacoes(totalMinutos) {
+  if (totalMinutos == null || Number.isNaN(totalMinutos)) return '—';
+
+  const sinal = totalMinutos < 0 ? '-' : '';
+  const absoluto = Math.abs(totalMinutos);
+  const horas = Math.floor(absoluto / 60);
+  const minutos = absoluto % 60;
+
+  return `${sinal}${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+}
+
+function minutosParaHoraTextoComSinalSolicitacoes(totalMinutos) {
+  if (totalMinutos == null || Number.isNaN(totalMinutos)) return '—';
+  if (totalMinutos === 0) return '00:00';
+
+  const sinal = totalMinutos > 0 ? '+' : '-';
+  const absoluto = Math.abs(totalMinutos);
+  const horas = Math.floor(absoluto / 60);
+  const minutos = absoluto % 60;
+
+  return `${sinal}${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+}
+
+function normalizarHoraBatidaSolicitacoes(valor) {
+  const texto = String(valor || '').trim();
+  if (!texto) return '';
+  return texto.length >= 5 ? texto.slice(0, 5) : texto;
+}
+
+function ordenarBatidasPorHoraSolicitacoes(batidas) {
+  return [...(Array.isArray(batidas) ? batidas : [])].sort((a, b) => {
+    const horaA = horaTextoParaMinutosSolicitacoes(normalizarHoraBatidaSolicitacoes(a?.hora));
+    const horaB = horaTextoParaMinutosSolicitacoes(normalizarHoraBatidaSolicitacoes(b?.hora));
+    return (horaA ?? 0) - (horaB ?? 0);
+  });
+}
+
+function removerBatidasDuplicadasSolicitacoes(batidas) {
+  const vistos = new Set();
+
+  return ordenarBatidasPorHoraSolicitacoes(batidas).filter(item => {
+    const hora = normalizarHoraBatidaSolicitacoes(item?.hora);
+    if (!hora) return false;
+    if (vistos.has(hora)) return false;
+    vistos.add(hora);
+    return true;
+  });
+}
+
+function sanitizarBatidasSolicitacoes(batidas) {
+  const listaBase = removerBatidasDuplicadasSolicitacoes(batidas);
+  if (!listaBase.length) return [];
+
+  const grupos = [];
+  let grupoAtual = [listaBase[0]];
+
+  for (let i = 1; i < listaBase.length; i++) {
+    const atual = listaBase[i];
+    const anterior = grupoAtual[grupoAtual.length - 1];
+
+    const minutosAtual = horaTextoParaMinutosSolicitacoes(normalizarHoraBatidaSolicitacoes(atual?.hora));
+    const minutosAnterior = horaTextoParaMinutosSolicitacoes(normalizarHoraBatidaSolicitacoes(anterior?.hora));
+
+    if (
+      minutosAtual != null &&
+      minutosAnterior != null &&
+      Math.abs(minutosAtual - minutosAnterior) < 2
+    ) {
+      grupoAtual.push(atual);
+    } else {
+      grupos.push(grupoAtual);
+      grupoAtual = [atual];
+    }
+  }
+
+  grupos.push(grupoAtual);
+
+  const resultado = grupos.map((grupo, indice) => {
+    const ordenado = ordenarBatidasPorHoraSolicitacoes(grupo);
+    const ehPosicaoDeEntrada = indice % 2 === 0;
+
+    return ehPosicaoDeEntrada
+      ? ordenado[0]
+      : ordenado[ordenado.length - 1];
+  });
+
+  return ordenarBatidasPorHoraSolicitacoes(resultado).map(item => ({
+    ...item,
+    hora: normalizarHoraBatidaSolicitacoes(item?.hora)
+  }));
+}
+
+function obterMapaBatidasPorSequenciaSolicitacoes(batidas) {
+  const lista = sanitizarBatidasSolicitacoes(batidas);
+
+  return {
+    entrada1: lista[0]?.hora || '—',
+    saidaIntervalo: lista[1]?.hora || '—',
+    retornoIntervalo: lista[2]?.hora || '—',
+    saidaFinal: lista[3]?.hora || '—',
+    excedentes: lista.slice(4)
+  };
+}
+
+function calcularCargaPrevistaMinutosSolicitacoes(horarioPrevisto) {
+  if (!horarioPrevisto) return 0;
+
+  const entrada = horaTextoParaMinutosSolicitacoes(horarioPrevisto.entrada);
+  const saidaIntervalo = horaTextoParaMinutosSolicitacoes(horarioPrevisto.saidaIntervalo);
+  const retornoIntervalo = horaTextoParaMinutosSolicitacoes(horarioPrevisto.retornoIntervalo);
+  const saida = horaTextoParaMinutosSolicitacoes(horarioPrevisto.saida);
+
+  let total = 0;
+
+  if (entrada != null && saidaIntervalo != null && saidaIntervalo > entrada) {
+    total += (saidaIntervalo - entrada);
+  }
+
+  if (retornoIntervalo != null && saida != null && saida > retornoIntervalo) {
+    total += (saida - retornoIntervalo);
+  }
+
+  if (
+    total === 0 &&
+    entrada != null &&
+    saida != null &&
+    saida > entrada
+  ) {
+    total += (saida - entrada);
+  }
+
+  return total;
+}
+
+function calcularCargaRealizadaMinutosSolicitacoes(batidas) {
+  const lista = sanitizarBatidasSolicitacoes(batidas);
+  let total = 0;
+
+  for (let i = 0; i < lista.length; i += 2) {
+    const entrada = horaTextoParaMinutosSolicitacoes(lista[i]?.hora);
+    const saida = horaTextoParaMinutosSolicitacoes(lista[i + 1]?.hora);
+
+    if (entrada != null && saida != null && saida > entrada) {
+      total += (saida - entrada);
+    }
+  }
+
+  return total;
+}
+
+function obterDiaSemanaDataSolicitacoes(dataReferencia) {
+  if (!dataReferencia) return null;
+  const data = typeof dataReferencia === 'string'
+    ? new Date(`${dataReferencia}T00:00:00`)
+    : dataReferencia;
+  return data.getDay();
+}
+
+function obterDiasSemanaResumoJornadaSolicitacoes(resumoJornada) {
+  const diasSemana = resumoJornada?.diasSemana || {};
+
+  return {
+    domingo: !!(diasSemana.domingo ?? resumoJornada?.trabalhaDomingo),
+    segunda: !!(diasSemana.segunda ?? resumoJornada?.trabalhaSegunda),
+    terca: !!(diasSemana.terca ?? resumoJornada?.trabalhaTerca),
+    quarta: !!(diasSemana.quarta ?? resumoJornada?.trabalhaQuarta),
+    quinta: !!(diasSemana.quinta ?? resumoJornada?.trabalhaQuinta),
+    sexta: !!(diasSemana.sexta ?? resumoJornada?.trabalhaSexta),
+    sabado: !!(diasSemana.sabado ?? resumoJornada?.trabalhaSabado)
+  };
+}
+
+function obterTrabalhaNoDiaPorDataSolicitacoes(resumoJornada, dataReferencia) {
+  const diaSemana = obterDiaSemanaDataSolicitacoes(dataReferencia);
+  const dias = obterDiasSemanaResumoJornadaSolicitacoes(resumoJornada);
+
+  if (diaSemana === 0) return dias.domingo;
+  if (diaSemana === 1) return dias.segunda;
+  if (diaSemana === 2) return dias.terca;
+  if (diaSemana === 3) return dias.quarta;
+  if (diaSemana === 4) return dias.quinta;
+  if (diaSemana === 5) return dias.sexta;
+  if (diaSemana === 6) return dias.sabado;
+
+  return !!resumoJornada?.trabalhaNoDia;
+}
+
+function dataSelecionadaEhFeriadoSolicitacoes(dataReferencia = dataSelecionadaSolicitacoes) {
+  if (!dataReferencia) return false;
+  return obterFeriadosDataSolicitacoes(dataReferencia).length > 0;
+}
+
+function montarLinhasHorarioSolicitacoes(jornada, batidas, trabalhaNoDia, inconsistente, motivo) {
+  const horarioPrevisto = jornada?.horarioPrevisto || {};
+  const realizado = obterMapaBatidasPorSequenciaSolicitacoes(batidas);
+
+  const linhas = [
+    {
+      evento: 'Entrada',
+      previsto: formatarHoraSimplesSolicitacoes(horarioPrevisto.entrada),
+      realizado: formatarHoraSimplesSolicitacoes(realizado.entrada1),
+      observacao: ''
+    },
+    {
+      evento: 'Saída intervalo',
+      previsto: formatarHoraSimplesSolicitacoes(horarioPrevisto.saidaIntervalo),
+      realizado: formatarHoraSimplesSolicitacoes(realizado.saidaIntervalo),
+      observacao: ''
+    },
+    {
+      evento: 'Retorno intervalo',
+      previsto: formatarHoraSimplesSolicitacoes(horarioPrevisto.retornoIntervalo),
+      realizado: formatarHoraSimplesSolicitacoes(realizado.retornoIntervalo),
+      observacao: ''
+    },
+    {
+      evento: 'Saída final',
+      previsto: formatarHoraSimplesSolicitacoes(horarioPrevisto.saida),
+      realizado: formatarHoraSimplesSolicitacoes(realizado.saidaFinal),
+      observacao: ''
+    }
+  ];
+
+  if (!trabalhaNoDia) {
+    const linhasNaoPrevisto = [
+      {
+        evento: 'Batida 1',
+        previsto: 'Não previsto',
+        realizado: formatarHoraSimplesSolicitacoes(realizado.entrada1),
+        observacao: 'Batida realizada em dia sem jornada prevista.'
+      },
+      {
+        evento: 'Batida 2',
+        previsto: 'Não previsto',
+        realizado: formatarHoraSimplesSolicitacoes(realizado.saidaIntervalo),
+        observacao: 'Batida realizada em dia sem jornada prevista.'
+      },
+      {
+        evento: 'Batida 3',
+        previsto: 'Não previsto',
+        realizado: formatarHoraSimplesSolicitacoes(realizado.retornoIntervalo),
+        observacao: 'Batida realizada em dia sem jornada prevista.'
+      },
+      {
+        evento: 'Batida 4',
+        previsto: 'Não previsto',
+        realizado: formatarHoraSimplesSolicitacoes(realizado.saidaFinal),
+        observacao: 'Batida realizada em dia sem jornada prevista.'
+      }
+    ].filter(item => item.realizado !== '—');
+
+    const linhasNaoPrevistoHtml = linhasNaoPrevisto.length
+      ? linhasNaoPrevisto.map(item => `
+          <tr>
+            <td class="px-3 py-2.5 font-medium">${escapeHtmlSolicitacoes(item.evento)}</td>
+            <td class="px-3 py-2.5">${escapeHtmlSolicitacoes(item.previsto)}</td>
+            <td class="px-3 py-2.5 text-amber-700 font-semibold">${escapeHtmlSolicitacoes(item.realizado)}</td>
+            <td class="px-3 py-2.5">${escapeHtmlSolicitacoes(item.observacao)}</td>
+          </tr>
+        `).join('')
+      : `
+        <tr>
+          <td class="px-3 py-3">Jornada do dia</td>
+          <td class="px-3 py-3">Não previsto</td>
+          <td class="px-3 py-3">Sem batidas</td>
+          <td class="px-3 py-3">${escapeHtmlSolicitacoes(motivo || 'Dia não previsto na jornada.')}</td>
+        </tr>
+      `;
+
+    const extras = realizado.excedentes.length
+      ? `
+        <tr>
+          <td class="px-3 py-2.5 font-medium">Batidas extras</td>
+          <td class="px-3 py-2.5">Não previsto</td>
+          <td class="px-3 py-2.5">${escapeHtmlSolicitacoes(realizado.excedentes.map(item => item.hora || '—').join(', '))}</td>
+          <td class="px-3 py-2.5">Foram encontradas batidas adicionais fora da sequência principal.</td>
+        </tr>
+      `
+      : '';
+
+    const situacao = `
+      <tr>
+        <td class="px-3 py-2.5 font-medium text-red-600">Situação</td>
+        <td class="px-3 py-2.5">—</td>
+        <td class="px-3 py-2.5 text-red-600 font-medium">${(batidas || []).length ? 'Inconsistente' : 'Sem jornada'}</td>
+        <td class="px-3 py-2.5 text-red-600">${escapeHtmlSolicitacoes(motivo || 'Dia não previsto na jornada.')}</td>
+      </tr>
+    `;
+
+    return linhasNaoPrevistoHtml + extras + situacao;
+  }
+
+  const linhasHtml = linhas.map(item => {
+    const divergente =
+      item.previsto !== '—' &&
+      item.realizado !== '—' &&
+      item.previsto !== item.realizado;
+
+    const classeRealizado = divergente
+      ? 'text-amber-700 font-semibold'
+      : 'text-foreground';
+
+    return `
+      <tr>
+        <td class="px-3 py-2.5 font-medium">${escapeHtmlSolicitacoes(item.evento)}</td>
+        <td class="px-3 py-2.5">${escapeHtmlSolicitacoes(item.previsto)}</td>
+        <td class="px-3 py-2.5 ${classeRealizado}">${escapeHtmlSolicitacoes(item.realizado)}</td>
+        <td class="px-3 py-2.5">${escapeHtmlSolicitacoes(item.observacao || (divergente ? 'Horário divergente do previsto.' : ''))}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const extras = realizado.excedentes.length
+    ? `
+      <tr>
+        <td class="px-3 py-2.5 font-medium">Batidas extras</td>
+        <td class="px-3 py-2.5">—</td>
+        <td class="px-3 py-2.5">${escapeHtmlSolicitacoes(realizado.excedentes.map(item => item.hora || '—').join(', '))}</td>
+        <td class="px-3 py-2.5">Foram encontradas batidas adicionais fora da sequência padrão.</td>
+      </tr>
+    `
+    : '';
+
+  const rodape = inconsistente && motivo
+    ? `
+      <tr>
+        <td class="px-3 py-2.5 font-medium text-red-600">Situação</td>
+        <td class="px-3 py-2.5">—</td>
+        <td class="px-3 py-2.5 text-red-600 font-medium">Inconsistente</td>
+        <td class="px-3 py-2.5 text-red-600">${escapeHtmlSolicitacoes(motivo)}</td>
+      </tr>
+    `
+    : `
+      <tr>
+        <td class="px-3 py-2.5 font-medium text-emerald-700">Situação</td>
+        <td class="px-3 py-2.5">—</td>
+        <td class="px-3 py-2.5 text-emerald-700 font-medium">Regular</td>
+        <td class="px-3 py-2.5 text-emerald-700">Batidas compatíveis com a jornada informada.</td>
+      </tr>
+    `;
+
+  return linhasHtml + extras + rodape;
+}
+
+
+function renderizarTotaisHorariosSolicitacoes(horarioPrevisto, batidas, trabalhaNoDia) {
+  const { tfootHorarios } = obterElementosCalendarioSolicitacoes();
+  if (!tfootHorarios) return;
+
+  const totalPrevisto = trabalhaNoDia ? calcularCargaPrevistaMinutosSolicitacoes(horarioPrevisto) : 0;
+  const totalRealizado = calcularCargaRealizadaMinutosSolicitacoes(batidas);
+
+  if (!trabalhaNoDia) {
+    tfootHorarios.innerHTML = `
+      <tr>
+        <td class="px-3 py-2.5 font-semibold">Total previsto</td>
+        <td class="px-3 py-2.5">00:00</td>
+        <td class="px-3 py-2.5 font-semibold">Total trabalhado</td>
+        <td class="px-3 py-2.5">${escapeHtmlSolicitacoes(minutosParaHoraTextoSolicitacoes(totalRealizado))}</td>
+      </tr>
+      <tr>
+        <td class="px-3 py-2.5 font-semibold">Diferença</td>
+        <td colspan="3" class="px-3 py-2.5 text-red-600 font-semibold">
+          ${escapeHtmlSolicitacoes(minutosParaHoraTextoComSinalSolicitacoes(totalRealizado))} — Dia não previsto na jornada.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  const diferenca = totalRealizado - totalPrevisto;
+  const excedeuTolerancia = Math.abs(diferenca) > 10;
+  const classeDiferenca = excedeuTolerancia
+    ? 'text-red-600 font-semibold'
+    : diferenca > 0
+      ? 'text-emerald-700 font-semibold'
+      : 'text-foreground font-semibold';
+
+  const observacao = excedeuTolerancia
+    ? 'Diferença superior à tolerância de 10 minutos.'
+    : 'Diferença dentro da tolerância de 10 minutos.';
+
+  tfootHorarios.innerHTML = `
+    <tr>
+      <td class="px-3 py-2.5 font-semibold">Total previsto</td>
+      <td class="px-3 py-2.5 font-semibold">${escapeHtmlSolicitacoes(minutosParaHoraTextoSolicitacoes(totalPrevisto))}</td>
+      <td class="px-3 py-2.5 font-semibold">Total trabalhado</td>
+      <td class="px-3 py-2.5 font-semibold">${escapeHtmlSolicitacoes(minutosParaHoraTextoSolicitacoes(totalRealizado))}</td>
+    </tr>
+    <tr>
+      <td class="px-3 py-2.5 font-semibold">Diferença</td>
+      <td colspan="3" class="px-3 py-2.5 ${classeDiferenca}">
+        ${escapeHtmlSolicitacoes(minutosParaHoraTextoComSinalSolicitacoes(diferenca))} — ${escapeHtmlSolicitacoes(observacao)}
+      </td>
+    </tr>
+  `;
+}
+
+function atualizarResumoUsuarioSolicitacoes() {
+  const { selectUsuario, resumoUsuario, tbodyHorarios, tfootHorarios } = obterElementosCalendarioSolicitacoes();
+
+  if (!selectUsuario || !resumoUsuario || !tbodyHorarios || !tfootHorarios) return;
+
+  ultimaDataJustificativaSolicitacoes = obterDataSelecionadaIsoSolicitacoes() || '';
+
+  const option = selectUsuario.options[selectUsuario.selectedIndex];
+
+  if (!option || !option.value) {
+    ultimaDiferencaJustificativaSolicitacoes = {
+      minutos: 0,
+      formatada: '00:00',
+      excedeuTolerancia: false
+    };
+
+    resumoUsuario.textContent = 'Selecione um funcionário para visualizar a situação do dia.';
+    resumoUsuario.className = 'rounded-xl bg-muted30 px-3 py-2 text-xs text-muted-foreground';
+    tbodyHorarios.innerHTML = `
+      <tr>
+        <td colspan="4" class="px-3 py-4 text-center text-xs text-muted-foreground">
+          Selecione um dia e um funcionário.
+        </td>
+      </tr>
+    `;
+    tfootHorarios.innerHTML = `
+      <tr>
+        <td colspan="4" class="px-3 py-3 text-xs text-muted-foreground">
+          Totais serão exibidos após selecionar um funcionário.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  const inconsistente = option.dataset.inconsistente === 'S';
+  const motivo = option.dataset.motivo || '';
+  const jornadaDescricao = option.dataset.jornada || 'Não vinculada';
+  const batidasQtd = option.dataset.batidas || '0';
+  const trabalhaNoDia = option.dataset.trabalhaNoDia === 'S';
+  const ehFeriado = option.dataset.feriado === 'S';
+  const excedeuTolerancia = option.dataset.excedeuTolerancia === 'S';
+  const diferencaMinutos = Number(option.dataset.diferencaMinutos || 0);
+  const jornadaResumo = parseJsonDatasetSolicitacoes(option.dataset.resumoJornada, null);
+  const batidas = parseJsonDatasetSolicitacoes(option.dataset.batidasJson, []);
+
+  ultimaDiferencaJustificativaSolicitacoes = {
+    minutos: diferencaMinutos,
+    formatada: minutosParaHoraTextoComSinalSolicitacoes(diferencaMinutos) || '00:00',
+    excedeuTolerancia
+  };
+
+  tbodyHorarios.innerHTML = montarLinhasHorarioSolicitacoes(
+    jornadaResumo,
+    batidas,
+    trabalhaNoDia,
+    inconsistente,
+    motivo
+  );
+
+  renderizarTotaisHorariosSolicitacoes(
+    jornadaResumo?.horarioPrevisto || null,
+    batidas,
+    trabalhaNoDia
+  );
+}
+
+function aplicarFiltroInconsistenciasSolicitacoes() {
+  const { selectUsuario, checkInconsistencias } = obterElementosCalendarioSolicitacoes();
+  if (!selectUsuario || !checkInconsistencias) return;
+
+  const mostrarSomenteInconsistencias = checkInconsistencias.checked;
+  const valorAtual = selectUsuario.value;
+
+  Array.from(selectUsuario.options).forEach((option, index) => {
+    if (index === 0) {
+      option.hidden = false;
+      return;
+    }
+
+    const inconsistente = option.dataset.inconsistente === 'S';
+    option.hidden = mostrarSomenteInconsistencias ? !inconsistente : false;
+  });
+
+  const optionSelecionada = Array.from(selectUsuario.options).find(
+    opt => opt.value === valorAtual && !opt.hidden
+  );
+
+  if (!optionSelecionada) {
+    selectUsuario.value = '';
+  }
+
+  atualizarResumoUsuarioSolicitacoes();
+}
+
+function obterDiagnosticoInconsistenciaSolicitacoes(usuario, dataReferencia = dataSelecionadaSolicitacoes) {
+  const resumoJornada = usuario?.resumoJornada || {
+    trabalhaNoDia: false,
+    horarioPrevisto: null,
+    diasSemana: {
+      domingo: false,
+      segunda: false,
+      terca: false,
+      quarta: false,
+      quinta: false,
+      sexta: false,
+      sabado: false
+    }
+  };
+
+  const batidas = sanitizarBatidasSolicitacoes(
+    Array.isArray(usuario.batidas) ? usuario.batidas : []
+  );
+
+  const quantidadeBatidas = Number(usuario?.quantidadeBatidas ?? batidas.length ?? 0);
+  const jornadaDescricao = usuario?.jornadaDescricao || 'Não vinculada';
+  const ehFeriado = dataSelecionadaEhFeriadoSolicitacoes(dataReferencia);
+  const trabalhaNoDia = obterTrabalhaNoDiaPorDataSolicitacoes(resumoJornada, dataReferencia);
+  const horarioPrevisto = resumoJornada?.horarioPrevisto || null;
+  const diaSemana = obterDiaSemanaDataSolicitacoes(dataReferencia);
+
+  if (ehFeriado) {
+    if (quantidadeBatidas > 0) {
+      return {
+        inconsistente: true,
+        motivo: 'Feriado no dia selecionado com marcação de ponto.',
+        jornadaDescricao,
+        resumoJornada,
+        batidas,
+        quantidadeBatidas,
+        trabalhaNoDia: false,
+        diferencaMinutos: 0,
+        excedeuTolerancia: false,
+        ehFeriado: true
+      };
+    }
+
+    return {
+      inconsistente: false,
+      motivo: '',
+      jornadaDescricao,
+      resumoJornada,
+      batidas,
+      quantidadeBatidas,
+      trabalhaNoDia: false,
+      diferencaMinutos: 0,
+      excedeuTolerancia: false,
+      ehFeriado: true
+    };
+  }
+
+  if (!trabalhaNoDia) {
+    if (quantidadeBatidas > 0) {
+      return {
+        inconsistente: true,
+        motivo: diaSemana === 6
+          ? 'Funcionário possui marcação em sábado não previsto na jornada.'
+          : 'Funcionário possui marcação em dia não previsto na jornada.',
+        jornadaDescricao,
+        resumoJornada,
+        batidas,
+        quantidadeBatidas,
+        trabalhaNoDia,
+        diferencaMinutos: 0,
+        excedeuTolerancia: false,
+        ehFeriado: false
+      };
+    }
+
+    return {
+      inconsistente: false,
+      motivo: '',
+      jornadaDescricao,
+      resumoJornada,
+      batidas,
+      quantidadeBatidas,
+      trabalhaNoDia,
+      diferencaMinutos: 0,
+      excedeuTolerancia: false,
+      ehFeriado: false
+    };
+  }
+
+  if (trabalhaNoDia && quantidadeBatidas === 0) {
+    const totalPrevistoSemBatida = calcularCargaPrevistaMinutosSolicitacoes(horarioPrevisto);
+    const diferencaSemBatida = 0 - totalPrevistoSemBatida;
+    const excedeuTolerancia = Math.abs(diferencaSemBatida) > 10;
+
+    return {
+      inconsistente: true,
+      motivo: 'Dia previsto na jornada sem nenhuma batida.',
+      jornadaDescricao,
+      resumoJornada,
+      batidas,
+      quantidadeBatidas,
+      trabalhaNoDia,
+      diferencaMinutos: diferencaSemBatida,
+      excedeuTolerancia,
+      ehFeriado: false
+    };
+  }
+
+  const totalPrevisto = calcularCargaPrevistaMinutosSolicitacoes(horarioPrevisto);
+  const totalRealizado = calcularCargaRealizadaMinutosSolicitacoes(batidas);
+  const diferencaMinutos = totalRealizado - totalPrevisto;
+  const excedeuTolerancia = Math.abs(diferencaMinutos) > 10;
+
+  if (excedeuTolerancia) {
+    return {
+      inconsistente: true,
+      motivo: `Diferença entre horas previstas e realizadas maior que 10 minutos (${minutosParaHoraTextoComSinalSolicitacoes(diferencaMinutos)}).`,
+      jornadaDescricao,
+      resumoJornada,
+      batidas,
+      quantidadeBatidas,
+      trabalhaNoDia,
+      diferencaMinutos,
+      excedeuTolerancia,
+      ehFeriado: false
+    };
+  }
+
+  return {
+    inconsistente: false,
+    motivo: '',
+    jornadaDescricao,
+    resumoJornada,
+    batidas,
+    quantidadeBatidas,
+    trabalhaNoDia,
+    diferencaMinutos,
+    excedeuTolerancia,
+    ehFeriado: false
+  };
+}
+
+async function selecionarDiaCalendarioSolicitacoes(data) {
+  const { selectUsuario } = obterElementosCalendarioSolicitacoes();
+  const usuarioSelecionadoAntes = String(selectUsuario?.value || '').trim();
+
+  dataSelecionadaSolicitacoes = clonarDataSolicitacoes(data);
+
+  renderizarCalendarioSolicitacoes();
+  atualizarObservacaoFeriadoSolicitacoes();
+
+  await carregarUsuariosSolicitacoesPorData();
+
+  if (usuarioSelecionadoAntes && selectUsuario) {
+    const optionExiste = Array.from(selectUsuario.options).some(
+      option => String(option.value || '').trim() === usuarioSelecionadoAntes && !option.hidden
+    );
+
+    if (optionExiste) {
+      selectUsuario.value = usuarioSelecionadoAntes;
+    }
+  }
+
+  atualizarResumoUsuarioSolicitacoes();
+  await carregarJustificativasPonto();
+  await carregarJustificativasPeriodoSolicitacoes();
+}
+
+function criarBotaoDiaCalendarioSolicitacoes(data) {
+  const botao = document.createElement('button');
+  botao.type = 'button';
+  botao.className = obterClasseDiaCalendarioSolicitacoes(data);
+  botao.textContent = data.getDate();
+  botao.dataset.data = formatarDataIsoSolicitacoes(data);
+  botao.title = data.toLocaleDateString('pt-BR');
+
+  const feriados = obterFeriadosDataSolicitacoes(data);
+
+  if (feriados.length) {
+    botao.title = feriados
+      .map(item => {
+        const periodo = item.periodo || 'Feriado';
+        const horario = `${item.horaInicio || '--:--'} às ${item.horaFim || '--:--'}`;
+        const observacao = item.observacao ? `Observação: ${item.observacao}` : 'Observação: Sem observação';
+        return `${periodo}\nHorário: ${horario}\n${observacao}`;
+      })
+      .join('\n\n');
+  }
+
+  botao.addEventListener('click', function () {
+    selecionarDiaCalendarioSolicitacoes(data);
+  });
+
+  return botao;
+}
+
+function criarEspacoVazioCalendarioSolicitacoes() {
+  const div = document.createElement('div');
+  div.className = 'h-7 rounded-md bg-transparent';
+  return div;
+}
+
+function renderizarCalendarioSolicitacoes() {
+  const { titulo, grid } = obterElementosCalendarioSolicitacoes();
+  if (!titulo || !grid) return;
+
+  const dias = obterListaDiasPeriodoFolhaSolicitacoes(referenciaPeriodoSolicitacoes);
+
+  if (!dias.length) {
+    titulo.textContent = '';
+    grid.innerHTML = '';
+    atualizarObservacaoFeriadoSolicitacoes();
+    return;
+  }
+
+  const primeiroDiaPeriodo = dias[0];
+  const indicePrimeiroDiaSemana = primeiroDiaPeriodo.getDay();
+
+  titulo.textContent = formatarTituloPeriodoFolhaSolicitacoes(referenciaPeriodoSolicitacoes);
+  grid.innerHTML = '';
+
+  for (let i = 0; i < indicePrimeiroDiaSemana; i++) {
+    grid.appendChild(criarEspacoVazioCalendarioSolicitacoes());
+  }
+
+  dias.forEach(data => {
+    grid.appendChild(criarBotaoDiaCalendarioSolicitacoes(data));
+  });
+
+  const totalCelulas = indicePrimeiroDiaSemana + dias.length;
+  const resto = totalCelulas % 7;
+  const quantidadeEspacosFinais = resto === 0 ? 0 : 7 - resto;
+
+  for (let i = 0; i < quantidadeEspacosFinais; i++) {
+    grid.appendChild(criarEspacoVazioCalendarioSolicitacoes());
+  }
+
+  atualizarObservacaoFeriadoSolicitacoes();
+}
+
+function irParaPeriodoAnteriorSolicitacoes() {
+  referenciaPeriodoSolicitacoes = new Date(
+    referenciaPeriodoSolicitacoes.getFullYear(),
+    referenciaPeriodoSolicitacoes.getMonth() - 1,
+    1
+  );
+
+  if (!dataEstaNoPeriodoSolicitacoes(dataSelecionadaSolicitacoes, referenciaPeriodoSolicitacoes)) {
+    dataSelecionadaSolicitacoes = null;
+  }
+
+  montarMapaFeriadosSolicitacoes();
+  renderizarCalendarioSolicitacoes();
+  carregarInconsistenciasDiasVisiveisSolicitacoes();
+  carregarUsuariosSolicitacoesPorData();
+}
+
+function irParaPeriodoProximoSolicitacoes() {
+  referenciaPeriodoSolicitacoes = new Date(
+    referenciaPeriodoSolicitacoes.getFullYear(),
+    referenciaPeriodoSolicitacoes.getMonth() + 1,
+    1
+  );
+
+  if (!dataEstaNoPeriodoSolicitacoes(dataSelecionadaSolicitacoes, referenciaPeriodoSolicitacoes)) {
+    dataSelecionadaSolicitacoes = null;
+  }
+
+  montarMapaFeriadosSolicitacoes();
+  renderizarCalendarioSolicitacoes();
+  carregarInconsistenciasDiasVisiveisSolicitacoes();
+  carregarUsuariosSolicitacoesPorData();
+}
+
+function irParaHojeSolicitacoes() {
+  referenciaPeriodoSolicitacoes = new Date();
+  dataSelecionadaSolicitacoes = clonarDataSolicitacoes(new Date());
+  montarMapaFeriadosSolicitacoes();
+  renderizarCalendarioSolicitacoes();
+  carregarInconsistenciasDiasVisiveisSolicitacoes();
+  carregarUsuariosSolicitacoesPorData();
+}
+
+async function carregarCalendariosSolicitacoes() {
+  try {
+    const resposta = await fetch(`${APIBASE}/api/calendarios`);
+    const json = await resposta.json();
+
+    if (!resposta.ok || !json?.success) {
+      throw new Error(json?.message || 'Erro ao carregar calendários.');
+    }
+
+    calendariosSolicitacoes = Array.isArray(json.items) ? json.items : [];
+
+    montarMapaFeriadosSolicitacoes();
+    renderizarCalendarioSolicitacoes();
+    carregarInconsistenciasDiasVisiveisSolicitacoes();
+  } catch (error) {
+    console.error('Erro ao carregar calendários das solicitações:', error);
+    calendariosSolicitacoes = [];
+    feriadosPorDataSolicitacoes = {};
+    renderizarCalendarioSolicitacoes();
+  }
+}
+
+function preencherSelectUsuariosSolicitacoes(items) {
+  const { selectUsuario } = obterElementosCalendarioSolicitacoes();
+  if (!selectUsuario) return;
+
+  const valorSelecionadoAntes = String(selectUsuario.value || '').trim();
+
+  selectUsuario.innerHTML = '';
+
+  const optionPadrao = document.createElement('option');
+  optionPadrao.value = '';
+  optionPadrao.textContent = 'Selecione um usuário...';
+  selectUsuario.appendChild(optionPadrao);
+
+  items.forEach(usuario => {
+    const option = document.createElement('option');
+
+    const id = usuario.id ?? usuario.ID ?? '';
+    const nome = usuario.nome ?? usuario.NOME ?? usuario.email ?? `Usuário ${id}`;
+    const email = usuario.email ?? usuario.EMAIL ?? '';
+    const setor = usuario.setor ?? usuario.SETOR ?? '';
+    const funcao = usuario.funcao ?? usuario.FUNCAO ?? '';
+
+    const diagnostico = obterDiagnosticoInconsistenciaSolicitacoes(usuario, dataSelecionadaSolicitacoes);
+    const resumoJornada = diagnostico.resumoJornada || {
+      trabalhaNoDia: false,
+      horarioPrevisto: null
+    };
+    const batidas = Array.isArray(diagnostico.batidas) ? diagnostico.batidas : [];
+    const inconsistente = !!diagnostico.inconsistente;
+
+    option.value = id;
+    option.textContent = inconsistente ? `⚠ ${nome}` : nome;
+    option.dataset.nome = nome;
+    option.dataset.email = email;
+    option.dataset.setor = setor;
+    option.dataset.funcao = funcao;
+    option.dataset.inconsistente = inconsistente ? 'S' : 'N';
+    option.dataset.motivo = diagnostico.motivo || '';
+    option.dataset.jornada = diagnostico.jornadaDescricao || '';
+    option.dataset.batidas = String(diagnostico.quantidadeBatidas ?? batidas.length ?? 0);
+    option.dataset.feriado = diagnostico.ehFeriado ? 'S' : 'N';
+    option.dataset.trabalhaNoDia = diagnostico.trabalhaNoDia ? 'S' : 'N';
+    option.dataset.resumoJornada = JSON.stringify(resumoJornada);
+    option.dataset.batidasJson = JSON.stringify(batidas);
+    option.dataset.diferencaMinutos = String(diagnostico.diferencaMinutos ?? 0);
+    option.dataset.excedeuTolerancia = diagnostico.excedeuTolerancia ? 'S' : 'N';
+
+    if (inconsistente) {
+      option.style.color = '#dc2626';
+      option.style.fontWeight = '600';
+    }
+
+    selectUsuario.appendChild(option);
+  });
+
+  aplicarFiltroInconsistenciasSolicitacoes();
+
+  if (valorSelecionadoAntes) {
+    const optionExiste = Array.from(selectUsuario.options).some(
+      option => String(option.value || '').trim() === valorSelecionadoAntes && !option.hidden
+    );
+
+    if (optionExiste) {
+      selectUsuario.value = valorSelecionadoAntes;
+    }
+  }
+
+  atualizarResumoUsuarioSolicitacoes();
+}
+
+async function carregarUsuariosSolicitacoesPorData() {
+  const dataIso = obterDataSelecionadaIsoSolicitacoes();
+
+  if (!dataIso) {
+    usuariosSolicitacoes = [];
+    preencherSelectUsuariosSolicitacoes([]);
+    renderizarCalendarioSolicitacoes();
+    return;
+  }
+
+  try {
+    const resposta = await fetch(`${API_BASE}/api/solicitacoes/usuarios-dia?data=${encodeURIComponent(dataIso)}`);
+    const json = await resposta.json();
+
+    if (!resposta.ok || !json?.success) {
+      throw new Error(json?.message || 'Erro ao carregar usuários do dia.');
+    }
+
+    usuariosSolicitacoes = Array.isArray(json.items) ? json.items : [];
+    usuariosPorDataSolicitacoes[dataIso] = usuariosSolicitacoes;
+
+    marcarInconsistenciaDataSolicitacoes(dataIso, usuariosSolicitacoes);
+    preencherSelectUsuariosSolicitacoes(usuariosSolicitacoes);
+    renderizarCalendarioSolicitacoes();
+  } catch (error) {
+    console.error('Erro ao carregar usuários das solicitações:', error);
+    usuariosSolicitacoes = [];
+    usuariosPorDataSolicitacoes[dataIso] = [];
+    marcarInconsistenciaDataSolicitacoes(dataIso, []);
+    preencherSelectUsuariosSolicitacoes([]);
+    renderizarCalendarioSolicitacoes();
+  }
+}
+
+async function atualizarSessaoSolicitacoes() {
+  const btnAtualizar = document.getElementById('btnAtualizarSolicitacoes');
+  const icon = btnAtualizar?.querySelector('i');
+
+  try {
+    if (btnAtualizar) {
+      btnAtualizar.disabled = true;
+      btnAtualizar.classList.add('opacity-70', 'pointer-events-none');
+    }
+
+    if (icon) {
+      icon.classList.add('fa-spin');
+    }
+
+    usuariosSolicitacoes = [];
+    inconsistenciasPorDataSolicitacoes = {};
+    usuariosPorDataSolicitacoes = {};
+
+    await carregarCalendariosSolicitacoes();
+    await carregarUsuariosSolicitacoesPorData();
+    await carregarInconsistenciasDiasVisiveisSolicitacoes();
+
+    atualizarResumoUsuarioSolicitacoes();
+    renderizarCalendarioSolicitacoes();
+
+    if (typeof carregarSolicitacoes === 'function') {
+      await carregarSolicitacoes();
+    }
+  } catch (error) {
+    console.error('Erro ao atualizar a seção de solicitações:', error);
+  } finally {
+    if (icon) {
+      icon.classList.remove('fa-spin');
+    }
+
+    if (btnAtualizar) {
+      btnAtualizar.disabled = false;
+      btnAtualizar.classList.remove('opacity-70', 'pointer-events-none');
+    }
+  }
+}
+
+function inicializarCalendarioSolicitacoes() {
+  const {
+    btnAnterior,
+    btnProximo,
+    btnHoje,
+    selectUsuario,
+    checkInconsistencias
+  } = obterElementosCalendarioSolicitacoes();
+
+  const btnAtualizar = document.getElementById('btnAtualizarSolicitacoes');
+
+  if (btnAnterior) btnAnterior.addEventListener('click', irParaPeriodoAnteriorSolicitacoes);
+  if (btnProximo) btnProximo.addEventListener('click', irParaPeriodoProximoSolicitacoes);
+  if (btnHoje) btnHoje.addEventListener('click', irParaHojeSolicitacoes);
+
+  if (btnAtualizar) {
+    btnAtualizar.addEventListener('click', atualizarSessaoSolicitacoes);
+  }
+
+  if (selectUsuario) {
+    selectUsuario.addEventListener('change', async () => {
+      atualizarResumoUsuarioSolicitacoes();
+      renderizarCalendarioSolicitacoes();
+      await carregarJustificativasPonto();
+      await carregarJustificativasPeriodoSolicitacoes();
+    });
+  }
+
+  if (checkInconsistencias) {
+    checkInconsistencias.addEventListener('change', aplicarFiltroInconsistenciasSolicitacoes);
+  }
+
+  if (dataEstaNoPeriodoSolicitacoes(new Date(), referenciaPeriodoSolicitacoes)) {
+    dataSelecionadaSolicitacoes = clonarDataSolicitacoes(new Date());
+  }
+
+  renderizarCalendarioSolicitacoes();
+  carregarCalendariosSolicitacoes();
+  carregarUsuariosSolicitacoesPorData();
+  carregarInconsistenciasDiasVisiveisSolicitacoes();
+  carregarJustificativasPeriodoSolicitacoes();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  inicializarTogglePainelSolicitacoes();
+  inicializarCalendarioSolicitacoes();
+  inicializarJustificativasPonto();
+  carregarJustificativasPonto();
+});
+
+
+let justificativasPontoCache = [];
+let justificativasPontoFiltradas = [];
+let justificativasPontoPeriodoCache = [];
+
+function obterElementosJustificativasPonto() {
+  return {
+    btnNova: document.getElementById('btnNovaJustificativaPonto'),
+    tbody: document.getElementById('tbodySolicitacoes'),
+    resumo: document.getElementById('solicitacoesFiltroResumo'),
+    msg: document.getElementById('solicitacoesMsg'),
+    inputFiltro: document.getElementById('inputFiltroSolicitacoes'),
+    btnLimparFiltro: document.getElementById('btnLimparFiltroSolicitacoes')
+  };
+}
+
+function obterNomeUsuarioSelecionadoSolicitacoes() {
+  const { selectUsuario } = obterElementosCalendarioSolicitacoes();
+  if (!selectUsuario) return '';
+
+  const option = selectUsuario.options[selectUsuario.selectedIndex];
+  return String(option?.dataset?.nome || option?.textContent || '').trim();
+}
+
+function obterOptionUsuarioSelecionadoSolicitacoes() {
+  const { selectUsuario } = obterElementosCalendarioSolicitacoes();
+  if (!selectUsuario) return null;
+  return selectUsuario.options[selectUsuario.selectedIndex] || null;
+}
+
+function obterDiferencaAtualSelecionadaJustificativa() {
+  const option = obterOptionUsuarioSelecionadoSolicitacoes();
+
+  if (option && option.value) {
+    const minutos = Number(option.dataset?.diferencaMinutos || 0);
+    const excedeuTolerancia = String(option.dataset?.excedeuTolerancia || 'N') === 'S';
+
+    return {
+      minutos,
+      formatada: minutosParaHoraTextoComSinalSolicitacoes(minutos) || '00:00',
+      excedeuTolerancia
+    };
+  }
+
+  return {
+    minutos: Number(ultimaDiferencaJustificativaSolicitacoes?.minutos || 0),
+    formatada: String(ultimaDiferencaJustificativaSolicitacoes?.formatada || '00:00'),
+    excedeuTolerancia: !!ultimaDiferencaJustificativaSolicitacoes?.excedeuTolerancia
+  };
+}
+
+
+function formatarDataPtBrJustificativas(valor) {
+  const texto = String(valor || '').trim();
+  if (!texto || !/^\d{4}-\d{2}-\d{2}$/.test(texto)) return texto || '--';
+  const [ano, mes, dia] = texto.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
+function formatarDataHoraPtBrJustificativas(valor) {
+  if (!valor) return '--';
+  const data = new Date(valor);
+  if (Number.isNaN(data.getTime())) return String(valor);
+  return data.toLocaleString('pt-BR');
+}
+
+function obterLabelStatusJustificativa(status) {
+  const valor = String(status || 'PENDENTE').trim().toUpperCase();
+  if (valor === 'APROVADO') return 'Aprovado';
+  if (valor === 'REJEITADO') return 'Rejeitado';
+  if (valor === 'EM_ANALISE') return 'Em análise';
+  return 'Pendente';
+}
+
+
+function obterClasseStatusJustificativa(status) {
+  const valor = String(status || 'PENDENTE').trim().toUpperCase();
+  if (valor === 'APROVADO') return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+  if (valor === 'REJEITADO') return 'bg-red-50 text-red-600 border border-red-200';
+  if (valor === 'EM_ANALISE') return 'bg-amber-50 text-amber-700 border border-amber-200';
+  return 'bg-slate-50 text-slate-700 border border-slate-200';
+}
+
+
+function montarResumoStatusJustificativa(status, usuario, dataHora, observacao) {
+  const partes = [obterLabelStatusJustificativa(status)];
+  if (usuario) partes.push(`por ${usuario}`);
+  if (dataHora) partes.push(`em ${formatarDataHoraPtBrJustificativas(dataHora)}`);
+  if (observacao) partes.push(`Obs.: ${observacao}`);
+  return partes.join(' • ');
+}
+
+function obterTextoPeriodoJustificativa(item) {
+  const tipoPeriodo = String(item?.tipoPeriodo || '').toUpperCase();
+  if (tipoPeriodo === 'PERIODO') {
+    return `Período ${item?.horaInicial || '--:--'} às ${item?.horaFinal || '--:--'}`;
+  }
+  return 'Dia todo';
+}
+
+function obterMenuGlobalJustificativas() {
+  return document.getElementById('menuAcoesJustificativaGlobal');
+}
+
+function fecharMenusAcoesJustificativas() {
+  const menu = obterMenuGlobalJustificativas();
+  if (!menu) return;
+
+  menu.classList.add('hidden');
+  menu.innerHTML = '';
+  menu.removeAttribute('data-id');
+  menu.style.left = '';
+  menu.style.top = '';
+}
+
+async function excluirJustificativaPonto(id) {
+  try {
+    const item = justificativasPontoCache.find(x => String(x?.id || '') === String(id || '').trim());
+
+    const descricaoItem = item
+      ? `${item.tipoJustificativa || 'Solicitação'} - ${item.funcionarioNome || 'Funcionário'} - ${formatarDataPtBrJustificativas(item.dataReferencia)}`
+      : `Solicitação ID ${id}`;
+
+    const confirmou = window.confirm(`Deseja realmente excluir a solicitação?\n\n${descricaoItem}`);
+    if (!confirmou) return;
+
+    const resposta = await fetch(
+      `${APIBASE}/api/solicitacoes/justificativas-ponto/${encodeURIComponent(id)}`,
+      {
+        method: 'DELETE'
+      }
+    );
+
+    const json = await resposta.json();
+
+    if (!resposta.ok || !json?.success) {
+      throw new Error(json?.message || 'Erro ao excluir justificativa.');
+    }
+
+    await carregarJustificativasPonto();
+    await carregarJustificativasPeriodoSolicitacoes();
+  } catch (error) {
+    console.error('Erro ao excluir justificativa de ponto:', error);
+    alert(error?.message || 'Erro ao excluir justificativa.');
+  }
+}
+
+function montarHtmlAcoesJustificativa(item) {
+  return `
+    <button
+      type="button"
+      class="btnEditarJustificativaPonto w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+    >
+      Editar
+    </button>
+
+    <button
+      type="button"
+      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+      data-perfil="GESTOR"
+      data-status="EM_ANALISE"
+    >
+      Gestor → Em análise
+    </button>
+
+    <button
+      type="button"
+      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+      data-perfil="GESTOR"
+      data-status="APROVADO"
+    >
+      Gestor → Aprovar
+    </button>
+
+    <button
+      type="button"
+      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+      data-perfil="GESTOR"
+      data-status="REJEITADO"
+    >
+      Gestor → Rejeitar
+    </button>
+
+    <hr class="my-1 border-border">
+
+    <button
+      type="button"
+      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+      data-perfil="RH"
+      data-status="EM_ANALISE"
+    >
+      RH → Em análise
+    </button>
+
+    <button
+      type="button"
+      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+      data-perfil="RH"
+      data-status="APROVADO"
+    >
+      RH → Aprovar
+    </button>
+
+    <button
+      type="button"
+      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+      data-perfil="RH"
+      data-status="REJEITADO"
+    >
+      RH → Rejeitar
+    </button>
+
+    <hr class="my-1 border-border">
+
+    <button
+      type="button"
+      class="btnExcluirJustificativaPonto w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-sm text-red-600"
+      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+    >
+      Excluir solicitação
+    </button>
+  `;
+}
+
+function abrirMenuAcoesJustificativa(botao, id) {
+  const menu = obterMenuGlobalJustificativas();
+  if (!menu) return;
+
+  const item = justificativasPontoCache.find(x => String(x?.id || '') === String(id || '').trim());
+  if (!item) return;
+
+  menu.innerHTML = montarHtmlAcoesJustificativa(item);
+  menu.classList.remove('hidden');
+  menu.setAttribute('data-id', String(id));
+
+  const rect = botao.getBoundingClientRect();
+  const larguraMenu = 220;
+  const margem = 8;
+
+  let left = rect.right - larguraMenu;
+  let top = rect.bottom + 6;
+
+  if (left < margem) {
+    left = margem;
+  }
+
+  if (left + larguraMenu > window.innerWidth - margem) {
+    left = window.innerWidth - larguraMenu - margem;
+  }
+
+  const alturaEstimada = 280;
+  if (top + alturaEstimada > window.innerHeight - margem) {
+    top = Math.max(margem, rect.top - alturaEstimada - 6);
+  }
+
+  menu.style.left = `${left}px`;
+  menu.style.top = `${top}px`;
+}
+
+function renderizarTabelaJustificativasPonto(lista = justificativasPontoCache) {
+  const { tbody, resumo } = obterElementosJustificativasPonto();
+  if (!tbody || !resumo) return;
+
+  justificativasPontoFiltradas = Array.isArray(lista) ? [...lista] : [];
+
+  resumo.textContent = justificativasPontoFiltradas.length
+    ? `${justificativasPontoFiltradas.length} justificativa(s) encontrada(s) para o filtro atual.`
+    : 'Nenhuma justificativa cadastrada para o filtro atual.';
+
+  if (!justificativasPontoFiltradas.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
+          Nenhuma justificativa cadastrada para o filtro atual.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = justificativasPontoFiltradas.map(item => {
+    const urlAnexo = obterUrlArquivoJustificativa(item?.caminhoArquivo);
+    const podeEditar =
+      String(item?.statusGestor || 'PENDENTE').trim().toUpperCase() === 'PENDENTE' &&
+      String(item?.statusRh || 'PENDENTE').trim().toUpperCase() === 'PENDENTE';
+
+    const diferencaMinutos = Number(item?.diferencaMinutos || 0);
+    const diferencaFormatada = item?.diferencaFormatada ||
+      minutosParaHoraTextoComSinalSolicitacoes(diferencaMinutos) ||
+      '00:00';
+
+    const labelDiferenca =
+      diferencaMinutos < 0
+        ? 'Ausência'
+        : diferencaMinutos > 0
+          ? 'Extra'
+          : 'Diferença';
+
+    return `
+      <tr>
+        <td class="px-4 py-3 align-top font-medium">
+          ${escapeHtmlSolicitacoes(String(item.id || '--'))}
+        </td>
+
+        <td class="px-4 py-3 align-top">
+          <div class="font-medium">${escapeHtmlSolicitacoes(item.funcionarioNome || '--')}</div>
+          <div class="text-11px text-muted-foreground">
+            ID ${escapeHtmlSolicitacoes(String(item.funcionarioId || '--'))}
+          </div>
+        </td>
+
+        <td class="px-4 py-3 align-top whitespace-nowrap">
+          ${escapeHtmlSolicitacoes(formatarDataPtBrJustificativas(item.dataReferencia))}
+        </td>
+
+        <td class="px-4 py-3 align-top">
+          <div class="font-medium">${escapeHtmlSolicitacoes(item.tipoJustificativa || '--')}</div>
+          <div class="text-11px text-muted-foreground">
+            ${escapeHtmlSolicitacoes(obterTextoPeriodoJustificativa(item))}
+          </div>
+          ${
+            diferencaMinutos !== 0 || item?.diferencaFormatada
+              ? `
+                <div class="text-11px text-amber-700 font-medium mt-1">
+                  ${escapeHtmlSolicitacoes(labelDiferenca)} (${escapeHtmlSolicitacoes(diferencaFormatada)})
+                </div>
+              `
+              : ''
+          }
+        </td>
+
+        <td class="px-4 py-3 align-top">
+          ${
+            urlAnexo
+              ? `
+                <a
+                  href="${escapeHtmlSolicitacoes(urlAnexo)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="max-w-[340px] inline-flex items-start gap-2 whitespace-pre-wrap break-words text-primary hover:underline"
+                  title="Abrir anexo da justificativa"
+                >
+                  <i class="fas fa-paperclip mt-1 text-[11px] shrink-0"></i>
+                  <span>${escapeHtmlSolicitacoes(item.descricao || '--')}</span>
+                </a>
+              `
+              : `
+                <div class="max-w-[340px] whitespace-pre-wrap break-words">
+                  ${escapeHtmlSolicitacoes(item.descricao || '--')}
+                </div>
+              `
+          }
+        </td>
+
+        <td class="px-4 py-3 align-top">
+          <button
+            type="button"
+            class="btnDetalhesStatusJustificativa inline-flex rounded-full px-2 py-1 text-[11px] font-medium ${obterClasseStatusJustificativa(item.statusGestor)} hover:opacity-90 transition-all"
+            data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+            data-perfil="GESTOR"
+            title="Ver detalhes do status do Gestor"
+            aria-label="Ver detalhes do status do Gestor"
+          >
+            ${escapeHtmlSolicitacoes(obterLabelStatusJustificativa(item.statusGestor))}
+          </button>
+        </td>
+
+        <td class="px-4 py-3 align-top">
+          <button
+            type="button"
+            class="btnDetalhesStatusJustificativa inline-flex rounded-full px-2 py-1 text-[11px] font-medium ${obterClasseStatusJustificativa(item.statusRh)} hover:opacity-90 transition-all"
+            data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+            data-perfil="RH"
+            title="Ver detalhes do status do RH"
+            aria-label="Ver detalhes do status do RH"
+          >
+            ${escapeHtmlSolicitacoes(obterLabelStatusJustificativa(item.statusRh))}
+          </button>
+        </td>
+
+        <td class="px-4 py-3 align-top text-right">
+          <button
+            type="button"
+            class="btnMenuAcoesJustificativa w-9 h-9 rounded-xl border border-border bg-white/80 hover:bg-white transition-all inline-flex items-center justify-center"
+            data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
+            data-pode-editar="${podeEditar ? 'S' : 'N'}"
+            aria-label="Abrir ações"
+            title="Ações"
+          >
+            <i class="fas fa-ellipsis-vertical text-sm"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function aplicarFiltroJustificativasPonto() {
+  const { inputFiltro, btnLimparFiltro } = obterElementosJustificativasPonto();
+  const termo = String(inputFiltro?.value || '').trim().toLowerCase();
+
+  if (btnLimparFiltro) {
+    btnLimparFiltro.classList.toggle('hidden', !termo);
+  }
+
+  if (!termo) {
+    renderizarTabelaJustificativasPonto(justificativasPontoCache);
+    return;
+  }
+
+  const filtradas = justificativasPontoCache.filter(item => {
+    const texto = [
+      item?.id,
+      item?.funcionarioId,
+      item?.funcionarioNome,
+      item?.dataReferencia,
+      item?.tipoJustificativa,
+      item?.descricao,
+      item?.statusGestor,
+      item?.statusRh
+    ].map(v => String(v || '').toLowerCase()).join(' ');
+
+    return texto.includes(termo);
+  });
+
+  renderizarTabelaJustificativasPonto(filtradas);
+}
+
+async function enviarArquivoJustificativa(file) {
+  if (!file) return null;
+
+  const fd = new FormData();
+  fd.append('arquivo', file);
+
+  const resposta = await fetch(`${APIBASE}/api/solicitacoes/justificativas-ponto/upload`, {
+    method: 'POST',
+    body: fd
+  });
+
+  const json = await resposta.json();
+  if (!resposta.ok || !json?.success) {
+    throw new Error(json?.message || 'Erro ao enviar anexo.');
+  }
+
+  return json.item || null;
+}
+
+async function carregarJustificativasPonto() {
+  const { resumo, tbody } = obterElementosJustificativasPonto();
+  if (!resumo || !tbody) return;
+
+  const data = obterDataSelecionadaIsoSolicitacoes();
+  const funcionarioId = obterUsuarioSelecionadoIdSolicitacoes();
+
+  if (!data) {
+    justificativasPontoCache = [];
+    resumo.textContent = 'Selecione um dia e um funcionário para visualizar as justificativas.';
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
+          Selecione um dia e um funcionário para visualizar as justificativas.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  resumo.textContent = 'Carregando justificativas...';
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
+        Carregando justificativas...
+      </td>
+    </tr>
+  `;
+
+
+
+  try {
+    const params = new URLSearchParams();
+    params.append('data', data);
+
+    if (funcionarioId) {
+      params.append('funcionarioId', funcionarioId);
+    }
+
+    const resposta = await fetch(`${APIBASE}/api/solicitacoes/justificativas-ponto?${params.toString()}`);
+    const json = await resposta.json();
+
+    if (!resposta.ok || !json?.success) {
+      throw new Error(json?.message || 'Erro ao carregar justificativas.');
+    }
+
+    justificativasPontoCache = Array.isArray(json.items) ? json.items : [];
+    aplicarFiltroJustificativasPonto();
+  } catch (error) {
+    console.error('Erro ao carregar justificativas de ponto:', error);
+    justificativasPontoCache = [];
+    resumo.textContent = 'Erro ao carregar justificativas.';
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center text-red-600">
+          ${escapeHtmlSolicitacoes(error?.message || 'Erro ao carregar justificativas.')}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+function fecharModalJustificativaPonto(modal) {
+  if (modal?.parentNode) {
+    modal.parentNode.removeChild(modal);
+  }
+}
+
+function montarHtmlModalJustificativa(modo, item) {
+  const edicao = modo === 'editar';
+  const dataReferencia = item?.dataReferencia || ultimaDataJustificativaSolicitacoes || obterDataSelecionadaIsoSolicitacoes();
+  const funcionarioId = item?.funcionarioId || obterUsuarioSelecionadoIdSolicitacoes();
+  const funcionarioNome = item?.funcionarioNome || obterNomeUsuarioSelecionadoSolicitacoes();
+  const tipoJustificativa = item?.tipoJustificativa || '';
+  const tipoPeriodo = String(
+    item?.tipoPeriodo || (String(item?.dia_todo || 'N').toUpperCase() === 'S' ? 'DIA_TODO' : 'PERIODO')
+  ).toUpperCase();
+  const horaInicial = item?.horaInicial || '';
+  const horaFinal = item?.horaFinal || '';
+  const descricao = item?.descricao || '';
+  const anexoReferencia = item?.anexoReferencia || '';
+  const caminhoArquivo = item?.caminhoArquivo || '';
+  const urlAnexoAtual = obterUrlArquivoJustificativa(caminhoArquivo);
+  const nomeArquivo = item?.nomeArquivo || '';
+  const mimeArquivo = item?.mimeArquivo || '';
+  const tamanhoArquivo = item?.tamanhoArquivo || '';
+  const diferencaAtual = obterDiferencaAtualSelecionadaJustificativa();
+  const diferencaMinutos = Number(item?.diferencaMinutos ?? diferencaAtual?.minutos ?? 0);
+  const diferencaFormatada =
+    item?.diferencaFormatada ??
+    diferencaAtual?.formatada ??
+    minutosParaHoraTextoComSinalSolicitacoes(diferencaMinutos) ??
+    '00:00';
+
+  return `
+    <div class="w-full max-w-3xl rounded-2xl border border-border bg-white shadow-2xl">
+      <div class="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
+        <div>
+          <h3 class="font-semibold text-base">${edicao ? 'Editar justificativa de ponto' : 'Nova justificativa de ponto'}</h3>
+          <p class="text-sm text-muted-foreground">
+            ${edicao ? 'Atualize os dados da justificativa selecionada.' : 'Preencha os dados para registrar a solicitação.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btnFecharModalJustificativaPonto w-9 h-9 rounded-xl border border-border bg-white/70 hover:bg-white transition-all flex items-center justify-center"
+          aria-label="Fechar"
+        >
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="formModalJustificativaPonto" class="p-5 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-foreground">Data</label>
+            <input
+              type="text"
+              value="${escapeHtmlSolicitacoes(formatarDataPtBrJustificativas(dataReferencia))}"
+              class="w-full h-11 rounded-xl border border-border bg-muted/30 px-4 outline-none cursor-not-allowed"
+              readonly
+              tabindex="-1"
+            />
+            <input
+              type="hidden"
+              name="dataReferencia"
+              value="${escapeHtmlSolicitacoes(dataReferencia)}"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-foreground">Funcionário</label>
+            <input
+              type="text"
+              value="${escapeHtmlSolicitacoes(funcionarioNome)}"
+              class="w-full h-11 rounded-xl border border-border bg-muted/30 px-4 outline-none"
+              readonly
+            />
+            <input type="hidden" name="funcionarioId" value="${escapeHtmlSolicitacoes(String(funcionarioId || ''))}" />
+            <input type="hidden" name="funcionarioNome" value="${escapeHtmlSolicitacoes(funcionarioNome)}" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-foreground">Tipo da justificativa</label>
+            <select
+              name="tipoJustificativa"
+              class="w-full h-11 rounded-xl border border-border bg-white/70 px-4 outline-none focus:ring-2 focus:ring-primary/30"
+              required
+            >
+              <option value="">Selecione...</option>
+              <option value="FALTA" ${tipoJustificativa === 'FALTA' ? 'selected' : ''}>Falta</option>
+              <option value="ATRASO" ${tipoJustificativa === 'ATRASO' ? 'selected' : ''}>Atraso</option>
+              <option value="HORAEXTRA" ${tipoJustificativa === 'HORAEXTRA' ? 'selected' : ''}>Hora extra</option>
+              <option value="SAIDAANTECIPADA" ${tipoJustificativa === 'SAIDAANTECIPADA' ? 'selected' : ''}>Saída antecipada</option>
+              <option value="ESQUECEUBATIDA" ${tipoJustificativa === 'ESQUECEUBATIDA' ? 'selected' : ''}>Esqueceu a batida</option>
+              <option value="ATESTADO" ${tipoJustificativa === 'ATESTADO' ? 'selected' : ''}>Atestado</option>
+              <option value="OUTROS" ${tipoJustificativa === 'OUTROS' ? 'selected' : ''}>Outros</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-foreground">Cobertura</label>
+            <select
+              name="tipoPeriodo"
+              class="w-full h-11 rounded-xl border border-border bg-white/70 px-4 outline-none focus:ring-2 focus:ring-primary/30"
+              required
+            >
+              <option value="DIA_TODO" ${tipoPeriodo === 'DIA_TODO' ? 'selected' : ''}>Dia todo</option>
+              <option value="PERIODO" ${tipoPeriodo === 'PERIODO' ? 'selected' : ''}>Por período</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="blocoPeriodoJustificativa" class="grid grid-cols-1 md:grid-cols-2 gap-3 ${tipoPeriodo !== 'PERIODO' ? 'hidden' : ''}">
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-foreground">Hora inicial</label>
+            <input
+              name="horaInicial"
+              type="time"
+              value="${escapeHtmlSolicitacoes(horaInicial)}"
+              class="w-full h-11 rounded-xl border border-border bg-white/70 px-4 outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-foreground">Hora final</label>
+            <input
+              name="horaFinal"
+              type="time"
+              value="${escapeHtmlSolicitacoes(horaFinal)}"
+              class="w-full h-11 rounded-xl border border-border bg-white/70 px-4 outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-foreground">Diferença identificada</label>
+            <input
+              name="diferencaFormatadaExibicao"
+              type="text"
+              value="${escapeHtmlSolicitacoes(diferencaFormatada || '00:00')}"
+              class="w-full h-11 rounded-xl border border-border bg-muted/30 px-4 outline-none"
+              readonly
+            />
+            <input type="hidden" name="diferencaMinutos" value="${escapeHtmlSolicitacoes(String(diferencaMinutos || 0))}" />
+            <input type="hidden" name="diferencaFormatada" value="${escapeHtmlSolicitacoes(diferencaFormatada || '00:00')}" />
+            <p class="text-11px text-muted-foreground">
+              A diferença do dia selecionado será carregada automaticamente conforme o funcionário atual.
+            </p>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-foreground">Anexo</label>
+            <input
+              name="arquivo"
+              type="file"
+              class="w-full rounded-xl border border-border bg-white/70 px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <input type="hidden" name="justificativaId" value="${escapeHtmlSolicitacoes(String(item?.id || ''))}" />
+            <input type="hidden" name="removerAnexo" value="N" />
+            <input type="hidden" name="anexoReferencia" value="${escapeHtmlSolicitacoes(anexoReferencia)}" />
+            <input type="hidden" name="nomeArquivo" value="${escapeHtmlSolicitacoes(nomeArquivo)}" />
+            <input type="hidden" name="caminhoArquivo" value="${escapeHtmlSolicitacoes(caminhoArquivo)}" />
+            <input type="hidden" name="mimeArquivo" value="${escapeHtmlSolicitacoes(mimeArquivo)}" />
+            <input type="hidden" name="tamanhoArquivo" value="${escapeHtmlSolicitacoes(String(tamanhoArquivo || ''))}" />
+
+            <div class="blocoAnexoAtualJustificativa ${urlAnexoAtual ? '' : 'hidden'} rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 space-y-2">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="text-xs font-semibold text-emerald-800">Anexo atual</div>
+                  <div class="text-xs text-emerald-700 break-all nomeAnexoAtualJustificativa">
+                    ${escapeHtmlSolicitacoes(nomeArquivo || anexoReferencia || 'Arquivo anexado')}
+                  </div>
+                </div>
+                <i class="fas fa-paperclip text-emerald-700 mt-0.5"></i>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <a
+                  href="${escapeHtmlSolicitacoes(urlAnexoAtual)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="linkVerAnexoAtualJustificativa inline-flex items-center gap-2 h-8 px-3 rounded-lg border border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-100 transition-all text-xs"
+                >
+                  <i class="fas fa-eye"></i>
+                  Ver anexo
+                </a>
+
+                <button
+                  type="button"
+                  class="btnExcluirAnexoAtualJustificativa inline-flex items-center gap-2 h-8 px-3 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 transition-all text-xs"
+                >
+                  <i class="fas fa-trash"></i>
+                  Excluir anexo
+                </button>
+              </div>
+            </div>
+
+            <div class="msgSemAnexoJustificativa ${urlAnexoAtual ? 'hidden' : ''} text-11px text-muted-foreground">
+              Nenhum anexo enviado.
+            </div>
+
+            <p class="text-11px text-muted-foreground">
+              Para trocar o anexo, basta selecionar um novo arquivo antes de salvar.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-foreground">Descrição</label>
+          <textarea
+            name="descricao"
+            rows="5"
+            class="w-full rounded-xl border border-border bg-white/70 px-4 py-3 outline-none focus:ring-2 focus:ring-primary/30"
+            placeholder="Descreva a justificativa..."
+            required
+          >${escapeHtmlSolicitacoes(descricao)}</textarea>
+        </div>
+
+        <div class="msgRetornoModalJustificativaPonto hidden rounded-xl px-3 py-2 text-xs border"></div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button
+            type="button"
+            class="btnCancelarModalJustificativaPonto h-10 px-4 rounded-xl border border-border bg-white/70 hover:bg-white transition-all text-sm"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="h-10 px-4 rounded-xl bg-primary text-white hover:opacity-90 transition-all text-sm"
+          >
+            ${edicao ? 'Salvar alterações' : 'Salvar justificativa'}
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+}
+
+function abrirModalJustificativaPonto(modo = 'novo', item = null) {
+  const dataSelecionada = obterDataSelecionadaIsoSolicitacoes();
+  const funcionarioId = obterUsuarioSelecionadoIdSolicitacoes();
+
+  if (!item && (!dataSelecionada || !funcionarioId)) {
+    alert('Selecione um dia e um funcionário antes de registrar a justificativa.');
+    return;
+  }
+
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 z-[90] flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4';
+  modal.innerHTML = montarHtmlModalJustificativa(modo, item);
+
+  const form = modal.querySelector('#formModalJustificativaPonto');
+  const btnFechar = modal.querySelector('.btnFecharModalJustificativaPonto');
+  const btnCancelar = modal.querySelector('.btnCancelarModalJustificativaPonto');
+  const msg = modal.querySelector('.msgRetornoModalJustificativaPonto');
+  const selectTipo = form?.querySelector('[name="tipoJustificativa"]');
+  const selectPeriodo = form?.querySelector('[name="tipoPeriodo"]');
+  const blocoPeriodo = form?.querySelector('#blocoPeriodoJustificativa');
+  const inputArquivo = form?.querySelector('[name="arquivo"]');
+
+  const hiddenRemoverAnexo = form?.querySelector('[name="removerAnexo"]');
+  const hiddenAnexoReferencia = form?.querySelector('[name="anexoReferencia"]');
+  const hiddenNomeArquivo = form?.querySelector('[name="nomeArquivo"]');
+  const hiddenCaminhoArquivo = form?.querySelector('[name="caminhoArquivo"]');
+  const hiddenMimeArquivo = form?.querySelector('[name="mimeArquivo"]');
+  const hiddenTamanhoArquivo = form?.querySelector('[name="tamanhoArquivo"]');
+
+  const blocoAnexoAtual = form?.querySelector('.blocoAnexoAtualJustificativa');
+  const nomeAnexoAtual = form?.querySelector('.nomeAnexoAtualJustificativa');
+  const linkVerAnexoAtual = form?.querySelector('.linkVerAnexoAtualJustificativa');
+  const btnExcluirAnexoAtual = form?.querySelector('.btnExcluirAnexoAtualJustificativa');
+  const msgSemAnexo = form?.querySelector('.msgSemAnexoJustificativa');
+
+  function exibirErroModal(texto) {
+    msg.textContent = texto;
+    msg.className = 'msgRetornoModalJustificativaPonto rounded-xl px-3 py-2 text-xs border bg-red-50 text-red-600 border-red-200';
+    msg.classList.remove('hidden');
+  }
+
+  function atualizarVisibilidadePeriodo() {
+    const porPeriodo = String(selectPeriodo?.value || 'PERIODO') === 'PERIODO';
+    blocoPeriodo?.classList.toggle('hidden', !porPeriodo);
+  }
+
+  function atualizarEstadoVisualAnexo() {
+    const possuiAnexo = !!String(hiddenCaminhoArquivo?.value || '').trim();
+
+    blocoAnexoAtual?.classList.toggle('hidden', !possuiAnexo);
+    msgSemAnexo?.classList.toggle('hidden', possuiAnexo);
+
+    if (possuiAnexo) {
+      const nome = String(hiddenNomeArquivo?.value || hiddenAnexoReferencia?.value || 'Arquivo anexado').trim();
+      const url = obterUrlArquivoJustificativa(String(hiddenCaminhoArquivo?.value || '').trim());
+
+      if (nomeAnexoAtual) nomeAnexoAtual.textContent = nome || 'Arquivo anexado';
+      if (linkVerAnexoAtual) linkVerAnexoAtual.href = url || '#';
+    }
+  }
+
+  function limparCamposAnexo() {
+    if (hiddenAnexoReferencia) hiddenAnexoReferencia.value = '';
+    if (hiddenNomeArquivo) hiddenNomeArquivo.value = '';
+    if (hiddenCaminhoArquivo) hiddenCaminhoArquivo.value = '';
+    if (hiddenMimeArquivo) hiddenMimeArquivo.value = '';
+    if (hiddenTamanhoArquivo) hiddenTamanhoArquivo.value = '';
+  }
+
+  function marcarRemocaoAnexo() {
+    if (hiddenRemoverAnexo) hiddenRemoverAnexo.value = 'S';
+    limparCamposAnexo();
+    if (inputArquivo) inputArquivo.value = '';
+    atualizarEstadoVisualAnexo();
+  }
+
+  btnExcluirAnexoAtual?.addEventListener('click', () => {
+    const confirmou = window.confirm('Deseja excluir o anexo atual desta justificativa?');
+    if (!confirmou) return;
+    marcarRemocaoAnexo();
+  });
+
+  inputArquivo?.addEventListener('change', () => {
+    const arquivo = inputArquivo.files?.[0] || null;
+    if (!arquivo) {
+      atualizarEstadoVisualAnexo();
+      return;
+    }
+
+    if (hiddenRemoverAnexo) hiddenRemoverAnexo.value = 'N';
+
+    if (nomeAnexoAtual) nomeAnexoAtual.textContent = arquivo.name;
+    if (linkVerAnexoAtual) linkVerAnexoAtual.removeAttribute('href');
+
+    blocoAnexoAtual?.classList.remove('hidden');
+    msgSemAnexo?.classList.add('hidden');
+  });
+
+  function atualizarDiferencaAutomatica() {
+    const inputMin = form.querySelector('[name="diferencaMinutos"]');
+    const inputFmt = form.querySelector('[name="diferencaFormatada"]');
+    const inputView = form.querySelector('[name="diferencaFormatadaExibicao"]');
+
+    const atual = obterDiferencaAtualSelecionadaJustificativa();
+
+    if (inputMin) inputMin.value = String(atual?.minutos ?? 0);
+    if (inputFmt) inputFmt.value = String(atual?.formatada || '00:00');
+    if (inputView) inputView.value = String(atual?.formatada || '00:00');
+  }
+
+  btnFechar?.addEventListener('click', () => fecharModalJustificativaPonto(modal));
+  btnCancelar?.addEventListener('click', () => fecharModalJustificativaPonto(modal));
+  selectPeriodo?.addEventListener('change', atualizarVisibilidadePeriodo);
+  selectTipo?.addEventListener('change', atualizarDiferencaAutomatica);
+
+  modal.addEventListener('click', function (event) {
+    if (event.target === modal) fecharModalJustificativaPonto(modal);
+  });
+
+  atualizarVisibilidadePeriodo();
+  atualizarDiferencaAutomatica();
+  atualizarEstadoVisualAnexo();
+
+  form?.addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    try {
+      msg.classList.add('hidden');
+
+      const fd = new FormData(form);
+      const tipoPeriodo = String(fd.get('tipoPeriodo') || 'DIA_TODO').trim().toUpperCase();
+      const justificativaId = String(fd.get('justificativaId') || '').trim();
+      const removerAnexo = String(fd.get('removerAnexo') || 'N').trim().toUpperCase() === 'S';
+
+      if (!String(fd.get('funcionarioId') || '').trim()) {
+        throw new Error('Funcionário não identificado.');
+      }
+
+      if (!String(fd.get('dataReferencia') || '').trim()) {
+        throw new Error('Informe a data da justificativa.');
+      }
+
+      if (!String(fd.get('tipoJustificativa') || '').trim()) {
+        throw new Error('Selecione o tipo da justificativa.');
+      }
+
+      if (!String(fd.get('descricao') || '').trim()) {
+        throw new Error('Informe a descrição da justificativa.');
+      }
+
+      if (tipoPeriodo === 'PERIODO') {
+        const horaInicial = String(fd.get('horaInicial') || '').trim();
+        const horaFinal = String(fd.get('horaFinal') || '').trim();
+
+        if (!horaInicial || !horaFinal) {
+          throw new Error('Informe hora inicial e hora final para justificativa por período.');
+        }
+      }
+
+      let anexoUpload = null;
+      const arquivo = inputArquivo?.files?.[0] || null;
+
+      if (arquivo) {
+        anexoUpload = await enviarArquivoJustificativa(arquivo);
+      }
+
+      let anexoReferenciaFinal = String(fd.get('anexoReferencia') || '').trim();
+      let nomeArquivoFinal = String(fd.get('nomeArquivo') || '').trim();
+      let caminhoArquivoFinal = String(fd.get('caminhoArquivo') || '').trim();
+      let mimeArquivoFinal = String(fd.get('mimeArquivo') || '').trim();
+      let tamanhoArquivoFinal = Number(fd.get('tamanhoArquivo') || 0);
+
+      if (removerAnexo && !anexoUpload) {
+        anexoReferenciaFinal = '';
+        nomeArquivoFinal = '';
+        caminhoArquivoFinal = '';
+        mimeArquivoFinal = '';
+        tamanhoArquivoFinal = 0;
+      }
+
+      if (anexoUpload) {
+        anexoReferenciaFinal = String(anexoUpload?.anexoReferencia || '').trim();
+        nomeArquivoFinal = String(anexoUpload?.nomeArquivo || '').trim();
+        caminhoArquivoFinal = String(anexoUpload?.caminhoArquivo || '').trim();
+        mimeArquivoFinal = String(anexoUpload?.mimeArquivo || '').trim();
+        tamanhoArquivoFinal = Number(anexoUpload?.tamanhoArquivo || 0);
+      }
+
+      const payload = {
+        funcionarioId: String(fd.get('funcionarioId') || '').trim(),
+        funcionarioNome: String(fd.get('funcionarioNome') || '').trim(),
+        dataReferencia: String(fd.get('dataReferencia') || '').trim(),
+        tipoJustificativa: String(fd.get('tipoJustificativa') || '').trim().toUpperCase(),
+        tipoPeriodo,
+        dia_todo: tipoPeriodo === 'DIA_TODO' ? 'S' : 'N',
+        horaInicial: tipoPeriodo === 'PERIODO' ? String(fd.get('horaInicial') || '').trim() : '',
+        horaFinal: tipoPeriodo === 'PERIODO' ? String(fd.get('horaFinal') || '').trim() : '',
+        diferencaMinutos: Number(fd.get('diferencaMinutos') || 0),
+        diferencaFormatada: String(fd.get('diferencaFormatada') || '').trim(),
+        descricao: String(fd.get('descricao') || '').trim(),
+        anexoReferencia: anexoReferenciaFinal,
+        nomeArquivo: nomeArquivoFinal,
+        caminhoArquivo: caminhoArquivoFinal,
+        mimeArquivo: mimeArquivoFinal,
+        tamanhoArquivo: Number.isFinite(tamanhoArquivoFinal) ? tamanhoArquivoFinal : 0,
+        removerAnexo: removerAnexo ? 'S' : 'N',
+        criadoPor: String(window.usuarioLogadoId || window.idUsuarioLogado || '').trim()
+      };
+
+      const url = justificativaId
+        ? `${APIBASE}/api/solicitacoes/justificativas-ponto/${encodeURIComponent(justificativaId)}`
+        : `${APIBASE}/api/solicitacoes/justificativas-ponto`;
+
+      const method = justificativaId ? 'PUT' : 'POST';
+
+      const resposta = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await resposta.json();
+
+      if (!resposta.ok || !json?.success) {
+        throw new Error(json?.message || 'Erro ao salvar justificativa.');
+      }
+
+      fecharModalJustificativaPonto(modal);
+      await carregarJustificativasPonto();
+      await carregarJustificativasPeriodoSolicitacoes();
+    } catch (error) {
+      console.error('Erro ao salvar justificativa:', error);
+      exibirErroModal(error?.message || 'Erro ao salvar justificativa.');
+    }
+  });
+
+  document.body.appendChild(modal);
+}
+
+
+
+async function carregarJustificativaPorId(id) {
+  const resposta = await fetch(`${APIBASE}/api/solicitacoes/justificativas-ponto/${encodeURIComponent(id)}`);
+  const json = await resposta.json();
+
+  if (!resposta.ok || !json?.success) {
+    throw new Error(json?.message || 'Erro ao carregar justificativa.');
+  }
+
+  return json.item || null;
+}
+
+async function editarJustificativaPonto(id) {
+  try {
+    const item = await carregarJustificativaPorId(id);
+    if (!item) {
+      throw new Error('Justificativa não encontrada.');
+    }
+
+    abrirModalJustificativaPonto('editar', item);
+  } catch (error) {
+    console.error('Erro ao abrir edição da justificativa:', error);
+    alert(error?.message || 'Erro ao carregar dados da justificativa.');
+  }
+}
+
+async function atualizarStatusJustificativaPonto(id, perfil, status) {
+  try {
+    const observacao = window.prompt(`Informe uma observação para o status ${status} (${perfil}) ou deixe em branco:`) || '';
+
+    const resposta = await fetch(`${APIBASE}/api/solicitacoes/justificativas-ponto/${encodeURIComponent(id)}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        perfil,
+        status,
+        observacao,
+        usuario: obterUsuarioAcaoJustificativa()
+      })
+    });
+
+    const json = await resposta.json();
+
+    if (!resposta.ok || !json?.success) {
+      throw new Error(json?.message || 'Erro ao atualizar status.');
+    }
+
+    await carregarJustificativasPonto();
+    await carregarJustificativasPeriodoSolicitacoes();
+  } catch (error) {
+    console.error('Erro ao atualizar status da justificativa:', error);
+    alert(error?.message || 'Erro ao atualizar status da justificativa.');
+    await carregarJustificativasPonto();
+    await carregarJustificativasPeriodoSolicitacoes();
+  }
+}
+
+function obterUsuarioAcaoJustificativa() {
+  return String(sessionStorage.getItem('usuario') || '').trim();
+  //return String(window.usuarioLogadoId || window.idUsuarioLogado || '').trim();
+  
+}
+
+function inicializarJustificativasPonto() {
+  const { btnNova, inputFiltro, btnLimparFiltro } = obterElementosJustificativasPonto();
+
+  btnNova?.addEventListener('click', () => {
+    abrirModalJustificativaPonto('novo');
+  });
+
+  inputFiltro?.addEventListener('input', aplicarFiltroJustificativasPonto);
+
+  btnLimparFiltro?.addEventListener('click', () => {
+    inputFiltro.value = '';
+    aplicarFiltroJustificativasPonto();
+    inputFiltro.focus();
+  });
+
+  document.addEventListener('click', event => {
+    const btnMenu = event.target.closest('.btnMenuAcoesJustificativa');
+    const btnEditar = event.target.closest('.btnEditarJustificativaPonto');
+    const btnStatus = event.target.closest('.btnAlterarStatusJustificativa');
+    const btnExcluir = event.target.closest('.btnExcluirJustificativaPonto');
+    const btnDetalhesStatus = event.target.closest('.btnDetalhesStatusJustificativa');
+    const menuGlobal = event.target.closest('#menuAcoesJustificativaGlobal');
+    const popoverStatus = event.target.closest('#popoverStatusJustificativaGlobal');
+
+    if (btnDetalhesStatus) {
+      event.stopPropagation();
+
+      const id = String(btnDetalhesStatus.dataset.id || '').trim();
+      const perfil = String(btnDetalhesStatus.dataset.perfil || '').trim().toUpperCase();
+      if (!id || !perfil) return;
+
+      const popover = obterPopoverStatusJustificativa();
+      const mesmoAberto =
+        popover &&
+        !popover.classList.contains('hidden') &&
+        String(popover.getAttribute('data-id') || '') === id &&
+        String(popover.getAttribute('data-perfil') || '') === perfil;
+
+      if (mesmoAberto) {
+        fecharPopoverStatusJustificativa();
+      } else {
+        abrirPopoverStatusJustificativa(btnDetalhesStatus, id, perfil);
+      }
+      return;
+    }
+
+    if (btnMenu) {
+      event.stopPropagation();
+
+      const id = String(btnMenu.dataset.id || '').trim();
+      if (!id) return;
+
+      const menu = obterMenuGlobalJustificativas();
+      const mesmoMenuAberto =
+        menu &&
+        !menu.classList.contains('hidden') &&
+        String(menu.getAttribute('data-id') || '') === id;
+
+      if (mesmoMenuAberto) {
+        fecharMenusAcoesJustificativas();
+      } else {
+        abrirMenuAcoesJustificativa(btnMenu, id);
+      }
+      return;
+    }
+
+    if (btnEditar) {
+      const id = String(btnEditar.dataset.id || '').trim();
+      fecharMenusAcoesJustificativas();
+      if (id) editarJustificativaPonto(id);
+      return;
+    }
+
+    if (btnStatus) {
+      const id = String(btnStatus.dataset.id || '').trim();
+      const perfil = String(btnStatus.dataset.perfil || '').trim();
+      const status = String(btnStatus.dataset.status || '').trim();
+
+      fecharMenusAcoesJustificativas();
+
+      if (id && perfil && status) {
+        atualizarStatusJustificativaPonto(id, perfil, status);
+      }
+      return;
+    }
+
+    if (btnExcluir) {
+      const id = String(btnExcluir.dataset.id || '').trim();
+      fecharMenusAcoesJustificativas();
+      if (id) excluirJustificativaPonto(id);
+      return;
+    }
+
+    if (!menuGlobal) {
+      fecharMenusAcoesJustificativas();
+    }
+
+    if (!popoverStatus) {
+      fecharPopoverStatusJustificativa();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    fecharMenusAcoesJustificativas();
+    fecharPopoverStatusJustificativa();
+  });
+
+  window.addEventListener('scroll', () => {
+    fecharMenusAcoesJustificativas();
+    fecharPopoverStatusJustificativa();
+  }, true);
+
+}
+
+function obterDetalhesStatusJustificativa(item, perfil) {
+  const ehGestor = String(perfil || '').trim().toUpperCase() === 'GESTOR';
+
+  return {
+    perfil: ehGestor ? 'Gestor' : 'RH',
+    status: ehGestor ? item?.statusGestor : item?.statusRh,
+    usuario: ehGestor ? item?.gestorUsuario : item?.rhUsuario,
+    dataHora: ehGestor ? item?.gestorData : item?.rhData,
+    observacao: ehGestor ? item?.observacaoGestor : item?.observacaoRh
+  };
+}
+
+function montarHtmlDetalhesStatusJustificativa(item, perfil) {
+  const dados = obterDetalhesStatusJustificativa(item, perfil);
+
+  return `
+    <div class="space-y-2">
+      <div>
+        <div class="text-[11px] font-semibold text-foreground">${escapeHtmlSolicitacoes(dados.perfil)}</div>
+        <div class="mt-1 inline-flex rounded-full px-2 py-1 text-[11px] font-medium ${obterClasseStatusJustificativa(dados.status)}">
+          ${escapeHtmlSolicitacoes(obterLabelStatusJustificativa(dados.status))}
+        </div>
+      </div>
+
+      <div class="text-xs text-muted-foreground space-y-1">
+        <div>
+          <span class="font-medium text-foreground">Alterado por:</span>
+          ${escapeHtmlSolicitacoes(dados.usuario || '--')}
+        </div>
+
+        <div>
+          <span class="font-medium text-foreground">Em:</span>
+          ${escapeHtmlSolicitacoes(dados.dataHora ? formatarDataHoraPtBrJustificativas(dados.dataHora) : '--')}
+        </div>
+
+        <div>
+          <span class="font-medium text-foreground">Observação:</span>
+          ${escapeHtmlSolicitacoes(dados.observacao || '--')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function obterPopoverStatusJustificativa() {
+  return document.getElementById('popoverStatusJustificativaGlobal');
+}
+
+function fecharPopoverStatusJustificativa() {
+  const popover = obterPopoverStatusJustificativa();
+  if (!popover) return;
+
+  popover.classList.add('hidden');
+  popover.innerHTML = '';
+  popover.removeAttribute('data-id');
+  popover.removeAttribute('data-perfil');
+  popover.style.left = '';
+  popover.style.top = '';
+}
+
+function abrirPopoverStatusJustificativa(botao, itemId, perfil) {
+  const popover = obterPopoverStatusJustificativa();
+  if (!popover) return;
+
+  const item = justificativasPontoCache.find(x => String(x?.id || '') === String(itemId || '').trim());
+  if (!item) return;
+
+  popover.innerHTML = montarHtmlDetalhesStatusJustificativa(item, perfil);
+  popover.classList.remove('hidden');
+  popover.setAttribute('data-id', String(itemId));
+  popover.setAttribute('data-perfil', String(perfil || '').trim().toUpperCase());
+
+  const rect = botao.getBoundingClientRect();
+  const largura = 280;
+  const margem = 8;
+
+  let left = rect.left;
+  let top = rect.bottom + 6;
+
+  if (left + largura > window.innerWidth - margem) {
+    left = window.innerWidth - largura - margem;
+  }
+
+  if (left < margem) {
+    left = margem;
+  }
+
+  const alturaEstimada = 170;
+  if (top + alturaEstimada > window.innerHeight - margem) {
+    top = Math.max(margem, rect.top - alturaEstimada - 6);
+  }
+
+  popover.style.left = `${left}px`;
+  popover.style.top = `${top}px`;
+}
+
+function obterUrlArquivoJustificativa(caminhoArquivo) {
+  const caminho = String(caminhoArquivo || '').trim();
+  if (!caminho) return '';
+
+  if (/^https?:\/\//i.test(caminho)) {
+    return caminho;
+  }
+
+  const base = String(APIBASE || '').trim().replace(/\/+$/, '');
+  const rotaNormalizada = `/${caminho.replace(/^\/+/, '')}`;
+
+  return `${base}${rotaNormalizada}`;
+}
+
+function obterJustificativasDoDiaSolicitacoes(dataIso, funcionarioId = '') {
+  const id = String(funcionarioId || '').trim();
+
+  return (Array.isArray(justificativasPontoPeriodoCache) ? justificativasPontoPeriodoCache : []).filter(item => {
+    const dataItem = String(item?.dataReferencia || '').trim();
+    const funcionarioItem = String(item?.funcionarioId || '').trim();
+
+    if (!dataItem || dataItem !== String(dataIso || '').trim()) {
+      return false;
+    }
+
+    if (id && funcionarioItem !== id) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+function funcionarioTemJustificativaValidaNoDiaSolicitacoes(dataIso, funcionarioId) {
+  const justificativas = obterJustificativasDoDiaSolicitacoes(dataIso, funcionarioId);
+
+  if (!justificativas.length) {
+    return false;
+  }
+
+  return justificativas.some(item => {
+    const statusRh = String(item?.statusRh || 'PENDENTE').trim().toUpperCase();
+    const statusGestor = String(item?.statusGestor || 'PENDENTE').trim().toUpperCase();
+
+    if (statusRh === 'Aprovado') {
+      return true;
+    }
+
+    return ['PENDENTE', 'EM_ANALISE', 'APROVADO'].includes(statusGestor) ||
+           ['PENDENTE', 'EM_ANALISE', 'APROVADO'].includes(statusRh);
+  });
+}
+
+function obterStatusJustificativaDiaSolicitacoes(data) {
+  const dataIso = typeof data === 'string' ? data : formatarDataIsoSolicitacoes(data);
+  const usuarioSelecionadoId = obterUsuarioSelecionadoIdSolicitacoes();
+
+  if (!dataIso) {
+    return {
+      temPendenciaSemJustificativa: false,
+      temPendenciaComJustificativa: false,
+      todosResolvidosPorRh: false
+    };
+  }
+
+  if (usuarioSelecionadoId) {
+    const temInconsistencia = obterTemInconsistenciaPorUsuarioNaDataSolicitacoes(dataIso, usuarioSelecionadoId);
+
+    if (!temInconsistencia) {
+      return {
+        temPendenciaSemJustificativa: false,
+        temPendenciaComJustificativa: false,
+        todosResolvidosPorRh: false
+      };
+    }
+
+    const justificativas = obterJustificativasDoDiaSolicitacoes(dataIso, usuarioSelecionadoId);
+    const aprovadoRh = justificativas.some(item =>
+      String(item?.statusRh || '').trim().toUpperCase() === 'APROVADO'
+    );
+
+    if (aprovadoRh) {
+      return {
+        temPendenciaSemJustificativa: false,
+        temPendenciaComJustificativa: false,
+        todosResolvidosPorRh: true
+      };
+    }
+
+    const temJustificativa = justificativas.length > 0;
+
+    return {
+      temPendenciaSemJustificativa: !temJustificativa,
+      temPendenciaComJustificativa: temJustificativa,
+      todosResolvidosPorRh: false
+    };
+  }
+
+  const usuariosDia = Array.isArray(usuariosPorDataSolicitacoes[dataIso])
+    ? usuariosPorDataSolicitacoes[dataIso]
+    : [];
+
+  const usuariosComInconsistencia = usuariosDia.filter(usuario => {
+    const diagnostico = obterDiagnosticoInconsistenciaSolicitacoes(usuario, new Date(`${dataIso}T00:00:00`));
+    return !!diagnostico?.inconsistente || !!diagnostico?.excedeuTolerancia;
+  });
+
+  if (!usuariosComInconsistencia.length) {
+    return {
+      temPendenciaSemJustificativa: false,
+      temPendenciaComJustificativa: false,
+      todosResolvidosPorRh: false
+    };
+  }
+
+  let semJustificativa = 0;
+  let comJustificativa = 0;
+  let resolvidosRh = 0;
+
+  usuariosComInconsistencia.forEach(usuario => {
+    const funcionarioId = String(usuario?.id ?? usuario?.ID ?? '').trim();
+    if (!funcionarioId) return;
+
+    const justificativas = obterJustificativasDoDiaSolicitacoes(dataIso, funcionarioId);
+    const aprovadoRh = justificativas.some(item =>
+      String(item?.statusRh || '').trim().toUpperCase() === 'APROVADO'
+    );
+
+    if (aprovadoRh) {
+      resolvidosRh += 1;
+      return;
+    }
+
+    if (justificativas.length > 0) {
+      comJustificativa += 1;
+    } else {
+      semJustificativa += 1;
+    }
+  });
+
+  return {
+    temPendenciaSemJustificativa: semJustificativa > 0,
+    temPendenciaComJustificativa: semJustificativa === 0 && (comJustificativa > 0 || resolvidosRh > 0),
+    todosResolvidosPorRh: semJustificativa === 0 && comJustificativa === 0 && resolvidosRh > 0
+  };
+}
+
+async function carregarJustificativasPeriodoSolicitacoes() {
+  try {
+    const dias = obterListaDiasPeriodoFolhaSolicitacoes(referenciaPeriodoSolicitacoes);
+    if (!Array.isArray(dias) || !dias.length) {
+      justificativasPontoPeriodoCache = [];
+      renderizarCalendarioSolicitacoes();
+      return;
+    }
+
+    const dataInicial = formatarDataIsoSolicitacoes(dias[0]);
+    const dataFinal = formatarDataIsoSolicitacoes(dias[dias.length - 1]);
+
+    const params = new URLSearchParams();
+    params.append('dataInicial', dataInicial);
+    params.append('dataFinal', dataFinal);
+
+    const resposta = await fetch(`${APIBASE}/api/solicitacoes/justificativas-ponto?${params.toString()}`);
+    const json = await resposta.json();
+
+    if (!resposta.ok || !json?.success) {
+      throw new Error(json?.message || 'Erro ao carregar justificativas do período.');
+    }
+
+    justificativasPontoPeriodoCache = Array.isArray(json.items) ? json.items : [];
+    renderizarCalendarioSolicitacoes();
+  } catch (error) {
+    console.error('Erro ao carregar justificativas do período', error);
+    justificativasPontoPeriodoCache = [];
+    renderizarCalendarioSolicitacoes();
+  }
+}

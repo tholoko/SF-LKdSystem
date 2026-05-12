@@ -1539,9 +1539,92 @@
           <div class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
               data-page="inventory-control">
             <i class="fas fa-warehouse w-4 text-warning"></i>
-            <span class="font-medium truncate">Centro de Custo</span>
+            <span class="font-medium truncate">Controle de estoque</span>
           </div>
         </div>
+      </div>
+
+      <!-- Fiscal -->
+      <div class="menu-group" data-menu-group="fiscal">
+        <button
+          type="button"
+          class="menu-group-toggle w-full flex items-center justify-between gap-3 form-control-sm rounded-xl transition-all text-muted-foreground hover:bg-secondary hover:text-foreground px-3 py-2"
+        >
+          <div class="flex items-center gap-4 min-w-0">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-amber-100 text-amber-700 shrink-0">
+              <i class="fas fa-scale-balanced"></i>
+            </div>
+            <div><span class="font-medium truncate">Fiscal</span></div>
+          </div>
+          <i class="fas fa-chevron-down menu-group-arrow text-xs transition-transform"></i>
+        </button>
+
+        <div class="menu-subitems hidden mt-2 ml-4 pl-4 border-l border-sidebar-border space-y-1">
+          <div
+            class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+            data-page="secao-dfe-certificado"
+          >
+            <i class="fas fa-file-shield w-4 text-amber-700"></i>
+            <span class="font-medium truncate">DF-e / Certificado A1</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recursos Humanos -->
+      <div class="menu-group" data-menu-group="recursos-humanos">
+        <button
+          type="button"
+          class="menu-group-toggle w-full flex items-center justify-between gap-3 form-control-sm rounded-xl transition-all text-muted-foreground hover:bg-secondary hover:text-foreground px-3 py-2"
+        >
+          <div class="flex items-center gap-4 min-w-0">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-100 text-blue-700 shrink-0">
+              <i class="fas fa-users"></i>
+            </div>
+            <div><span class="font-medium truncate">Recursos Humanos</span></div>
+          </div>
+          <i class="fas fa-chevron-down menu-group-arrow text-xs transition-transform"></i>
+        </button>
+
+        <div class="menu-subitems hidden mt-2 ml-4 pl-4 border-l border-sidebar-border space-y-1">
+          <div
+            class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+            data-page="secao-cadastro-calendario"
+          >
+            <i class="fas fa-calendar-days w-4 text-blue-700"></i>
+            <span class="font-medium truncate">Feriados</span>
+          </div>
+
+          <div
+            class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+            data-page="secao-jornada"
+          >
+            <i class="fas fa-business-time w-4 text-blue-700"></i>
+            <span class="font-medium truncate">Jornada</span>
+          </div>
+
+          <div
+            class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+            data-page="secao-vinculo-jornada"
+          >
+            <i class="fas fa-link w-4 text-blue-700"></i>
+            <span class="font-medium truncate">Vínculo Usuário Jornada</span>
+          </div>
+
+          <div
+            class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+            data-page="secao-solicitacoes"
+          >
+            <i class="fas fa-file-alt w-4 text-blue-700"></i>
+            <span class="font-medium truncate">Solicitações</span>
+          </div>
+          <div class="menu-item submenu-item flex items-center gap-3 form-control-sm rounded-xl cursor-pointer transition-all text-muted-foreground hover:bg-secondary hover:text-foreground"
+              data-page="secao-cadastro-equipamento">
+            <i class="fas fa-clock w-4 text-blue-700"></i>
+            <span class="font-medium truncate">Cadastro Equipamento</span>
+          </div>
+        </div>
+
+        
       </div>
 
       <!-- Utilitários -->
@@ -2222,7 +2305,7 @@
               </button>
 
               <div>
-                <h2 class="text-2xl font-semibold text-foreground">Estoque - Centro de Custo</h2>
+                <h2 class="text-2xl font-semibold text-foreground">Controle de estoque interno</h2>
                 <p class="form-subtitle-sm">Gestão de materiais do escritório.</p>
               </div>
             </div>
@@ -2277,7 +2360,7 @@
 
             <button id="abaEstoqueCentroCusto" type="button" aria-selected="false"
               class="px-4 py-2 rounded-xl form-label-sm border border-border bg-white/40 text-muted-foreground hover:bg-white/70 transition-all">
-              Centro de custo
+              Estoque
             </button>
           </div>
 
@@ -2305,7 +2388,7 @@
               </table>
             </div>
           </div>
-          <!-- Painel Centro de Custo -->
+          <!-- Painel Estoque -->
           <div id="painelEstoqueCentroCusto" class="hidden space-y-4">
             <div id="estoqueCentroCustoErro"
               class="hidden rounded-xl border border-destructive/20 bg-destructive/10 form-control-sm text-sm text-destructive"></div>
@@ -2313,7 +2396,7 @@
             <div class="flex items-center justify-between gap-3">
               <div>
                 <h3 class="text-base font-semibold text-foreground">Materiais recebidos</h3>
-                <p class="form-subtitle-sm">Itens transferidos para o seu centro de custo.</p>
+                <p class="form-subtitle-sm">Itens transferidos para o seu Estoque.</p>
               </div>
 
               <button
@@ -2722,7 +2805,7 @@
               id="inputFiltroGestaoUsuarios"
               type="text"
               class="w-full h-11 rounded-xl border border-border bg-white/70 pl-11 pr-10 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
-              placeholder="Filtrar usuários, setor, perfil, centro de custo, status..."
+              placeholder="Filtrar usuários, setor, perfil, Estoque, status..."
               autocomplete="off"
             />
 
@@ -2771,7 +2854,7 @@
                 <th class="form-control-sm text-left">
                   <button type="button" class="inline-flex items-center gap-2 font-semibold text-muted-foreground hover:text-foreground transition-all"
                     data-sort-gestao="centroCusto" onclick="alternarOrdenacaoGestao('centroCusto')">
-                    <span>Centro de custo</span>
+                    <span>Estoque</span>
                     <span data-sort-icon><i class="fas fa-sort text-xs opacity-50" aria-hidden="true"></i></span>
                   </button>
                 </th>
@@ -3017,9 +3100,11 @@
 
     <!-- Agendamento Veículos -->
     <section id="secao-meus-agendamentos" class="page-content md:ml-4">
-      <div class="glass rounded-2xl p-6 shadow space-y-4">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex items-start gap-3">
+      <div class="glass rounded-2xl p-4 sm:p-6 shadow space-y-4">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          
+          <!-- Esquerda: menu + título -->
+          <div class="flex items-start gap-3 min-w-0">
             <button
               type="button"
               onclick="openSidebarSafe()"
@@ -3029,14 +3114,17 @@
               <i class="fas fa-bars"></i>
             </button>
 
-            <div>
-              <h3 class="font-semibold">Agendamento Veículos</h3>
-              <p class="form-subtitle-sm">Acompanhe suas solicitações de veículo</p>
+            <div class="min-w-0">
+              <h3 class="font-semibold break-words">Agendamento Veículos</h3>
+              <p class="form-subtitle-sm break-words">Acompanhe suas solicitações de veículo</p>
             </div>
           </div>
 
-          <div class="flex items-center gap-2 flex-wrap justify-end">
-            <div class="relative min-w-[240px] w-full sm:w-[280px] md:w-[320px]">
+          <!-- Direita: busca + ações -->
+          <div class="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end lg:w-auto">
+            
+            <!-- Busca -->
+            <div class="relative w-full sm:flex-1 sm:min-w-[220px] md:max-w-[320px]">
               <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none"></i>
               <input
                 id="inputFiltroBuscaAgendamentos"
@@ -3056,40 +3144,41 @@
               </button>
             </div>
 
-            <button
-              id="btnGerenciarVeiculos"
-              type="button"
-              class="w-10 h-10 rounded-xl border border-green-300/70 bg-green-100/80 text-green-800 hover:bg-green-200/80 transition-all flex items-center justify-center shadow-sm"
-              title="Gerenciar veículos"
-              aria-label="Gerenciar veículos">
-              <i class="fas fa-car-side"></i>
-            </button>
+            <!-- Botões -->
+            <div class="flex w-full items-center justify-end gap-2 flex-wrap sm:w-auto sm:flex-nowrap">
+              <button
+                id="btnGerenciarVeiculos"
+                type="button"
+                class="w-10 h-10 rounded-xl border border-green-300/70 bg-green-100/80 text-green-800 hover:bg-green-200/80 transition-all flex items-center justify-center shadow-sm shrink-0"
+                title="Gerenciar veículos"
+                aria-label="Gerenciar veículos">
+                <i class="fas fa-car-side"></i>
+              </button>
 
-            <button
-              id="btnAtualizarMeusAgendamentos"
-              type="button"
-              class="w-10 h-10 rounded-xl border border-emerald-300/70 bg-emerald-100/80 text-emerald-800 hover:bg-emerald-200/80 transition-all flex items-center justify-center shadow-sm"
-              title="Atualizar lista"
-              aria-label="Atualizar lista">
-              <i class="fas fa-rotate-right"></i>
-            </button>
+              <button
+                id="btnAtualizarMeusAgendamentos"
+                type="button"
+                class="w-10 h-10 rounded-xl border border-emerald-300/70 bg-emerald-100/80 text-emerald-800 hover:bg-emerald-200/80 transition-all flex items-center justify-center shadow-sm shrink-0"
+                title="Atualizar lista"
+                aria-label="Atualizar lista">
+                <i class="fas fa-rotate-right"></i>
+              </button>
 
-            <button
-              id="btnNovoAgendamentoCarro"
-              type="button"
-              class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center"
-              title="Novo agendamento"
-              aria-label="Novo agendamento">
-              <i class="fas fa-plus" aria-hidden="true"></i>
-            </button>
+              <button
+                id="btnNovoAgendamentoCarro"
+                type="button"
+                class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center shrink-0"
+                title="Novo agendamento"
+                aria-label="Novo agendamento">
+                <i class="fas fa-plus" aria-hidden="true"></i>
+              </button>
+            </div>
           </div>
-
-
         </div>
 
         <div id="meusAgendamentosMsg" class="form-subtitle-sm hidden"></div>
 
-        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
           <button type="button" id="cardFiltroTotal" data-status="TODOS" class="card-filtro-agendamento rounded-2xl border border-border bg-white/60 shadow-sm p-5 text-left transition-all hover:bg-white/80">
             <div class="flex items-center justify-between gap-3">
               <p class="form-label-sm text-foreground">Total</p>
@@ -3145,8 +3234,8 @@
           </button>
         </div>
 
-        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
-          <table class="min-w-full text-sm">
+        <div class="overflow-x-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm whitespace-nowrap">
             <thead class="bg-muted/40 text-muted-foreground">
               <tr>
                 <th class="text-left font-semibold form-control-sm">Código</th>
@@ -3161,7 +3250,7 @@
             </thead>
             <tbody id="tbodyMeusAgendamentos">
               <tr>
-                <td colspan="7" class="px-4 py-6 form-subtitle-sm text-center">
+                <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center whitespace-normal">
                   Nenhum agendamento encontrado.
                 </td>
               </tr>
@@ -3218,6 +3307,811 @@
         </div>
       </div>
     </section>
+
+    <!-- DF-e / Certificado Digital -->
+    <section id="secao-dfe-certificado" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-5">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex items-start gap-3">
+            <button type="button" onclick="openSidebarSafe()" class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0" title="Abrir menu">
+              <i class="fas fa-bars"></i>
+            </button>
+            <div>
+              <h3 class="font-semibold">Consulta DF-e com Certificado A1</h3>
+              <p class="form-subtitle-sm">Importe o certificado A1, consulte notas emitidas para o CNPJ, filtre, visualize e baixe XML.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button id="btnConsultarDFe" type="button" class="rounded-xl bg-primary text-white form-control-sm font-medium px-4 hover:opacity-90 transition-all">
+              Consultar notas
+            </button>
+            <button id="btnBaixarSelecionadasDFe" type="button" class="rounded-xl border border-border bg-white/60 form-control-sm font-medium px-4 hover:bg-white/90 transition-all">
+              Baixar selecionadas
+            </button>
+          </div>
+        </div>
+
+        <div id="dfeMsg" class="form-subtitle-sm hidden"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="rounded-2xl border border-border bg-white/50 p-5 space-y-4">
+            <div>
+              <h4 class="font-semibold">Credenciais do certificado</h4>
+              <p class="form-subtitle-sm">O certificado A1 é enviado ao backend para a consulta segura no Ambiente Nacional.</p>
+            </div>
+
+            <form id="formCertificadoDfe" class="space-y-4">
+              <div>
+                <label class="form-label-sm block mb-2">Certificado A1 (.pfx ou .p12)</label>
+                <input id="dfeCertFile" type="file" accept=".pfx,.p12,application/x-pkcs12" class="w-full rounded-xl border border-border bg-white/70 form-control-sm" />
+              </div>
+
+              <div>
+                <label class="form-label-sm block mb-2">Senha do certificado</label>
+                <input id="dfeCertSenha" type="password" class="w-full rounded-xl border border-border bg-white/70 form-control-sm" placeholder="Informe a senha do certificado" />
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label-sm block mb-2">CPF ou CNPJ consultado</label>
+                  <input
+                    id="dfeDocumento"
+                    type="text"
+                    class="w-full rounded-xl border border-border bg-white/70 form-control-sm"
+                    placeholder="Opcional - informe CPF ou CNPJ"
+                  />
+                  <p class="form-subtitle-sm mt-2">
+                    Se deixar em branco, o sistema buscará os últimos 15 lançamentos a partir do último NSU.
+                  </p>
+                </div>
+                <div>
+                  <label class="form-label-sm block mb-2">Ambiente</label>
+                  <select id="dfeTpAmb" class="w-full rounded-xl border border-border bg-white/70 form-control-sm">
+                    <option value="1">Produção</option>
+                    <option value="2">Homologação</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="form-label-sm block mb-2">UF autor</label>
+                  <select id="dfeUfAutor" class="w-full rounded-xl border border-border bg-white/70 form-control-sm">
+                    <option value="12">AC</option><option value="27">AL</option><option value="16">AP</option><option value="13">AM</option><option value="29" selected>BA</option>
+                    <option value="23">CE</option><option value="53">DF</option><option value="32">ES</option><option value="52">GO</option><option value="21">MA</option>
+                    <option value="51">MT</option><option value="50">MS</option><option value="31">MG</option><option value="15">PA</option><option value="25">PB</option>
+                    <option value="41">PR</option><option value="26">PE</option><option value="22">PI</option><option value="33">RJ</option><option value="24">RN</option>
+                    <option value="43">RS</option><option value="11">RO</option><option value="14">RR</option><option value="42">SC</option><option value="35">SP</option>
+                    <option value="28">SE</option><option value="17">TO</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label-sm block mb-2">Último NSU</label>
+                  <input id="dfeUltNsu" type="text" value="000000000000000" class="w-full rounded-xl border border-border bg-white/70 form-control-sm" />
+                </div>
+                <div>
+                  <label class="form-label-sm block mb-2">Máx. docs</label>
+                  <input id="dfeLimite" type="number" min="1" max="50" value="15" class="w-full rounded-xl border border-border bg-white/70 form-control-sm" />
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="rounded-2xl border border-border bg-white/50 p-5 space-y-4">
+            <div>
+              <h4 class="font-semibold">Filtros da listagem</h4>
+              <p class="form-subtitle-sm">Após a consulta, refine os resultados por emitente, chave ou período.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label-sm block mb-2">Emitente</label>
+                <input id="filtroEmitenteDfe" type="text" class="w-full rounded-xl border border-border bg-white/70 form-control-sm" placeholder="Razão social ou CNPJ" />
+              </div>
+              <div>
+                <label class="form-label-sm block mb-2">Chave / NSU</label>
+                <input id="filtroChaveDfe" type="text" class="w-full rounded-xl border border-border bg-white/70 form-control-sm" placeholder="Chave ou NSU" />
+              </div>
+              <div>
+                <label class="form-label-sm block mb-2">Data inicial</label>
+                <input id="filtroDataIniDfe" type="date" class="w-full rounded-xl border border-border bg-white/70 form-control-sm" />
+              </div>
+              <div>
+                <label class="form-label-sm block mb-2">Data final</label>
+                <input id="filtroDataFimDfe" type="date" class="w-full rounded-xl border border-border bg-white/70 form-control-sm" />
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3 flex-wrap">
+              <button id="btnAplicarFiltroDfe" type="button" class="rounded-xl border border-border bg-white/60 form-control-sm font-medium px-4 hover:bg-white/90 transition-all">Aplicar filtro</button>
+              <button id="btnLimparFiltroDfe" type="button" class="rounded-xl border border-border bg-white/60 form-control-sm font-medium px-4 hover:bg-white/90 transition-all">Limpar</button>
+            </div>
+
+            <div class="rounded-xl border border-border bg-white/60 p-4">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div><div class="text-muted-foreground">Total</div><div id="dfeResumoTotal" class="font-bold text-lg">0</div></div>
+                <div><div class="text-muted-foreground">Selecionadas</div><div id="dfeResumoSelecionadas" class="font-bold text-lg">0</div></div>
+                <div><div class="text-muted-foreground">Último NSU</div><div id="dfeResumoUltNsu" class="font-bold text-sm">-</div></div>
+                <div><div class="text-muted-foreground">Máx. NSU</div><div id="dfeResumoMaxNsu" class="font-bold text-sm">-</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm">
+            <thead class="bg-muted/40 text-muted-foreground">
+              <tr>
+                <th class="text-left font-semibold form-control-sm px-4 py-3"><input type="checkbox" id="dfeSelectAll" /></th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">NSU</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Chave</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Emitente</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Data</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Valor</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Tipo</th>
+                <th class="text-right font-semibold form-control-sm px-4 py-3">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyDfeNotas" class="divide-y divide-border">
+              <tr>
+                <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">Nenhuma nota consultada.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOLICITAÇÕES -->
+    <section id="secao-solicitacoes" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-5 shadow space-y-4">
+        <!-- CABEÇALHO -->
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-10 h-10 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu"
+            >
+              <i class="fas fa-bars text-sm"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Solicitações</h3>
+              <p class="form-subtitle-sm">Cadastre, visualize e acompanhe as solicitações por data.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <button
+              id="btnTogglePainelSolicitacoes"
+              type="button"
+              class="h-9 px-3 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all text-sm flex items-center gap-2"
+              title="Ocultar ou exibir painel lateral"
+              aria-label="Ocultar ou exibir painel lateral"
+              aria-expanded="true"
+            >
+              <i class="fas fa-panels-lean"></i>
+              <span id="labelTogglePainelSolicitacoes">Ocultar painel</span>
+            </button>
+
+            <button
+              id="btnAtualizarSolicitacoes"
+              type="button"
+              class="w-9 h-9 rounded-xl border border-border bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all"
+              title="Atualizar lista"
+              aria-label="Atualizar lista"
+            >
+              <i class="fas fa-rotate-right text-sm"></i>
+            </button>
+
+            <button
+              id="btnNovaSolicitacao"
+              type="button"
+              class="w-9 h-9 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center"
+              title="Adicionar solicitação"
+              aria-label="Adicionar solicitação"
+            >
+              <i class="fas fa-plus text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ÁREA PRINCIPAL -->
+        <div id="layoutSolicitacoes" class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+          <!-- COLUNA 1: PAINEL AUXILIAR -->
+          <div id="painelAuxSolicitacoes" class="xl:col-span-4 space-y-4">
+            <!-- CALENDÁRIO -->
+            <div class="rounded-2xl border border-border bg-white/60 p-3 space-y-3">
+              <div class="flex items-center justify-between">
+                <h4 class="font-semibold text-sm">Calendário</h4>
+
+                <button
+                  type="button"
+                  id="btnHojeSolicitacoes"
+                  class="px-2.5 h-7 rounded-lg border border-border bg-white/70 hover:bg-white transition-all text-[11px]"
+                >
+                  Hoje
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  id="btnPeriodoAnteriorSolicitacoes"
+                  class="w-7 h-7 rounded-lg border border-border bg-white/70 hover:bg-white transition-all flex items-center justify-center shrink-0"
+                  aria-label="Período anterior"
+                >
+                  <i class="fas fa-chevron-left text-[10px]"></i>
+                </button>
+
+                <div id="tituloPeriodoSolicitacoes" class="font-medium text-xs text-center flex-1"></div>
+
+                <button
+                  type="button"
+                  id="btnPeriodoProximoSolicitacoes"
+                  class="w-7 h-7 rounded-lg border border-border bg-white/70 hover:bg-white transition-all flex items-center justify-center shrink-0"
+                  aria-label="Próximo período"
+                >
+                  <i class="fas fa-chevron-right text-[10px]"></i>
+                </button>
+              </div>
+
+              <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-muted-foreground">
+                <div>Dom</div>
+                <div>Seg</div>
+                <div>Ter</div>
+                <div>Qua</div>
+                <div>Qui</div>
+                <div>Sex</div>
+                <div>Sáb</div>
+              </div>
+
+              <div id="gridCalendarioSolicitacoes" class="grid grid-cols-7 gap-1"></div>
+
+              <div
+                id="observacaoFeriadoSolicitacoes"
+                class="rounded-xl bg-muted/30 px-3 py-2 text-xs text-muted-foreground"
+              >
+                Selecione um dia para visualizar observações do feriado.
+              </div>
+            </div>
+
+            <!-- HORÁRIOS DO DIA -->
+            <div class="rounded-2xl border border-border bg-white/60 p-3 space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h4 class="font-semibold text-sm">Horários do dia</h4>
+                  <p class="text-xs text-muted-foreground">
+                    Selecione um funcionário para visualizar o previsto e o realizado.
+                  </p>
+                </div>
+
+                <button
+                  id="btnNovaJustificativaPonto"
+                  type="button"
+                  class="w-9 h-9 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center shrink-0"
+                  title="Solicitar justificativa de ponto"
+                  aria-label="Solicitar justificativa de ponto"
+                >
+                  <i class="fas fa-file-circle-plus text-sm"></i>
+                </button>
+              </div>
+
+              <div class="flex flex-col md:flex-row md:items-end gap-2">
+                <div class="flex-1 space-y-1">
+                  <label for="selectUsuarioSolicitacoes" class="text-xs font-medium text-foreground">Funcionário</label>
+                  <select
+                    id="selectUsuarioSolicitacoes"
+                    class="w-full h-11 rounded-xl border border-border bg-white/70 px-4 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="">Selecione um usuário...</option>
+                  </select>
+                </div>
+
+                <label
+                  for="checkInconsistenciasSolicitacao"
+                  class="h-11 px-3 rounded-xl border border-border bg-white/50 flex items-center gap-1.5 text-[11px] text-foreground cursor-pointer whitespace-nowrap"
+                >
+                  <input
+                    id="checkInconsistenciasSolicitacao"
+                    type="checkbox"
+                    class="w-3.5 h-3.5 rounded border border-border text-primary focus:ring-2 focus:ring-primary/30"
+                  />
+                  <span>Inconsistências</span>
+                </label>
+              </div>
+
+              <div
+                id="resumoUsuarioSolicitacoes"
+                class="rounded-xl bg-muted/30 px-3 py-2 text-xs text-muted-foreground"
+              >
+                Selecione um funcionário para visualizar a situação do dia.
+              </div>
+
+              <div class="overflow-auto rounded-xl border border-border bg-white/50">
+                <table class="min-w-full text-xs">
+                  <thead class="bg-muted/40 text-muted-foreground">
+                    <tr>
+                      <th class="text-left font-semibold px-3 py-2.5">Evento</th>
+                      <th class="text-left font-semibold px-3 py-2.5">Previsto</th>
+                      <th class="text-left font-semibold px-3 py-2.5">Realizado</th>
+                      <th class="text-left font-semibold px-3 py-2.5">Observação</th>
+                    </tr>
+                  </thead>
+
+                  <tbody id="tbodyHorariosSolicitacao" class="divide-y divide-border">
+                    <tr>
+                      <td colspan="4" class="px-3 py-4 text-center text-xs text-muted-foreground">
+                        Selecione um dia e um funcionário.
+                      </td>
+                    </tr>
+                  </tbody>
+
+                  <tfoot id="tfootHorariosSolicitacao" class="bg-muted/20 border-t border-border">
+                    <tr>
+                      <td colspan="4" class="px-3 py-3 text-xs text-muted-foreground">
+                        Totais serão exibidos após selecionar um funcionário.
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUNA 2: SOLICITAÇÕES -->
+          <div id="painelTabelaSolicitacoes" class="xl:col-span-8 space-y-3">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div class="relative w-full md:max-w-md">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground pointer-events-none">
+                  <i class="fas fa-search text-sm" aria-hidden="true"></i>
+                </span>
+
+                <input
+                  id="inputFiltroSolicitacoes"
+                  type="text"
+                  class="w-full h-10 rounded-xl border border-border bg-white/70 pl-10 pr-10 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  placeholder="Filtrar por ID, funcionário, tipo, status..."
+                  autocomplete="off"
+                />
+
+                <button
+                  id="btnLimparFiltroSolicitacoes"
+                  type="button"
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-all hidden"
+                  aria-label="Limpar filtro"
+                  title="Limpar filtro"
+                >
+                  <i class="fas fa-times-circle text-sm" aria-hidden="true"></i>
+                </button>
+              </div>
+
+              <p id="solicitacoesFiltroResumo" class="text-sm text-muted-foreground">
+                Selecione um dia e um funcionário para visualizar as justificativas.
+              </p>
+            </div>
+
+            <div id="solicitacoesMsg" class="form-subtitle-sm hidden"></div>
+
+            <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+              <table class="min-w-full text-sm">
+                <thead class="bg-muted/40 text-muted-foreground">
+                  <tr>
+                    <th class="text-left font-semibold form-control-sm px-4 py-3">ID</th>
+                    <th class="text-left font-semibold form-control-sm px-4 py-3">Funcionário</th>
+                    <th class="text-left font-semibold form-control-sm px-4 py-3">Data</th>
+                    <th class="text-left font-semibold form-control-sm px-4 py-3">Justificativa</th>
+                    <th class="text-left font-semibold form-control-sm px-4 py-3">Descrição</th>
+                    <th class="text-left font-semibold form-control-sm px-4 py-3">Gestor</th>
+                    <th class="text-left font-semibold form-control-sm px-4 py-3">RH</th>
+                    <th class="text-right font-semibold form-control-sm px-4 py-3">Ações</th>
+                  </tr>
+                </thead>
+
+                <tbody id="tbodySolicitacoes" class="divide-y divide-border">
+                  <tr>
+                    <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
+                      Selecione um dia e um funcionário para carregar as justificativas.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU GLOBAL SOBREPOSTO -->
+      <div
+        id="menuAcoesJustificativaGlobal"
+        class="hidden fixed z-[9999] min-w-[220px] rounded-xl border border-border bg-white shadow-2xl p-1"
+      ></div>
+
+      <div
+        id="popoverStatusJustificativaGlobal"
+        class="hidden fixed z-[9998] w-[280px] rounded-xl border border-border bg-white shadow-2xl p-3"
+      ></div>
+    </section>
+
+    <!-- CADASTRO EQUIPAMENTO / RELÓGIO DE PONTO -->
+    <section id="secao-cadastro-equipamento" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-5">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu"
+            >
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Cadastro de Equipamento</h3>
+              <p class="form-subtitle-sm">Gerencie os relógios de ponto cadastrados no sistema.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              id="btnAtualizarEquipamentos"
+              type="button"
+              class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all"
+              title="Atualizar lista"
+              aria-label="Atualizar lista"
+            >
+              <i class="fas fa-rotate-right"></i>
+            </button>
+
+            <button
+              id="btnNovoEquipamento"
+              type="button"
+              class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center"
+              title="Adicionar equipamento"
+              aria-label="Adicionar equipamento"
+            >
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div class="relative w-full md:max-w-md">
+            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-muted-foreground pointer-events-none">
+              <i class="fas fa-search" aria-hidden="true"></i>
+            </span>
+
+            <input
+              id="inputFiltroEquipamentos"
+              type="text"
+              class="w-full h-11 rounded-xl border border-border bg-white/70 pl-11 pr-10 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Filtrar por código, descrição, local, status..."
+              autocomplete="off"
+            />
+
+            <button
+              id="btnLimparFiltroEquipamentos"
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-all hidden"
+              aria-label="Limpar filtro"
+              title="Limpar filtro"
+            >
+              <i class="fas fa-times-circle" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <p id="equipamentosFiltroResumo" class="text-sm text-muted-foreground"></p>
+        </div>
+
+        <div id="equipamentosMsg" class="form-subtitle-sm hidden"></div>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm">
+            <thead class="bg-muted/40 text-muted-foreground">
+              <tr>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Código</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Descrição</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Nº Série</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Local</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">IP</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Conexão</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Usuário</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Porta</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">MTE</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Status</th>
+                <th class="text-right font-semibold form-control-sm px-4 py-3">Ações</th>
+              </tr>
+            </thead>
+
+            <tbody id="tbodyEquipamentos" class="divide-y divide-border">
+              <tr>
+                <td colspan="7" class="px-4 py-6 form-subtitle-sm text-center">
+                  Nenhum equipamento cadastrado.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Cadastro de Feriados -->
+    <section id="secao-cadastro-calendario" class="page-content md:ml-4">
+      <div class="glass rounded-2xl p-6 shadow space-y-5">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu"
+            >
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Cadastro de Feriados</h3>
+              <p class="form-subtitle-sm">Cadastre períodos por unidade de trabalho e horário.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              id="btnAtualizarCalendarios"
+              type="button"
+              class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all"
+              title="Atualizar lista"
+              aria-label="Atualizar lista"
+            >
+              <i class="fas fa-rotate-right"></i>
+            </button>
+
+            <button
+              id="btnNovoCalendario"
+              type="button"
+              class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center"
+              title="Adicionar calendário"
+              aria-label="Adicionar calendário"
+            >
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="calendariosMsg" class="form-subtitle-sm hidden"></div>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm">
+            <thead class="bg-muted/40 text-muted-foreground">
+              <tr>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">ID</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Unidade de trabalho</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Período</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Hora início</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Hora fim</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Observação</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Status</th>
+                <th class="text-right font-semibold form-control-sm px-4 py-3">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyCalendarios" class="divide-y divide-border">
+              <tr>
+                <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
+                  Nenhum calendário cadastrado.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- JORNADA -->
+    <section id="secao-jornada" class="page-content md:ml-4 hidden">
+      <div class="glass rounded-2xl p-6 shadow space-y-5">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu"
+            >
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Jornada</h3>
+              <p class="form-subtitle-sm">Cadastre e gerencie os turnos de trabalho com 4 horários.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              id="btnAtualizarJornada"
+              type="button"
+              class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all"
+              title="Atualizar lista"
+              aria-label="Atualizar lista"
+            >
+              <i class="fas fa-rotate-right"></i>
+            </button>
+
+            <button
+              id="btnNovaJornada"
+              type="button"
+              class="w-10 h-10 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center"
+              title="Adicionar jornada"
+              aria-label="Adicionar jornada"
+            >
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div class="relative w-full md:max-w-md">
+            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-muted-foreground pointer-events-none">
+              <i class="fas fa-search" aria-hidden="true"></i>
+            </span>
+
+            <input
+              id="inputFiltroJornada"
+              type="text"
+              class="w-full h-11 rounded-xl border border-border bg-white/70 pl-11 pr-10 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Filtrar por descrição, horários, status..."
+              autocomplete="off"
+            />
+
+            <button
+              id="btnLimparFiltroJornada"
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-all hidden"
+              aria-label="Limpar filtro"
+              title="Limpar filtro"
+            >
+              <i class="fas fa-times-circle" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <p id="jornadaFiltroResumo" class="text-sm text-muted-foreground"></p>
+        </div>
+
+        <div id="jornadaMsg" class="form-subtitle-sm hidden"></div>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm">
+            <thead class="bg-muted/40 text-muted-foreground">
+              <tr>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Descrição</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Entrada 1</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Saída 1</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Entrada 2</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Saída 2</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Carga horária</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Status</th>
+                <th class="text-right font-semibold form-control-sm px-4 py-3">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyJornada" class="divide-y divide-border">
+              <tr>
+                <td colspan="8" class="px-4 py-6 form-subtitle-sm text-center">
+                  Nenhuma jornada cadastrada.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VÍNCULO USUÁRIO JORNADA -->
+    <section id="secao-vinculo-jornada" class="page-content md:ml-4 hidden">
+      <div class="glass rounded-2xl p-6 shadow space-y-5">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <button
+              type="button"
+              onclick="openSidebarSafe()"
+              class="w-11 h-11 rounded-xl bg-white/85 border border-border/60 backdrop-blur-md shadow flex items-center justify-center hover:bg-white transition-all text-foreground shrink-0"
+              title="Abrir menu"
+              aria-label="Abrir menu"
+            >
+              <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+              <h3 class="font-semibold">Vínculo Usuário Jornada</h3>
+              <p class="form-subtitle-sm">Associe uma jornada a um ou mais usuários.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              id="btnAtualizarVinculoJornada"
+              type="button"
+              class="w-10 h-10 rounded-xl border border-border bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all"
+              title="Atualizar vínculos"
+              aria-label="Atualizar vínculos"
+            >
+              <i class="fas fa-rotate-right"></i>
+            </button>
+
+            <button
+              id="btnNovoVinculoJornada"
+              type="button"
+              class="px-4 h-10 rounded-xl bg-primary text-white hover:opacity-90 transition-all flex items-center justify-center gap-2"
+              title="Novo vínculo"
+              aria-label="Novo vínculo"
+            >
+              <i class="fas fa-plus"></i>
+              <span>Novo vínculo</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div class="relative w-full md:max-w-md">
+            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-muted-foreground pointer-events-none">
+              <i class="fas fa-search" aria-hidden="true"></i>
+            </span>
+
+            <input
+              id="inputFiltroVinculoJornada"
+              type="text"
+              class="w-full h-11 rounded-xl border border-border bg-white/70 pl-11 pr-10 form-control-sm outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Filtrar por usuário, jornada, status..."
+              autocomplete="off"
+            />
+
+            <button
+              id="btnLimparFiltroVinculoJornada"
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-all hidden"
+              aria-label="Limpar filtro"
+              title="Limpar filtro"
+            >
+              <i class="fas fa-times-circle" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <p id="vinculoJornadaFiltroResumo" class="text-sm text-muted-foreground"></p>
+        </div>
+
+        <div id="vinculoJornadaMsg" class="form-subtitle-sm hidden"></div>
+
+        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+          <table class="min-w-full text-sm">
+            <thead class="bg-muted/40 text-muted-foreground">
+              <tr>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Usuário</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Jornada</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Data início</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Data fim</th>
+                <th class="text-left font-semibold form-control-sm px-4 py-3">Status</th>
+                <th class="text-right font-semibold form-control-sm px-4 py-3">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyVinculoJornada" class="divide-y divide-border">
+              <tr>
+                <td colspan="6" class="px-4 py-6 form-subtitle-sm text-center">
+                  Nenhum vínculo cadastrado.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
 
   </main>
 </body>
