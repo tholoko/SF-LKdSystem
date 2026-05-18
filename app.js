@@ -4493,23 +4493,25 @@ function abrirModalGestaoUsuario({ modo, usuario = {} }) {
                           >
                         </div>
 
-                        <div id="guBlocoTabelaFilhos" class="space-y-3 hidden">
-                          <div>
-                            <h5 class="text-sm font-semibold text-foreground">Filhos</h5>
-                            <p class="text-xs text-muted-foreground">Informe nome completo e data de nascimento.</p>
-                          </div>
-                          <div class="overflow-auto rounded-2xl border border-border bg-white/50">
-                            <table class="min-w-full text-sm">
-                              <thead class="bg-muted/40 text-muted-foreground">
-                                <tr>
-                                  <th class="text-left font-semibold form-control-sm">#</th>
-                                  <th class="text-left font-semibold form-control-sm">Nome completo</th>
-                                  <th class="text-left font-semibold form-control-sm">Data de nascimento</th>
-                                </tr>
-                              </thead>
-                              <tbody id="guTabelaFilhosBody"></tbody>
-                            </table>
-                          </div>
+                        
+                      </div>
+
+                      <div id="guBlocoTabelaFilhos" class="space-y-3 hidden">
+                        <div>
+                          <h5 class="text-sm font-semibold text-foreground">Filhos</h5>
+                          <p class="text-xs text-muted-foreground">Informe nome completo e data de nascimento.</p>
+                        </div>
+                        <div class="overflow-auto rounded-2xl border border-border bg-white/50">
+                          <table class="min-w-full text-sm">
+                            <thead class="bg-muted/40 text-muted-foreground">
+                              <tr>
+                                <th class="text-left font-semibold form-control-sm">#</th>
+                                <th class="text-left font-semibold form-control-sm">Nome completo</th>
+                                <th class="text-left font-semibold form-control-sm">Data de nascimento</th>
+                              </tr>
+                            </thead>
+                            <tbody id="guTabelaFilhosBody"></tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
@@ -6142,6 +6144,30 @@ function fecharModalMarketing() {
   document.getElementById('modalMarketing')?.classList.add('hidden');
 }
 
+function atualizarCamposRecorrenciaMarketing() {
+  const recorrencia = document.getElementById('mkRecorrencia')?.value || 'once';
+
+  const grupoOnce = document.getElementById('mkGrupoPeriodoOnce');
+  const grupoDiaMensal = document.getElementById('mkGrupoDiaMensal');
+  const grupoMesAno = document.getElementById('mkGrupoMesAno');
+  const grupoDiaMesAnual = document.getElementById('mkGrupoDiaMesAnual');
+
+  grupoOnce?.classList.add('hidden');
+  grupoDiaMensal?.classList.add('hidden');
+  grupoMesAno?.classList.add('hidden');
+  grupoDiaMesAnual?.classList.add('hidden');
+
+  if (recorrencia === 'once') {
+    grupoOnce?.classList.remove('hidden');
+  } else if (recorrencia === 'daily') {
+    grupoDiaMensal?.classList.remove('hidden');
+  } else if (recorrencia === 'monthly') {
+    grupoMesAno?.classList.remove('hidden');
+  } else if (recorrencia === 'yearly') {
+    grupoDiaMesAnual?.classList.remove('hidden');
+  }
+}
+
 function limparFormularioMarketing() {
   marketingEditandoId = null;
   marketingImagemAtual = '';
@@ -6158,6 +6184,10 @@ function limparFormularioMarketing() {
   document.getElementById('mkExibirPainel').checked = true;
   document.getElementById('mkApenasUmaVez').checked = false;
   document.getElementById('mkArquivo').value = '';
+  document.getElementById('mkDiaExibicao').value = '';
+  document.getElementById('mkMesExibicao').value = '';
+  document.getElementById('mkDiaExibicaoAnual').value = '';
+  document.getElementById('mkMesExibicaoAnual').value = '';
 
   const preview = document.getElementById('mkPreview');
   const vazio = document.getElementById('mkPreviewVazio');
@@ -6167,6 +6197,8 @@ function limparFormularioMarketing() {
     preview.classList.add('hidden');
   }
   if (vazio) vazio.classList.remove('hidden');
+
+  atualizarCamposRecorrenciaMarketing();
 }
 
 function abrirModalMarketingParaNovo() {
@@ -6178,16 +6210,74 @@ async function salvarCardMarketing() {
   const APIBASE = getApiBase();
   const formData = new FormData();
 
-  formData.append('titulo', document.getElementById('mkTitulo').value.trim());
-  formData.append('descricao', document.getElementById('mkDescricao').value.trim());
-  formData.append('card', document.getElementById('mkCard').value);
-  formData.append('dataInicio', document.getElementById('mkDataInicio').value);
-  formData.append('dataFim', document.getElementById('mkDataFim').value);
-  formData.append('ordem', document.getElementById('mkOrdem').value || 0);
-  formData.append('recorrencia', document.getElementById('mkRecorrencia').value);
-  formData.append('ativo', document.getElementById('mkAtivo').value);
-  formData.append('exibirNoPainel', document.getElementById('mkExibirPainel').checked ? 1 : 0);
-  formData.append('apenasUmaVez', document.getElementById('mkApenasUmaVez').checked ? 1 : 0);
+  const titulo = document.getElementById('mkTitulo').value.trim();
+  const descricao = document.getElementById('mkDescricao').value.trim();
+  const card = document.getElementById('mkCard').value;
+  const dataInicio = document.getElementById('mkDataInicio').value;
+  const dataFim = document.getElementById('mkDataFim').value;
+  const ordem = document.getElementById('mkOrdem').value || 0;
+  const recorrencia = document.getElementById('mkRecorrencia').value;
+  const ativo = document.getElementById('mkAtivo').value;
+  const exibirNoPainel = document.getElementById('mkExibirPainel').checked ? 1 : 0;
+  const apenasUmaVez = document.getElementById('mkApenasUmaVez').checked ? 1 : 0;
+
+  let diaExibicao = '';
+  let mesExibicao = '';
+
+  if (recorrencia === 'once') {
+    if (!dataInicio || !dataFim) {
+      alert('Informe a data inicial e a data final.');
+      return;
+    }
+    if (dataFim < dataInicio) {
+      alert('A data final não pode ser menor que a data inicial.');
+      return;
+    }
+  }
+
+  if (recorrencia === 'daily') {
+    diaExibicao = document.getElementById('mkDiaExibicao').value;
+    if (!diaExibicao || Number(diaExibicao) < 1 || Number(diaExibicao) > 31) {
+      alert('Informe um dia do mês válido.');
+      return;
+    }
+  }
+
+  if (recorrencia === 'monthly') {
+    mesExibicao = document.getElementById('mkMesExibicao').value;
+    if (!mesExibicao || Number(mesExibicao) < 1 || Number(mesExibicao) > 12) {
+      alert('Informe um mês válido.');
+      return;
+    }
+  }
+
+  if (recorrencia === 'yearly') {
+    diaExibicao = document.getElementById('mkDiaExibicaoAnual').value;
+    mesExibicao = document.getElementById('mkMesExibicaoAnual').value;
+
+    if (!diaExibicao || Number(diaExibicao) < 1 || Number(diaExibicao) > 31) {
+      alert('Informe um dia válido.');
+      return;
+    }
+
+    if (!mesExibicao || Number(mesExibicao) < 1 || Number(mesExibicao) > 12) {
+      alert('Informe um mês válido.');
+      return;
+    }
+  }
+
+  formData.append('titulo', titulo);
+  formData.append('descricao', descricao);
+  formData.append('card', card);
+  formData.append('dataInicio', recorrencia === 'once' ? dataInicio : '');
+  formData.append('dataFim', recorrencia === 'once' ? dataFim : '');
+  formData.append('ordem', ordem);
+  formData.append('recorrencia', recorrencia);
+  formData.append('ativo', ativo);
+  formData.append('exibirNoPainel', exibirNoPainel);
+  formData.append('apenasUmaVez', apenasUmaVez);
+  formData.append('diaExibicao', diaExibicao);
+  formData.append('mesExibicao', mesExibicao);
 
   const arquivo = document.getElementById('mkArquivo')?.files?.[0];
   if (!marketingEditandoId && !arquivo) {
@@ -6254,7 +6344,10 @@ function atualizarPaineisMarketing(lista = marketingCardsCache) {
     Number(x.ATIVO ?? x.ativo ?? 0) === 1 &&
     Number(x.EXIBIRNOPAINEL ?? x.exibirNoPainel ?? 0) === 1
   ).length;
-  const agendados = lista.filter(x => (x.DATAINICIO || x.dataInicio || x.DATAFIM || x.dataFim)).length;
+  const agendados = lista.filter(x => {
+    const rec = String(x.RECORRENCIA || x.recorrencia || '').toLowerCase();
+    return ['once', 'daily', 'monthly', 'yearly'].includes(rec);
+  }).length;
   const recorrentes = lista.filter(x => {
     const r = String(x.RECORRENCIA || x.recorrencia || '').toLowerCase();
     return r && r !== 'once';
@@ -6345,6 +6438,10 @@ function abrirModalMarketingParaEditar(item) {
   document.getElementById('mkAtivo').value = String(item.ATIVO ?? item.ativo ?? 1);
   document.getElementById('mkExibirPainel').checked = Number(item.EXIBIRNOPAINEL ?? item.exibirNoPainel ?? 1) === 1;
   document.getElementById('mkApenasUmaVez').checked = Number(item.APENASUMAVEZ ?? item.apenasUmaVez ?? 0) === 1;
+  document.getElementById('mkDiaExibicao').value = item.DIAEXIBICAO ?? item.diaExibicao ?? '';
+  document.getElementById('mkMesExibicao').value = item.MESEXIBICAO ?? item.mesExibicao ?? '';
+  document.getElementById('mkDiaExibicaoAnual').value = item.DIAEXIBICAO ?? item.diaExibicao ?? '';
+  document.getElementById('mkMesExibicaoAnual').value = item.MESEXIBICAO ?? item.mesExibicao ?? '';
 
   const preview = document.getElementById('mkPreview');
   const vazio = document.getElementById('mkPreviewVazio');
@@ -6359,6 +6456,7 @@ function abrirModalMarketingParaEditar(item) {
     vazio.classList.remove('hidden');
   }
 
+  atualizarCamposRecorrenciaMarketing();
   abrirModalMarketing();
 }
 
@@ -6378,6 +6476,7 @@ function inicializarMarketingCards() {
   document.getElementById('btnCancelarModalMarketing')?.addEventListener('click', fecharModalMarketing);
   document.getElementById('btnFecharModalMarketing')?.addEventListener('click', fecharModalMarketing);
   document.getElementById('btnSalvarModalMarketing')?.addEventListener('click', salvarCardMarketing);
+  document.getElementById('mkRecorrencia')?.addEventListener('change', atualizarCamposRecorrenciaMarketing);
 
   document.getElementById('btnAtualizarMarketing')?.addEventListener('click', () => {
     listarCardsMarketing().catch(err => {
@@ -6416,6 +6515,8 @@ function inicializarMarketingCards() {
       });
     }
   });
+
+  atualizarCamposRecorrenciaMarketing();
 }
 
 document.addEventListener('DOMContentLoaded', inicializarMarketingCards);

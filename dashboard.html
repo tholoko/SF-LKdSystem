@@ -1415,6 +1415,15 @@
   }
 }
 
+button:not([disabled]),
+[role="button"]:not([disabled]),
+.cursor-pointer,
+.menu-item,
+.submenu-item,
+.card-filtro-agendamento {
+  cursor: pointer;
+}
+
 </style>
 
 </head>
@@ -2510,7 +2519,6 @@
               <option value="daily">Diariamente</option>
               <option value="monthly">Mensalmente</option>
               <option value="yearly">Anualmente</option>
-              <option value="always">Sempre</option>
             </select>
 
             <button id="btnAtualizarMarketing" type="button"
@@ -2576,6 +2584,230 @@
         </div>
       </div>
     </section>
+
+    <!-- MODAL MARKETING -->
+    <div id="modalMarketingOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[120]"></div>
+
+    <div id="modalMarketing" class="hidden fixed inset-0 z-[121] flex items-center justify-center p-4">
+      <div class="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl border border-border">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-border sticky top-0 bg-white z-10">
+          <div>
+            <h3 id="modalMarketingTitulo" class="text-lg font-semibold text-foreground">Novo card de marketing</h3>
+            <p class="text-sm text-muted-foreground">Preencha os dados do card e configure a exibição.</p>
+          </div>
+
+          <button
+            id="btnFecharModalMarketing"
+            type="button"
+            class="w-10 h-10 rounded-xl border border-border bg-white hover:bg-muted/40 flex items-center justify-center transition-all"
+            aria-label="Fechar modal">
+            <i class="fas fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="p-5 space-y-5">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="mkTitulo" class="block text-sm font-medium text-foreground mb-1">Título</label>
+              <input
+                id="mkTitulo"
+                type="text"
+                class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Título do card" />
+            </div>
+
+            <div>
+              <label for="mkCard" class="block text-sm font-medium text-foreground mb-1">Card</label>
+              <select
+                id="mkCard"
+                class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                <option value="principal">Principal</option>
+                <option value="secundario">Secundário</option>
+                <option value="banner">Banner</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="mkDescricao" class="block text-sm font-medium text-foreground mb-1">Descrição</label>
+            <textarea
+              id="mkDescricao"
+              rows="3"
+              class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="Descrição do card"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="mkRecorrencia" class="block text-sm font-medium text-foreground mb-1">Recorrência</label>
+              <select
+                id="mkRecorrencia"
+                class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                <option value="once">Somente uma vez</option>
+                <option value="daily">Diariamente (dia fixo do mês)</option>
+                <option value="monthly">Mensalmente (mês inteiro)</option>
+                <option value="yearly">Anualmente (dia e mês)</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="mkAtivo" class="block text-sm font-medium text-foreground mb-1">Status</label>
+              <select
+                id="mkAtivo"
+                class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                <option value="1">Ativo</option>
+                <option value="0">Inativo</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="mkGrupoPeriodoOnce" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="mkDataInicio" class="block text-sm font-medium text-foreground mb-1">Data inicial</label>
+              <input
+                id="mkDataInicio"
+                type="date"
+                class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+
+            <div>
+              <label for="mkDataFim" class="block text-sm font-medium text-foreground mb-1">Data final</label>
+              <input
+                id="mkDataFim"
+                type="date"
+                class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+          </div>
+
+          <div id="mkGrupoDiaMensal" class="hidden">
+            <label for="mkDiaExibicao" class="block text-sm font-medium text-foreground mb-1">Dia do mês</label>
+            <input
+              id="mkDiaExibicao"
+              type="number"
+              min="1"
+              max="31"
+              class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="Ex.: 15" />
+            <div class="text-xs text-muted-foreground mt-1">
+              A postagem aparecerá nesse dia em todos os meses e todos os anos.
+            </div>
+          </div>
+
+          <div id="mkGrupoMesAno" class="hidden">
+            <label for="mkMesExibicao" class="block text-sm font-medium text-foreground mb-1">Mês</label>
+            <select
+              id="mkMesExibicao"
+              class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+              <option value="">Selecione</option>
+              <option value="1">Janeiro</option>
+              <option value="2">Fevereiro</option>
+              <option value="3">Março</option>
+              <option value="4">Abril</option>
+              <option value="5">Maio</option>
+              <option value="6">Junho</option>
+              <option value="7">Julho</option>
+              <option value="8">Agosto</option>
+              <option value="9">Setembro</option>
+              <option value="10">Outubro</option>
+              <option value="11">Novembro</option>
+              <option value="12">Dezembro</option>
+            </select>
+            <div class="text-xs text-muted-foreground mt-1">
+              A postagem aparecerá durante todos os dias desse mês, em todos os anos.
+            </div>
+          </div>
+
+          <div id="mkGrupoDiaMesAnual" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="mkDiaExibicaoAnual" class="block text-sm font-medium text-foreground mb-1">Dia</label>
+              <input
+                id="mkDiaExibicaoAnual"
+                type="number"
+                min="1"
+                max="31"
+                class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Ex.: 20" />
+            </div>
+
+            <div>
+              <label for="mkMesExibicaoAnual" class="block text-sm font-medium text-foreground mb-1">Mês</label>
+              <select
+                id="mkMesExibicaoAnual"
+                class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                <option value="">Selecione</option>
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="mkOrdem" class="block text-sm font-medium text-foreground mb-1">Ordem</label>
+              <input
+                id="mkOrdem"
+                type="number"
+                value="0"
+                class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+
+            <div class="flex items-end">
+              <label class="inline-flex items-center gap-2 text-sm text-foreground">
+                <input id="mkExibirPainel" type="checkbox" class="rounded border-border" checked>
+                <span>Exibir no painel</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="inline-flex items-center gap-2 text-sm text-foreground">
+              <input id="mkApenasUmaVez" type="checkbox" class="rounded border-border">
+              <span>Apenas uma vez</span>
+            </label>
+          </div>
+
+          <div>
+            <label for="mkArquivo" class="block text-sm font-medium text-foreground mb-1">Imagem</label>
+            <input
+              id="mkArquivo"
+              type="file"
+              accept="image/*"
+              class="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none" />
+          </div>
+
+          <div class="rounded-2xl border border-border bg-muted/20 p-3">
+            <img id="mkPreview" src="" alt="Preview da imagem" class="hidden w-full max-h-64 object-contain rounded-xl">
+            <div id="mkPreviewVazio" class="text-sm text-muted-foreground">Nenhuma imagem selecionada.</div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 px-5 py-4 border-t border-border sticky bottom-0 bg-white">
+          <button
+            id="btnCancelarModalMarketing"
+            type="button"
+            class="rounded-xl border border-border bg-white px-4 py-2 text-sm font-medium hover:bg-muted/40 transition-all">
+            Cancelar
+          </button>
+
+          <button
+            id="btnSalvarModalMarketing"
+            type="button"
+            class="rounded-xl bg-primary text-white px-4 py-2 text-sm font-medium hover:opacity-90 transition-all">
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
 
     <div id="modalMarketingOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[140]"></div>
 
