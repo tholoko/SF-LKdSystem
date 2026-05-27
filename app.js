@@ -4084,14 +4084,14 @@ function abrirModalGestaoUsuario({ modo, usuario = {} }) {
                         </div>
 
                         <div class="space-y-2">
-                          <label class="form-label-sm">Local de trabalho</label>
+                          <label class="form-label-sm">Centro de Custo</label>
                           <div class="flex items-stretch gap-2">
                             <select
                               id="guLocalTrabalho"
                               ${formDisabledAttr}
                               class="flex-1 min-w-0 h-12 rounded-xl border border-border bg-white/70 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                             >
-                              ${optionsFromRows(cacheLocaisTrabalhoGestao, localTrabalhoAtual, 'Selecione o local de trabalho')}
+                              ${optionsFromRows(cacheLocaisTrabalhoGestao, localTrabalhoAtual, 'Selecione o centro de custo')}
                             </select>
                             ${
                               isView ? '' : `
@@ -4099,8 +4099,8 @@ function abrirModalGestaoUsuario({ modo, usuario = {} }) {
                                   id="btnAddLocalTrabalho"
                                   type="button"
                                   class="h-12 w-12 shrink-0 rounded-xl border border-border bg-white/60 hover:bg-white/90 transition-all flex items-center justify-center"
-                                  aria-label="Adicionar local de trabalho"
-                                  title="Adicionar local de trabalho"
+                                  aria-label="Adicionar centro de custo"
+                                  title="Adicionar centro de custo"
                                 >
                                   <i class="fas fa-plus" aria-hidden="true"></i>
                                 </button>
@@ -4989,7 +4989,7 @@ function abrirModalGestaoUsuario({ modo, usuario = {} }) {
   });
 
   btnAddLocalTrabalho?.addEventListener('click', async () => {
-    const nome = prompt('Nome do local de trabalho');
+    const nome = prompt('Nome do centro de custo');
     if (!nome) return;
 
     try {
@@ -15879,9 +15879,10 @@ const PERFIL_FIELDS = [
   'jornada',
   'vinculo_jornada',
   'solicitacoes',
-  'cadastro_equipamento'
+  'cadastro_equipamento',
+  'aprovador_ponto_gestor',
+  'aprovador_ponto_rh'
 ];
-
 
 function setPerfisMsg(msg, tipo = '') {
   const el = document.getElementById('perfilMsg');
@@ -16006,7 +16007,6 @@ async function carregarPerfis() {
   }
 }
 
-
 function removerModalPerfil() {
   document.getElementById('perfilOverlay')?.remove();
   document.getElementById('perfilModal')?.remove();
@@ -16023,25 +16023,25 @@ function setPerfilCheckboxValue(id, value) {
 
 function montarPayloadPerfil() {
   const payload = {
-    nome: (document.getElementById('perfilNome')?.value || '').trim()
+    nome: document.getElementById('perfilNome')?.value?.trim() || ''
   };
 
-  PERFIL_FIELDS.forEach(field => {
+  PERFIL_FIELDS.forEach((field) => {
     payload[field] = getPerfilCheckboxValue(field);
   });
 
   return payload;
 }
 
-function preencherFormPerfil(perfil = {}) {
+function preencherFormPerfil(perfil) {
   const idEl = document.getElementById('perfilId');
   const nomeEl = document.getElementById('perfilNome');
 
   if (idEl) idEl.value = perfil.id ?? perfil.ID ?? '';
   if (nomeEl) nomeEl.value = perfil.nome ?? perfil.NOME ?? '';
 
-  PERFIL_FIELDS.forEach(field => {
-    setPerfilCheckboxValue(field, perfil[field]);
+  PERFIL_FIELDS.forEach((field) => {
+    setPerfilCheckboxValue(field, perfil?.[field]);
   });
 }
 
@@ -16050,12 +16050,12 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
 
   const overlay = document.createElement('div');
   overlay.id = 'perfilOverlay';
-  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[90]';
+  overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-90';
   document.body.appendChild(overlay);
 
   const modal = document.createElement('div');
   modal.id = 'perfilModal';
-  modal.className = 'fixed inset-0 z-[100]';
+  modal.className = 'fixed inset-0 z-100';
 
   const isEdit = modo === 'edit';
 
@@ -16207,17 +16207,51 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
                     <div class="flex items-center gap-3">
                       <span class="tree-icon text-xs transition-transform -rotate-90">▼</span>
                       <label class="flex items-center gap-2 font-semibold cursor-pointer">
-                        <input type="checkbox" id="recursos_humanos" data-children="cadastro_calendario,jornada,vinculo_jornada,solicitacoes,cadastro_equipamento">
+                        <input
+                          type="checkbox"
+                          id="recursos_humanos"
+                          data-children="cadastro_calendario,jornada,vinculo_jornada,solicitacoes,cadastro_equipamento,aprovador_ponto_gestor,aprovador_ponto_rh"
+                        >
                         <span>Recursos Humanos</span>
                       </label>
                     </div>
                   </button>
+
                   <div id="grupo-rh" class="tree-children hidden border-t border-border px-6 py-3 space-y-2">
-                    <label class="flex items-center gap-2"><input type="checkbox" id="cadastro_calendario" data-parent="recursos_humanos"> <span>Feriados</span></label>
-                    <label class="flex items-center gap-2"><input type="checkbox" id="jornada" data-parent="recursos_humanos"> <span>Jornada</span></label>
-                    <label class="flex items-center gap-2"><input type="checkbox" id="vinculo_jornada" data-parent="recursos_humanos"> <span>Vínculo usuário jornada</span></label>
-                    <label class="flex items-center gap-2"><input type="checkbox" id="solicitacoes" data-parent="recursos_humanos"> <span>Solicitações</span></label>
-                    <label class="flex items-center gap-2"><input type="checkbox" id="cadastro_equipamento" data-parent="recursos_humanos"> <span>Cadastro equipamento</span></label>
+                    <label class="flex items-center gap-2">
+                      <input type="checkbox" id="cadastro_calendario" data-parent="recursos_humanos">
+                      <span>Feriados</span>
+                    </label>
+
+                    <label class="flex items-center gap-2">
+                      <input type="checkbox" id="jornada" data-parent="recursos_humanos">
+                      <span>Jornada</span>
+                    </label>
+
+                    <label class="flex items-center gap-2">
+                      <input type="checkbox" id="vinculo_jornada" data-parent="recursos_humanos">
+                      <span>Vínculo usuário jornada</span>
+                    </label>
+
+                    <label class="flex items-center gap-2">
+                      <input type="checkbox" id="solicitacoes" data-parent="recursos_humanos">
+                      <span>Solicitações</span>
+                    </label>
+
+                    <label class="flex items-center gap-2">
+                      <input type="checkbox" id="cadastro_equipamento" data-parent="recursos_humanos">
+                      <span>Cadastro equipamento</span>
+                    </label>
+
+                    <label class="flex items-center gap-2">
+                      <input type="checkbox" id="aprovador_ponto_gestor" data-parent="recursos_humanos">
+                      <span>Aprovador de ponto Gestor</span>
+                    </label>
+
+                    <label class="flex items-center gap-2">
+                      <input type="checkbox" id="aprovador_ponto_rh" data-parent="recursos_humanos">
+                      <span>Aprovador de ponto RH</span>
+                    </label>
                   </div>
                 </div>
 
@@ -16282,32 +16316,33 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
     if (!children.length) return;
 
     const checkedCount = children.filter(el => el.checked).length;
-
     parent.checked = checkedCount > 0;
     parent.indeterminate = checkedCount > 0 && checkedCount < children.length;
   }
 
   function bindTree() {
-    modal.querySelectorAll('.tree-toggle').forEach(btn => {
+    modal.querySelectorAll('.tree-toggle').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         if (e.target.closest('input, label')) return;
+
         const targetId = btn.dataset.target;
         const box = document.getElementById(targetId);
         const icon = btn.querySelector('.tree-icon');
+
         if (!box) return;
         box.classList.toggle('hidden');
         icon?.classList.toggle('-rotate-90');
       });
     });
 
-    modal.querySelectorAll('input[data-children]').forEach(parent => {
+    modal.querySelectorAll('input[data-children]').forEach((parent) => {
       parent.addEventListener('change', () => {
         const childrenIds = (parent.dataset.children || '')
           .split(',')
           .map(v => v.trim())
           .filter(Boolean);
 
-        childrenIds.forEach(id => {
+        childrenIds.forEach((id) => {
           const child = document.getElementById(id);
           if (child) child.checked = parent.checked;
         });
@@ -16316,10 +16351,8 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
       });
     });
 
-    modal.querySelectorAll('input[data-parent]').forEach(child => {
-      child.addEventListener('change', () => {
-        syncParent(child.dataset.parent);
-      });
+    modal.querySelectorAll('input[data-parent]').forEach((child) => {
+      child.addEventListener('change', () => syncParent(child.dataset.parent));
     });
   }
 
@@ -16329,9 +16362,17 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
 
   bindTree();
 
-  if (perfil) preencherFormPerfil(perfil);
-
-  ['pedidos', 'clientes', 'gestao_usuarios', 'estoque', 'fiscal', 'recursos_humanos'].forEach(syncParent);
+  if (perfil) {
+    preencherFormPerfil(perfil);
+    [
+      'pedidos',
+      'clientes',
+      'gestao_usuarios',
+      'estoque',
+      'fiscal',
+      'recursos_humanos'
+    ].forEach(syncParent);
+  }
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -16374,7 +16415,6 @@ function abrirModalPerfil(modo = 'new', perfil = null) {
     }
   });
 }
-
 
 // eventos
 document.addEventListener('click', (e) => {
@@ -23259,19 +23299,269 @@ function renderArvoreOrganograma() {
   }
 
   container.innerHTML = `
-    <div class="organograma-classico-wrap overflow-auto py-6">
-      <div class="organograma-classico">
-        ${raizes.map(raiz => renderNoClassico(raiz.id, filhosPorPai, todosNos)).join('')}
+    <div class="org-toolbar">
+      <button type="button" class="org-toolbtn" onclick="zoomOrganogramaOut()" title="Diminuir">
+        <i class="fas fa-minus"></i>
+      </button>
+
+      <button type="button" class="org-toolbtn org-toolbtn-label" onclick="zoomOrganogramaReset()" title="Resetar zoom">
+        <span id="orgZoomLabel">100%</span>
+      </button>
+
+      <button type="button" class="org-toolbtn" onclick="zoomOrganogramaIn()" title="Aumentar">
+        <i class="fas fa-plus"></i>
+      </button>
+
+      <button type="button" class="org-toolbtn" onclick="toggleFullscreenOrganograma()" title="Tela cheia">
+        <i class="fas fa-expand"></i>
+      </button>
+    </div>
+
+    <div class="organograma-stage" id="organogramaStage">
+      <div class="organograma-canvas" id="organogramaCanvas">
+        <div class="organograma-classico organograma-elegante">
+          ${raizes.map(raiz => renderNoClassico(raiz.id, filhosPorPai, todosNos)).join('')}
+        </div>
       </div>
     </div>
   `;
+
+  requestAnimationFrame(() => {
+    resetOrganogramaState();
+    initOrganogramaInteracoes();
+    centralizarOrganograma(true);
+    atualizarLabelZoom();
+  });
 }
 
-function renderNoClassico(noId, filhosPorPai, todosNos, visitados = new Set()) {
+const organogramaZoomState = {
+  scale: 1,
+  minScale: 0.5,
+  maxScale: 2.5,
+  x: 0,
+  y: 0,
+  dragging: false,
+  startX: 0,
+  startY: 0,
+  pointers: new Map(),
+  pinchStartDistance: 0,
+  pinchStartScale: 1
+};
+
+function aplicarTransformOrganograma() {
+  const canvas = document.getElementById('organogramaCanvas');
+  if (!canvas) return;
+
+  canvas.style.transform = `translate(${organogramaZoomState.x}px, ${organogramaZoomState.y}px) scale(${organogramaZoomState.scale})`;
+  atualizarLabelZoom();
+}
+
+function atualizarLabelZoom() {
+  const label = document.getElementById('orgZoomLabel');
+  if (!label) return;
+  label.textContent = `${Math.round(organogramaZoomState.scale * 100)}%`;
+}
+
+function centralizarOrganograma(resetScale = false) {
+  const stage = document.getElementById('organogramaStage');
+  const canvas = document.getElementById('organogramaCanvas');
+  if (!stage || !canvas) return;
+
+  if (resetScale) {
+    organogramaZoomState.scale = 1;
+  }
+
+  const stageWidth = stage.clientWidth;
+  const stageHeight = stage.clientHeight;
+
+  const canvasWidth = canvas.scrollWidth;
+  const canvasHeight = canvas.scrollHeight;
+
+  organogramaZoomState.x = Math.max(24, (stageWidth - canvasWidth * organogramaZoomState.scale) / 2);
+  organogramaZoomState.y = Math.max(24, (stageHeight - canvasHeight * organogramaZoomState.scale) / 2);
+
+  aplicarTransformOrganograma();
+}
+
+function limitarPanOrganograma() {
+  const stage = document.getElementById('organogramaStage');
+  const canvas = document.getElementById('organogramaCanvas');
+  if (!stage || !canvas) return;
+
+  const larguraConteudo = canvas.scrollWidth * organogramaZoomState.scale;
+  const alturaConteudo = canvas.scrollHeight * organogramaZoomState.scale;
+
+  const folga = 120;
+
+  if (larguraConteudo <= stage.clientWidth) {
+    organogramaZoomState.x = (stage.clientWidth - larguraConteudo) / 2;
+  } else {
+    const minX = stage.clientWidth - larguraConteudo - folga;
+    const maxX = folga;
+    organogramaZoomState.x = Math.min(maxX, Math.max(minX, organogramaZoomState.x));
+  }
+
+  if (alturaConteudo <= stage.clientHeight) {
+    organogramaZoomState.y = Math.max(24, (stage.clientHeight - alturaConteudo) / 2);
+  } else {
+    const minY = stage.clientHeight - alturaConteudo - folga;
+    const maxY = folga;
+    organogramaZoomState.y = Math.min(maxY, Math.max(minY, organogramaZoomState.y));
+  }
+}
+
+function zoomOrganogramaIn() {
+  zoomOrganogramaPorPonto(1.12);
+}
+
+function zoomOrganogramaOut() {
+  zoomOrganogramaPorPonto(1 / 1.12);
+}
+
+function zoomOrganogramaReset() {
+  centralizarOrganograma(true);
+}
+
+function zoomOrganogramaPorPonto(fator, clientX = null, clientY = null) {
+  const stage = document.getElementById('organogramaStage');
+  if (!stage) return;
+
+  const rect = stage.getBoundingClientRect();
+  const px = clientX == null ? rect.left + rect.width / 2 : clientX;
+  const py = clientY == null ? rect.top + rect.height / 2 : clientY;
+
+  const mouseX = px - rect.left;
+  const mouseY = py - rect.top;
+
+  const scaleAntigo = organogramaZoomState.scale;
+  let novoScale = scaleAntigo * fator;
+
+  novoScale = Math.max(
+    organogramaZoomState.minScale,
+    Math.min(organogramaZoomState.maxScale, novoScale)
+  );
+
+  const fatorReal = novoScale / scaleAntigo;
+  if (fatorReal === 1) return;
+
+  organogramaZoomState.x = mouseX - (mouseX - organogramaZoomState.x) * fatorReal;
+  organogramaZoomState.y = mouseY - (mouseY - organogramaZoomState.y) * fatorReal;
+  organogramaZoomState.scale = novoScale;
+
+  limitarPanOrganograma();
+  aplicarTransformOrganograma();
+}
+
+function toggleFullscreenOrganograma() {
+  const stage = document.getElementById('organogramaStage');
+  if (!stage) return;
+
+  if (!document.fullscreenEnabled) {
+    console.warn('Fullscreen não suportado neste navegador.');
+    return;
+  }
+
+  if (!document.fullscreenElement) {
+    stage.requestFullscreen().catch(err => {
+      console.error('Erro ao entrar em tela cheia:', err);
+    });
+  } else {
+    document.exitFullscreen().catch(err => {
+      console.error('Erro ao sair da tela cheia:', err);
+    });
+  }
+}
+
+function initOrganogramaInteracoes() {
+  const stage = document.getElementById('organogramaStage');
+  if (!stage) return;
+
+  aplicarTransformOrganograma();
+
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+
+  stage.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    const fator = e.deltaY < 0 ? 1.10 : 1 / 1.10;
+    zoomOrganogramaPorPonto(fator, e.clientX, e.clientY);
+  }, { passive: false });
+
+  stage.addEventListener('mousedown', function (e) {
+    if (e.button !== 0) return;
+
+    isDragging = true;
+    startX = e.clientX - organogramaZoomState.x;
+    startY = e.clientY - organogramaZoomState.y;
+
+    stage.classList.add('is-dragging');
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', function (e) {
+    if (!isDragging) return;
+
+    organogramaZoomState.x = e.clientX - startX;
+    organogramaZoomState.y = e.clientY - startY;
+
+    // limitarPanOrganograma(); // comente isso para testar
+    aplicarTransformOrganograma();
+  });
+
+  window.addEventListener('mouseup', function () {
+    isDragging = false;
+    stage.classList.remove('is-dragging');
+  });
+
+  stage.querySelectorAll('.org-card').forEach(card => {
+    card.addEventListener('click', function () {
+      if (isDragging) return;
+      stage.querySelectorAll('.org-card.is-active').forEach(el => el.classList.remove('is-active'));
+      card.classList.add('is-active');
+    });
+  });
+}
+
+function getPointerDistance(p1, p2) {
+  const dx = p1.x - p2.x;
+  const dy = p1.y - p2.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+document.addEventListener('fullscreenchange', function () {
+  const stage = document.getElementById('organogramaStage');
+  if (!stage) return;
+
+  stage.classList.toggle('is-fullscreen', document.fullscreenElement === stage);
+
+  setTimeout(() => {
+    limitarPanOrganograma();
+    centralizarOrganograma(false);
+  }, 120);
+});
+
+window.addEventListener('resize', function () {
+  const stage = document.getElementById('organogramaStage');
+  if (!stage) return;
+
+  setTimeout(() => {
+    limitarPanOrganograma();
+    centralizarOrganograma(false);
+  }, 100);
+});
+
+function getTouchDistance(t1, t2) {
+  const dx = t1.clientX - t2.clientX;
+  const dy = t1.clientY - t2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function renderNoClassico(noId, filhosPorPai, todosNos, visitados = new Set(), nivel = 0) {
   if (visitados.has(noId)) {
     return `
       <div class="org-group">
-        <div class="org-card !bg-red-500">Ciclo detectado</div>
+        <div class="org-card org-card-erro">Ciclo detectado</div>
       </div>
     `;
   }
@@ -23283,18 +23573,24 @@ function renderNoClassico(noId, filhosPorPai, todosNos, visitados = new Set()) {
   if (!no) return '';
 
   const filhos = filhosPorPai.get(noId) || [];
+  const nivelClasse = `org-level-${Math.min(nivel, 6)}`;
+  const filhosClasse = nivel >= 2 ? 'org-children-vertical' : 'org-children-horizontal';
 
   return `
-    <div class="org-group">
-      <div class="org-card">${escapeHtml(no.nome)}</div>
+    <div class="org-group ${nivelClasse}">
+      <div class="org-card" data-no-id="${noId}" title="Clique para destacar">
+        <div class="org-card-content">
+          <span>${escapeHtml(no.nome)}</span>
+        </div>
+      </div>
 
       ${filhos.length ? `
         <div class="org-children-wrap">
           <div class="org-parent-line"></div>
-          <div class="org-children">
+          <div class="org-children ${filhos.length > 1 ? 'multiple' : 'single'} ${filhosClasse}">
             ${filhos.map(filhoId => `
               <div class="org-child">
-                ${renderNoClassico(filhoId, filhosPorPai, todosNos, novoVisitados)}
+                ${renderNoClassico(filhoId, filhosPorPai, todosNos, novoVisitados, nivel + 1)}
               </div>
             `).join('')}
           </div>
@@ -23311,6 +23607,35 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
+}
+
+function resetOrganogramaState() {
+  organogramaZoomState.scale = 1;
+  organogramaZoomState.x = 0;
+  organogramaZoomState.y = 0;
+  organogramaZoomState.dragging = false;
+  organogramaZoomState.startX = 0;
+  organogramaZoomState.startY = 0;
+  organogramaZoomState.pointers = new Map();
+  organogramaZoomState.pinchStartDistance = 0;
+  organogramaZoomState.pinchStartScale = 1;
+}
+
+function centralizarOrganograma() {
+  const stage = document.getElementById('organogramaStage');
+  const canvas = document.getElementById('organogramaCanvas');
+  if (!stage || !canvas) return;
+
+  const stageWidth = stage.clientWidth;
+  const stageHeight = stage.clientHeight;
+
+  const canvasWidth = canvas.scrollWidth;
+  const canvasHeight = canvas.scrollHeight;
+
+  organogramaZoomState.x = Math.max(24, (stageWidth - canvasWidth * organogramaZoomState.scale) / 2);
+  organogramaZoomState.y = Math.max(24, (stageHeight - canvasHeight * organogramaZoomState.scale) / 2);
+
+  aplicarTransformOrganograma();
 }
 
 /* =========================
@@ -23730,18 +24055,7 @@ async function abrirModalUsuariosOrganograma() {
                     </select>
                   </div>
 
-                  <div class="space-y-2">
-                    <label class="form-label-sm block">Precisa aprovação para reservar carro?</label>
-                    <select
-                      id="orgUsuarioPrecisaAprovacaoReservaCarro"
-                      class="w-full rounded-xl border border-border bg-white/70 form-control-sm outline-none"
-                    >
-                      <option value="sim">Sim</option>
-                      <option value="nao">Não</option>
-                    </select>
-                  </div>
-
-                  <div class="space-y-2">
+                  <div class="space-y-2 md:col-span-2">
                     <label class="form-label-sm block">Status</label>
                     <select
                       id="orgUsuarioVinculoStatus"
@@ -23752,27 +24066,84 @@ async function abrirModalUsuariosOrganograma() {
                     </select>
                   </div>
                 </div>
+              </div>
 
-                <div class="flex flex-col sm:flex-row gap-2">
-                  <button
-                    id="btnSalvarUsuarioVinculoOrganogramaModal"
-                    type="button"
-                    class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
-                  >
-                    Salvar vínculo
-                  </button>
-
-                  <button
-                    id="btnLimparUsuarioVinculoOrganogramaModal"
-                    type="button"
-                    class="sm:flex-1 rounded-xl border border-border bg-white/60 form-control-sm font-medium hover:bg-white transition-all"
-                  >
-                    Limpar
-                  </button>
+              <div class="rounded-2xl border border-border bg-white/60 p-4 space-y-4">
+                <div>
+                  <h4 class="text-base font-semibold text-foreground">Permissões</h4>
+                  <p class="text-sm text-muted-foreground">Defina quais permissões o usuário terá dentro do vínculo selecionado.</p>
                 </div>
 
-                <p id="orgUsuarioVinculoMsg" class="form-subtitle-sm hidden"></p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <label class="flex items-start gap-3 rounded-xl border border-border bg-white/70 px-4 py-3 cursor-pointer hover:bg-white transition-all">
+                    <input
+                      id="orgUsuarioPrecisaAprovacaoReservaCarro"
+                      type="checkbox"
+                      class="mt-1 h-4 w-4 rounded border border-border"
+                    />
+                    <div>
+                      <span class="form-label-sm block !mb-0">Precisa aprovação para reservar carro?</span>
+                      <span class="text-xs text-muted-foreground">Quando marcado, a reserva de carro dependerá de aprovação.</span>
+                    </div>
+                  </label>
+
+                  <label class="flex items-start gap-3 rounded-xl border border-border bg-white/70 px-4 py-3 cursor-pointer hover:bg-white transition-all">
+                    <input
+                      id="orgUsuarioPodeVerTodosPontos"
+                      type="checkbox"
+                      class="mt-1 h-4 w-4 rounded border border-border"
+                    />
+                    <div>
+                      <span class="form-label-sm block !mb-0">Pode ver o ponto de todos</span>
+                      <span class="text-xs text-muted-foreground">Permite visualizar o ponto de todos os usuários.</span>
+                    </div>
+                  </label>
+
+                  <label class="flex items-start gap-3 rounded-xl border border-border bg-white/70 px-4 py-3 cursor-pointer hover:bg-white transition-all">
+                    <input
+                      id="orgUsuarioPodeVerTodosPontosUnidade"
+                      type="checkbox"
+                      class="mt-1 h-4 w-4 rounded border border-border"
+                    />
+                    <div>
+                      <span class="form-label-sm block !mb-0">Pode ver todos os pontos da Unidade de Trabalho</span>
+                      <span class="text-xs text-muted-foreground">Permite visualizar os pontos de toda a unidade vinculada.</span>
+                    </div>
+                  </label>
+
+                  <label class="flex items-start gap-3 rounded-xl border border-border bg-white/70 px-4 py-3 cursor-pointer hover:bg-white transition-all">
+                    <input
+                      id="orgUsuarioPodeVerTodosPontosFilhos"
+                      type="checkbox"
+                      class="mt-1 h-4 w-4 rounded border border-border"
+                    />
+                    <div>
+                      <span class="form-label-sm block !mb-0">Pode ver todos os pontos dos filhos</span>
+                      <span class="text-xs text-muted-foreground">Permite visualizar os pontos dos setores filhos relacionados.</span>
+                    </div>
+                  </label>
+                </div>
               </div>
+
+              <div class="flex flex-col sm:flex-row gap-2">
+                <button
+                  id="btnSalvarUsuarioVinculoOrganogramaModal"
+                  type="button"
+                  class="sm:flex-1 rounded-xl bg-primary text-white form-control-sm font-medium hover:opacity-90 transition-all"
+                >
+                  Salvar vínculo
+                </button>
+
+                <button
+                  id="btnLimparUsuarioVinculoOrganogramaModal"
+                  type="button"
+                  class="sm:flex-1 rounded-xl border border-border bg-white/60 form-control-sm font-medium hover:bg-white transition-all"
+                >
+                  Limpar
+                </button>
+              </div>
+
+              <p id="orgUsuarioVinculoMsg" class="form-subtitle-sm hidden"></p>
 
               <div class="rounded-2xl border border-border bg-white/50 overflow-hidden">
                 <div class="overflow-auto">
@@ -23783,13 +24154,16 @@ async function abrirModalUsuariosOrganograma() {
                         <th class="text-left font-semibold form-control-sm px-4 py-3">E-mail</th>
                         <th class="text-left font-semibold form-control-sm px-4 py-3">Setor</th>
                         <th class="text-left font-semibold form-control-sm px-4 py-3">Precisa aprovação</th>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">Pode ver ponto de todos</th>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">Todos pontos unidade</th>
+                        <th class="text-left font-semibold form-control-sm px-4 py-3">Todos pontos filhos</th>
                         <th class="text-left font-semibold form-control-sm px-4 py-3">Status</th>
                         <th class="text-right font-semibold form-control-sm px-4 py-3">Ações</th>
                       </tr>
                     </thead>
                     <tbody id="tbodyUsuariosVinculosOrganogramaModal">
                       <tr>
-                        <td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">Carregando vínculos...</td>
+                        <td colspan="9" class="px-4 py-6 form-subtitle-sm text-center">Carregando vínculos...</td>
                       </tr>
                     </tbody>
                   </table>
@@ -23823,7 +24197,10 @@ async function abrirModalUsuariosOrganograma() {
   const selectSetor = document.getElementById('orgSetorUsuarioVinculoSelect');
   const selectStatus = document.getElementById('orgUsuarioVinculoStatus');
   const btnSalvar = document.getElementById('btnSalvarUsuarioVinculoOrganogramaModal');
-  const selectPrecisaAprovacao = document.getElementById('orgUsuarioPrecisaAprovacaoReservaCarro');
+  const chkPrecisaAprovacao = document.getElementById('orgUsuarioPrecisaAprovacaoReservaCarro');
+  const chkPodeVerTodosPontos = document.getElementById('orgUsuarioPodeVerTodosPontos');
+  const chkPodeVerTodosPontosUnidade = document.getElementById('orgUsuarioPodeVerTodosPontosUnidade');
+  const chkPodeVerTodosPontosFilhos = document.getElementById('orgUsuarioPodeVerTodosPontosFilhos');
 
   function setMsg(msg, erro = false) {
     const el = document.getElementById('orgUsuarioVinculoMsg');
@@ -23840,11 +24217,22 @@ async function abrirModalUsuariosOrganograma() {
     el.classList.add(erro ? 'text-destructive' : 'text-emerald-700');
   }
 
+  function valorSimNao(checked) {
+    return checked ? 'sim' : 'nao';
+  }
+
+  function isSim(value) {
+    return String(value ?? '').trim().toLowerCase() === 'sim';
+  }
+
   function limparFormulario() {
     editandoId = null;
     if (selectUsuario) selectUsuario.value = '';
     if (selectSetor) selectSetor.value = '';
-    if (selectPrecisaAprovacao) selectPrecisaAprovacao.value = 'sim';
+    if (chkPrecisaAprovacao) chkPrecisaAprovacao.checked = true;
+    if (chkPodeVerTodosPontos) chkPodeVerTodosPontos.checked = false;
+    if (chkPodeVerTodosPontosUnidade) chkPodeVerTodosPontosUnidade.checked = false;
+    if (chkPodeVerTodosPontosFilhos) chkPodeVerTodosPontosFilhos.checked = false;
     if (selectStatus) selectStatus.value = '1';
     if (btnSalvar) btnSalvar.textContent = 'Salvar vínculo';
     setMsg('');
@@ -23854,6 +24242,13 @@ async function abrirModalUsuariosOrganograma() {
     return Number(status) === 1
       ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-emerald-200 bg-emerald-50 text-emerald-700">Ativo</span>'
       : '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-slate-200 bg-slate-100 text-slate-700">Inativo</span>';
+  }
+
+  function badgeSimNao(value) {
+    const v = String(value || '').trim().toLowerCase();
+    return v === 'sim'
+      ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-700">Sim</span>'
+      : '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-slate-200 bg-slate-100 text-slate-700">Não</span>';
   }
 
   async function carregarUsuarios() {
@@ -23898,20 +24293,13 @@ async function abrirModalUsuariosOrganograma() {
     }
   }
 
-  function badgePrecisaAprovacao(value) {
-    const v = String(value || '').trim().toLowerCase();
-    return v === 'sim'
-      ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-700">Sim</span>'
-      : '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-slate-200 bg-slate-100 text-slate-700">Não</span>';
-  }
-
   function renderTabela() {
     if (!tbody) return;
 
     if (!cacheVinculos.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">
+          <td colspan="9" class="px-4 py-6 form-subtitle-sm text-center">
             Nenhum vínculo cadastrado.
           </td>
         </tr>
@@ -23924,7 +24312,10 @@ async function abrirModalUsuariosOrganograma() {
         <td class="px-4 py-3">${escapeHtml(item.NOME_USUARIO ?? item.nomeusuario ?? '-')}</td>
         <td class="px-4 py-3">${escapeHtml(item.EMAIL_USUARIO ?? item.emailusuario ?? '-')}</td>
         <td class="px-4 py-3">${escapeHtml(item.NOME_SETOR ?? item.nomesetor ?? '-')}</td>
-        <td class="px-4 py-3">${badgePrecisaAprovacao(item.PRECISA_APROCAVAO ?? item.precisaaprocavao ?? item.PRECISA_APROVACAO ?? item.precisaaprovacao ?? 'nao')}</td>
+        <td class="px-4 py-3">${badgeSimNao(item.PRECISA_APROCAVAO ?? item.precisaaprocavao ?? item.PRECISA_APROVACAO ?? item.precisaaprovacao ?? 'nao')}</td>
+        <td class="px-4 py-3">${badgeSimNao(item.PODE_VER_PONTO_TODOS ?? item.podeverpontotodos ?? 'nao')}</td>
+        <td class="px-4 py-3">${badgeSimNao(item.PODE_VER_TODOS_PONTOS_UNIDADE ?? item.podevertodospontosunidade ?? 'nao')}</td>
+        <td class="px-4 py-3">${badgeSimNao(item.PODE_VER_TODOS_PONTOS_FILHOS ?? item.podevertodospontosfilhos ?? 'nao')}</td>
         <td class="px-4 py-3">${badgeStatus(item.STATUS ?? item.status)}</td>
         <td class="px-4 py-3 text-right">
           <div class="inline-flex items-center gap-2">
@@ -23957,18 +24348,53 @@ async function abrirModalUsuariosOrganograma() {
         if (!item) return;
 
         editandoId = item.ID ?? item.id;
-        if (selectUsuario) selectUsuario.value = String(item.ID_USUARIO ?? item.idusuario ?? '');
-        if (selectSetor) selectSetor.value = String(item.ID_SETOR_ORGANOGRAMA ?? item.idsetororganograma ?? '');
-        if (selectPrecisaAprovacao) {
-          selectPrecisaAprovacao.value = String(
+
+        if (selectUsuario) {
+          selectUsuario.value = String(item.ID_USUARIO ?? item.idusuario ?? '');
+        }
+
+        if (selectSetor) {
+          selectSetor.value = String(item.ID_SETOR_ORGANOGRAMA ?? item.idsetororganograma ?? '');
+        }
+
+        if (chkPrecisaAprovacao) {
+          chkPrecisaAprovacao.checked = isSim(
             item.PRECISA_APROCAVAO ??
             item.precisaaprocavao ??
             item.PRECISA_APROVACAO ??
             item.precisaaprovacao ??
             'sim'
-          ).toLowerCase();
+          );
         }
-        if (selectStatus) selectStatus.value = String(Number(item.STATUS ?? item.status) ? 1 : 0);
+
+        if (chkPodeVerTodosPontos) {
+          chkPodeVerTodosPontos.checked = isSim(
+            item.PODE_VER_PONTO_TODOS ??
+            item.podeverpontotodos ??
+            'nao'
+          );
+        }
+
+        if (chkPodeVerTodosPontosUnidade) {
+          chkPodeVerTodosPontosUnidade.checked = isSim(
+            item.PODE_VER_TODOS_PONTOS_UNIDADE ??
+            item.podevertodospontosunidade ??
+            'nao'
+          );
+        }
+
+        if (chkPodeVerTodosPontosFilhos) {
+          chkPodeVerTodosPontosFilhos.checked = isSim(
+            item.PODE_VER_TODOS_PONTOS_FILHOS ??
+            item.podevertodospontosfilhos ??
+            'nao'
+          );
+        }
+
+        if (selectStatus) {
+          selectStatus.value = String(Number(item.STATUS ?? item.status) ? 1 : 0);
+        }
+
         if (btnSalvar) btnSalvar.textContent = 'Salvar alterações';
         setMsg('Modo de edição ativado.');
       });
@@ -24005,7 +24431,7 @@ async function abrirModalUsuariosOrganograma() {
     if (tbody) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="px-4 py-6 form-subtitle-sm text-center">
+          <td colspan="9" class="px-4 py-6 form-subtitle-sm text-center">
             Carregando vínculos...
           </td>
         </tr>
@@ -24029,7 +24455,10 @@ async function abrirModalUsuariosOrganograma() {
 
       const idusuario = Number(selectUsuario?.value || 0);
       const idsetororganograma = Number(selectSetor?.value || 0);
-      const precisaaprocavao = String(selectPrecisaAprovacao?.value || 'sim').trim().toLowerCase();
+      const precisaaprocavao = valorSimNao(!!chkPrecisaAprovacao?.checked);
+      const podeverpontotodos = valorSimNao(!!chkPodeVerTodosPontos?.checked);
+      const podevertodospontosunidade = valorSimNao(!!chkPodeVerTodosPontosUnidade?.checked);
+      const podevertodospontosfilhos = valorSimNao(!!chkPodeVerTodosPontosFilhos?.checked);
       const status = Number(selectStatus?.value ?? 1) ? 1 : 0;
 
       if (!idusuario) {
@@ -24044,6 +24473,9 @@ async function abrirModalUsuariosOrganograma() {
         idusuario,
         idsetororganograma,
         precisaaprocavao,
+        podeverpontotodos,
+        podevertodospontosunidade,
+        podevertodospontosfilhos,
         status
       };
 
@@ -29346,6 +29778,7 @@ function marcarInconsistenciaDataSolicitacoes(dataIso, items) {
 }
 
 
+
 async function carregarInconsistenciasDiasVisiveisSolicitacoes() {
   if (carregandoInconsistenciasVisiveisSolicitacoes) return;
 
@@ -29359,11 +29792,24 @@ async function carregarInconsistenciasDiasVisiveisSolicitacoes() {
   carregandoInconsistenciasVisiveisSolicitacoes = true;
 
   try {
+    const usuarioLogadoId = obterUsuarioIdLogado();
+
     await Promise.all(
-      datas.map(async dataIso => {
+      datas.map(async (dataIso) => {
         try {
-          const resposta = await fetch(`${API_BASE}/api/solicitacoes/usuarios-dia?data=${encodeURIComponent(dataIso)}`);
+          const params = new URLSearchParams();
+          params.append('data', dataIso);
+
+          if (usuarioLogadoId) {
+            params.append('usuarioLogadoId', usuarioLogadoId);
+          }
+
+          const resposta = await fetch(
+            `${API_BASE}/api/solicitacoes/usuarios-dia?${params.toString()}`
+          );
+
           const json = await resposta.json();
+
 
           if (!resposta.ok || !json?.success) {
             usuariosPorDataSolicitacoes[dataIso] = [];
@@ -30444,6 +30890,7 @@ function preencherSelectUsuariosSolicitacoes(items) {
 
 async function carregarUsuariosSolicitacoesPorData() {
   const dataIso = obterDataSelecionadaIsoSolicitacoes();
+  const usuarioLogadoId = Number(sessionStorage.getItem('id') || 0);
 
   if (!dataIso) {
     usuariosSolicitacoes = [];
@@ -30453,7 +30900,11 @@ async function carregarUsuariosSolicitacoesPorData() {
   }
 
   try {
-    const resposta = await fetch(`${API_BASE}/api/solicitacoes/usuarios-dia?data=${encodeURIComponent(dataIso)}`);
+    const params = new URLSearchParams();
+    params.append('data', dataIso);
+    params.append('usuarioLogadoId', usuarioLogadoId);
+
+    const resposta = await fetch(`${APIBASE}/api/solicitacoes/usuarios-dia?${params.toString()}`);
     const json = await resposta.json();
 
     if (!resposta.ok || !json?.success) {
@@ -30462,7 +30913,6 @@ async function carregarUsuariosSolicitacoesPorData() {
 
     usuariosSolicitacoes = Array.isArray(json.items) ? json.items : [];
     usuariosPorDataSolicitacoes[dataIso] = usuariosSolicitacoes;
-
     marcarInconsistenciaDataSolicitacoes(dataIso, usuariosSolicitacoes);
     preencherSelectUsuariosSolicitacoes(usuariosSolicitacoes);
     renderizarCalendarioSolicitacoes();
@@ -30568,7 +31018,6 @@ document.addEventListener('DOMContentLoaded', function () {
   carregarJustificativasPonto();
 });
 
-
 let justificativasPontoCache = [];
 let justificativasPontoFiltradas = [];
 let justificativasPontoPeriodoCache = [];
@@ -30619,7 +31068,6 @@ function obterDiferencaAtualSelecionadaJustificativa() {
   };
 }
 
-
 function formatarDataPtBrJustificativas(valor) {
   const texto = String(valor || '').trim();
   if (!texto || !/^\d{4}-\d{2}-\d{2}$/.test(texto)) return texto || '--';
@@ -30642,7 +31090,6 @@ function obterLabelStatusJustificativa(status) {
   return 'Pendente';
 }
 
-
 function obterClasseStatusJustificativa(status) {
   const valor = String(status || 'PENDENTE').trim().toUpperCase();
   if (valor === 'APROVADO') return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
@@ -30650,7 +31097,6 @@ function obterClasseStatusJustificativa(status) {
   if (valor === 'EM_ANALISE') return 'bg-amber-50 text-amber-700 border border-amber-200';
   return 'bg-slate-50 text-slate-700 border border-slate-200';
 }
-
 
 function montarResumoStatusJustificativa(status, usuario, dataHora, observacao) {
   const partes = [obterLabelStatusJustificativa(status)];
@@ -30715,88 +31161,219 @@ async function excluirJustificativaPonto(id) {
   }
 }
 
+let permissoesAprovacaoJustificativa = {
+  aprovadorPontoGestor: false,
+  aprovadorPontoRh: false
+};
+
+async function carregarPermissoesAprovacaoJustificativa() {
+  try {
+    const usuarioId = Number(sessionStorage.getItem('id') || 0);
+
+    if (!usuarioId) {
+      permissoesAprovacaoJustificativa = {
+        aprovadorPontoGestor: false,
+        aprovadorPontoRh: false
+      };
+      return;
+    }
+
+
+    const resposta = await fetch(
+      `${APIBASE}/api/solicitacoes/justificativas-ponto-permissoes/${encodeURIComponent(usuarioId)}`
+    );
+
+    const json = await resposta.json();
+
+    if (!resposta.ok || !json?.success) {
+      throw new Error(json?.message || 'Erro ao carregar permissões de aprovação.');
+    }
+
+    permissoesAprovacaoJustificativa = {
+      aprovadorPontoGestor: !!json?.permissoes?.aprovadorPontoGestor,
+      aprovadorPontoRh: !!json?.permissoes?.aprovadorPontoRh
+    };
+  } catch (error) {
+    console.error('Erro ao carregar permissões de aprovação:', error);
+    permissoesAprovacaoJustificativa = {
+      aprovadorPontoGestor: false,
+      aprovadorPontoRh: false
+    };
+  }
+}
+
 function montarHtmlAcoesJustificativa(item) {
-  return `
-    <button
-      type="button"
-      class="btnEditarJustificativaPonto w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
-      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
-    >
-      Editar
-    </button>
+  console.group('montarHtmlAcoesJustificativa');
 
-    <button
-      type="button"
-      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
-      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
-      data-perfil="GESTOR"
-      data-status="EM_ANALISE"
-    >
-      Gestor → Em análise
-    </button>
 
-    <button
-      type="button"
-      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
-      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
-      data-perfil="GESTOR"
-      data-status="APROVADO"
-    >
-      Gestor → Aprovar
-    </button>
+  const id = escapeHtmlSolicitacoes(String(item?.id || ''));
+  const statusGestor = String(item?.statusGestor || 'PENDENTE').trim().toUpperCase();
+  const statusRh = String(item?.statusRh || 'PENDENTE').trim().toUpperCase();
 
-    <button
-      type="button"
-      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
-      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
-      data-perfil="GESTOR"
-      data-status="REJEITADO"
-    >
-      Gestor → Rejeitar
-    </button>
+  const podeAprovarComoGestor = !!permissoesAprovacaoJustificativa?.aprovadorPontoGestor;
+  const podeAprovarComoRh = !!permissoesAprovacaoJustificativa?.aprovadorPontoRh;
 
-    <hr class="my-1 border-border">
 
-    <button
-      type="button"
-      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
-      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
-      data-perfil="RH"
-      data-status="EM_ANALISE"
-    >
-      RH → Em análise
-    </button>
+  const gestorPodeAtuarPorStatus = ['PENDENTE', 'REJEITADO', 'EM_ANALISE'].includes(statusGestor);
+  const rhPodeAtuarPorStatus =
+    statusGestor === 'APROVADO' &&
+    ['PENDENTE', 'REJEITADO', 'EM_ANALISE'].includes(statusRh);
 
-    <button
-      type="button"
-      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
-      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
-      data-perfil="RH"
-      data-status="APROVADO"
-    >
-      RH → Aprovar
-    </button>
 
-    <button
-      type="button"
-      class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
-      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
-      data-perfil="RH"
-      data-status="REJEITADO"
-    >
-      RH → Rejeitar
-    </button>
 
-    <hr class="my-1 border-border">
+  const gestorPodeAtuar = gestorPodeAtuarPorStatus && podeAprovarComoGestor;
+  const rhPodeAtuar = rhPodeAtuarPorStatus && podeAprovarComoRh;
+  const tudoAprovado = statusGestor === 'APROVADO' && statusRh === 'APROVADO';
 
-    <button
-      type="button"
-      class="btnExcluirJustificativaPonto w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-sm text-red-600"
-      data-id="${escapeHtmlSolicitacoes(String(item.id || ''))}"
-    >
-      Excluir solicitação
-    </button>
-  `;
+
+  const podeEditarExcluir = gestorPodeAtuarPorStatus;
+  const semAcoes = tudoAprovado || (!podeEditarExcluir && !gestorPodeAtuar && !rhPodeAtuar);
+
+
+  if (semAcoes) {
+    console.warn('[SAÍDA] Nenhuma ação disponível para esta solicitação', {
+      id,
+      statusGestor,
+      statusRh,
+      podeEditarExcluir,
+      gestorPodeAtuar,
+      rhPodeAtuar,
+      tudoAprovado
+    });
+
+    console.groupEnd();
+    return `
+      <div class="px-3 py-2 text-xs text-muted-foreground">
+        Nenhuma ação disponível para esta solicitação.
+      </div>
+    `;
+  }
+
+  const botoes = [];
+
+
+  if (podeEditarExcluir) {
+    botoes.push(`
+      <button
+        type="button"
+        class="btnEditarJustificativaPonto w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+        data-id="${id}"
+      >
+        Editar
+      </button>
+    `);
+  } else {
+  }
+
+  if (gestorPodeAtuar) {
+
+    botoes.push(`
+      <button
+        type="button"
+        class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+        data-id="${id}"
+        data-perfil="GESTOR"
+        data-status="EM_ANALISE"
+      >
+        Gestor → Em análise
+      </button>
+    `);
+
+    botoes.push(`
+      <button
+        type="button"
+        class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+        data-id="${id}"
+        data-perfil="GESTOR"
+        data-status="APROVADO"
+      >
+        Gestor → Aprovar
+      </button>
+    `);
+
+    botoes.push(`
+      <button
+        type="button"
+        class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+        data-id="${id}"
+        data-perfil="GESTOR"
+        data-status="REJEITADO"
+      >
+        Gestor → Rejeitar
+      </button>
+    `);
+  } else {
+    console.warn('[BOTÕES] Botões do GESTOR NÃO foram adicionados', {
+      gestorPodeAtuar,
+      gestorPodeAtuarPorStatus,
+      podeAprovarComoGestor,
+      statusGestor
+    });
+  }
+
+  if (rhPodeAtuar) {
+
+    botoes.push(`
+      <button
+        type="button"
+        class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+        data-id="${id}"
+        data-perfil="RH"
+        data-status="EM_ANALISE"
+      >
+        RH → Em análise
+      </button>
+    `);
+
+    botoes.push(`
+      <button
+        type="button"
+        class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+        data-id="${id}"
+        data-perfil="RH"
+        data-status="APROVADO"
+      >
+        RH → Aprovar
+      </button>
+    `);
+
+    botoes.push(`
+      <button
+        type="button"
+        class="btnAlterarStatusJustificativa w-full text-left px-3 py-2 rounded-lg hover:bg-muted/40 text-sm"
+        data-id="${id}"
+        data-perfil="RH"
+        data-status="REJEITADO"
+      >
+        RH → Rejeitar
+      </button>
+    `);
+  } else {
+
+  }
+
+  if (podeEditarExcluir) {
+    if (gestorPodeAtuar || rhPodeAtuar) {
+
+      botoes.push(`<hr class="my-1 border-border">`);
+    }
+
+    botoes.push(`
+      <button
+        type="button"
+        class="btnExcluirJustificativaPonto w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-sm text-red-600"
+        data-id="${id}"
+      >
+        Excluir solicitação
+      </button>
+    `);
+  } else {
+
+  }
+
+  console.groupEnd();
+
+  return botoes.join('');
 }
 
 function abrirMenuAcoesJustificativa(botao, id) {
@@ -31562,8 +32139,6 @@ function abrirModalJustificativaPonto(modo = 'novo', item = null) {
   document.body.appendChild(modal);
 }
 
-
-
 async function carregarJustificativaPorId(id) {
   const resposta = await fetch(`${APIBASE}/api/solicitacoes/justificativas-ponto/${encodeURIComponent(id)}`);
   const json = await resposta.json();
@@ -31626,22 +32201,24 @@ function obterUsuarioAcaoJustificativa() {
   
 }
 
-function inicializarJustificativasPonto() {
+async function inicializarJustificativasPonto() {
   const { btnNova, inputFiltro, btnLimparFiltro } = obterElementosJustificativasPonto();
 
-  btnNova?.addEventListener('click', () => {
-    abrirModalJustificativaPonto('novo');
-  });
+  await carregarPermissoesAprovacaoJustificativa();
+
+  btnNova?.addEventListener('click', () => abrirModalJustificativaPonto('novo'));
 
   inputFiltro?.addEventListener('input', aplicarFiltroJustificativasPonto);
 
   btnLimparFiltro?.addEventListener('click', () => {
-    inputFiltro.value = '';
+    if (inputFiltro) {
+      inputFiltro.value = '';
+    }
     aplicarFiltroJustificativasPonto();
-    inputFiltro.focus();
+    inputFiltro?.focus();
   });
 
-  document.addEventListener('click', event => {
+  document.addEventListener('click', function (event) {
     const btnMenu = event.target.closest('.btnMenuAcoesJustificativa');
     const btnEditar = event.target.closest('.btnEditarJustificativaPonto');
     const btnStatus = event.target.closest('.btnAlterarStatusJustificativa');
@@ -31655,6 +32232,7 @@ function inicializarJustificativasPonto() {
 
       const id = String(btnDetalhesStatus.dataset.id || '').trim();
       const perfil = String(btnDetalhesStatus.dataset.perfil || '').trim().toUpperCase();
+
       if (!id || !perfil) return;
 
       const popover = obterPopoverStatusJustificativa();
@@ -31662,7 +32240,9 @@ function inicializarJustificativasPonto() {
         popover &&
         !popover.classList.contains('hidden') &&
         String(popover.getAttribute('data-id') || '') === id &&
-        String(popover.getAttribute('data-perfil') || '') === perfil;
+        String(popover.getAttribute('data-perfil') || '').trim().toUpperCase() === perfil;
+
+      fecharMenusAcoesJustificativas();
 
       if (mesmoAberto) {
         fecharPopoverStatusJustificativa();
@@ -31684,6 +32264,8 @@ function inicializarJustificativasPonto() {
         !menu.classList.contains('hidden') &&
         String(menu.getAttribute('data-id') || '') === id;
 
+      fecharPopoverStatusJustificativa();
+
       if (mesmoMenuAberto) {
         fecharMenusAcoesJustificativas();
       } else {
@@ -31694,28 +32276,49 @@ function inicializarJustificativasPonto() {
 
     if (btnEditar) {
       const id = String(btnEditar.dataset.id || '').trim();
+
       fecharMenusAcoesJustificativas();
-      if (id) editarJustificativaPonto(id);
+      fecharPopoverStatusJustificativa();
+
+      if (id) {
+        editarJustificativaPonto(id);
+      }
       return;
     }
 
     if (btnStatus) {
       const id = String(btnStatus.dataset.id || '').trim();
-      const perfil = String(btnStatus.dataset.perfil || '').trim();
-      const status = String(btnStatus.dataset.status || '').trim();
+      const perfil = String(btnStatus.dataset.perfil || '').trim().toUpperCase();
+      const status = String(btnStatus.dataset.status || '').trim().toUpperCase();
 
       fecharMenusAcoesJustificativas();
+      fecharPopoverStatusJustificativa();
 
-      if (id && perfil && status) {
-        atualizarStatusJustificativaPonto(id, perfil, status);
+      if (!id || !perfil || !status) return;
+
+      if (perfil === 'GESTOR' && !permissoesAprovacaoJustificativa?.aprovadorPontoGestor) {
+        alert('Você não possui permissão para aprovar justificativas como Gestor.');
+        return;
       }
+
+      if (perfil === 'RH' && !permissoesAprovacaoJustificativa?.aprovadorPontoRh) {
+        alert('Você não possui permissão para aprovar justificativas como RH.');
+        return;
+      }
+
+      atualizarStatusJustificativaPonto(id, perfil, status);
       return;
     }
 
     if (btnExcluir) {
       const id = String(btnExcluir.dataset.id || '').trim();
+
       fecharMenusAcoesJustificativas();
-      if (id) excluirJustificativaPonto(id);
+      fecharPopoverStatusJustificativa();
+
+      if (id) {
+        excluirJustificativaPonto(id);
+      }
       return;
     }
 
@@ -31733,11 +32336,14 @@ function inicializarJustificativasPonto() {
     fecharPopoverStatusJustificativa();
   });
 
-  window.addEventListener('scroll', () => {
-    fecharMenusAcoesJustificativas();
-    fecharPopoverStatusJustificativa();
-  }, true);
-
+  window.addEventListener(
+    'scroll',
+    () => {
+      fecharMenusAcoesJustificativas();
+      fecharPopoverStatusJustificativa();
+    },
+    true
+  );
 }
 
 function obterDetalhesStatusJustificativa(item, perfil) {
