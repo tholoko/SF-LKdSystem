@@ -17484,27 +17484,69 @@ async function abrirModalDevolucaoReservaCarro(idReserva) {
   }
 
   function capturarFoto(tipo) {
+    console.log('[capturarFoto] Iniciando captura...', { tipo });
+
     if (!streamCamera || !video || !canvas) {
+      console.error('[capturarFoto] Câmera não iniciada ou elementos ausentes.', {
+        streamCamera: !!streamCamera,
+        video: !!video,
+        canvas: !!canvas
+      });
       throw new Error('Inicie a câmera antes de tirar a foto.');
     }
 
     const larguraOriginal = video.videoWidth || 1280;
     const alturaOriginal = video.videoHeight || 720;
+    console.log('[capturarFoto] Resolução original do vídeo:', {
+      larguraOriginal,
+      alturaOriginal
+    });
+
     const { largura, altura } = calcularDimensoesHD(larguraOriginal, alturaOriginal);
+    console.log('[capturarFoto] Resolução ajustada para HD:', {
+      largura,
+      altura
+    });
 
     canvas.width = largura;
     canvas.height = altura;
 
+    console.log('[capturarFoto] Canvas configurado:', {
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height
+    });
+
     const ctx = canvas.getContext('2d');
     if (!ctx) {
+      console.error('[capturarFoto] Falha ao obter contexto 2D do canvas.');
       throw new Error('Não foi possível processar a foto.');
     }
 
+    console.log('[capturarFoto] Contexto 2D obtido com sucesso.');
     ctx.drawImage(video, 0, 0, largura, altura);
+    console.log('[capturarFoto] Imagem desenhada no canvas.');
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+
+    console.log('[capturarFoto] DataURL gerado com sucesso.', {
+      tipo,
+      tamanhoBase64: dataUrl?.length || 0,
+      qualidade: 0.75
+    });
+
     fotos[tipo] = dataUrl;
+
+    console.log('[capturarFoto] Foto salva no objeto fotos.', {
+      tipo,
+      possuiFoto: !!fotos[tipo]
+    });
+
     atualizarPreviewFoto(tipo, dataUrl, `Foto HD (${largura}x${altura})`);
+
+    console.log('[capturarFoto] Preview atualizado com sucesso.', {
+      tipo,
+      nomePreview: `Foto HD (${largura}x${altura})`
+    });
   }
 
   function validarFotosObrigatorias() {
@@ -17529,21 +17571,48 @@ async function abrirModalDevolucaoReservaCarro(idReserva) {
     const input = document.getElementById(mapa[tipo]);
     if (!input) return;
 
+    if (input.dataset.bindFoto === '1') return;
+    input.dataset.bindFoto = '1';
+
     input.addEventListener('change', async () => {
       try {
         setErro('');
+
         const file = input.files?.[0];
         if (!file) return;
 
-        if (!String(file.type || '').startsWith('image/')) {
+        if (!String(file.type).startsWith('image/')) {
           input.value = '';
           throw new Error('Arquivo de imagem inválido.');
         }
 
-        const base64 = await fileToBase64(file);
-        fotos[tipo] = base64;
-        atualizarPreviewFoto(tipo, base64, file.name || 'Imagem anexada');
+        console.log('[bindInputFoto] Arquivo original selecionado:', {
+          tipo,
+          nome: file.name,
+          tamanhoKB: Math.round(file.size / 1024),
+          mime: file.type
+        });
+
+        const resultado = await comprimirImagemArquivo(file, { quality: 0.75 });
+
+        fotos[tipo] = resultado.dataUrl;
+
+        console.log('[bindInputFoto] Imagem processada para mobile:', {
+          tipo,
+          largura: resultado.largura,
+          altura: resultado.altura,
+          tamanhoBase64: resultado.dataUrl.length
+        });
+
+        atualizarPreviewFoto(
+          tipo,
+          resultado.dataUrl,
+          `${file.name} (${resultado.largura}x${resultado.altura})`
+        );
+
+        input.value = '';
       } catch (err) {
+        console.error('[bindInputFoto] Erro ao processar foto mobile:', err);
         setErro(err?.message || 'Erro ao processar foto.');
       }
     });
@@ -19994,7 +20063,6 @@ async function aprovarReservaCarro(idReserva, payload = {}) {
     ? `/api/reservas-carro-formulario/${encodeURIComponent(idReserva)}/aprovar`
     : `/api/reservas-carro/${encodeURIComponent(idReserva)}/aprovar`;
 
-    console.log(payload);
 
 
   const resp = await fetch(`${APIBASE}${rotaAprovacao}`, {
@@ -20918,27 +20986,69 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
   }
 
   function capturarFoto(tipo) {
+    console.log('[capturarFoto] Iniciando captura...', { tipo });
+
     if (!streamCamera || !video || !canvas) {
+      console.error('[capturarFoto] Câmera não iniciada ou elementos ausentes.', {
+        streamCamera: !!streamCamera,
+        video: !!video,
+        canvas: !!canvas
+      });
       throw new Error('Inicie a câmera antes de tirar a foto.');
     }
 
     const larguraOriginal = video.videoWidth || 1280;
     const alturaOriginal = video.videoHeight || 720;
+    console.log('[capturarFoto] Resolução original do vídeo:', {
+      larguraOriginal,
+      alturaOriginal
+    });
+
     const { largura, altura } = calcularDimensoesHD(larguraOriginal, alturaOriginal);
+    console.log('[capturarFoto] Resolução ajustada para HD:', {
+      largura,
+      altura
+    });
 
     canvas.width = largura;
     canvas.height = altura;
 
+    console.log('[capturarFoto] Canvas configurado:', {
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height
+    });
+
     const ctx = canvas.getContext('2d');
     if (!ctx) {
+      console.error('[capturarFoto] Falha ao obter contexto 2D do canvas.');
       throw new Error('Não foi possível processar a foto.');
     }
 
+    console.log('[capturarFoto] Contexto 2D obtido com sucesso.');
     ctx.drawImage(video, 0, 0, largura, altura);
+    console.log('[capturarFoto] Imagem desenhada no canvas.');
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+
+    console.log('[capturarFoto] DataURL gerado com sucesso.', {
+      tipo,
+      tamanhoBase64: dataUrl?.length || 0,
+      qualidade: 0.75
+    });
+
     fotos[tipo] = dataUrl;
+
+    console.log('[capturarFoto] Foto salva no objeto fotos.', {
+      tipo,
+      possuiFoto: !!fotos[tipo]
+    });
+
     atualizarPreviewFoto(tipo, dataUrl, `Foto HD (${largura}x${altura})`);
+
+    console.log('[capturarFoto] Preview atualizado com sucesso.', {
+      tipo,
+      nomePreview: `Foto HD (${largura}x${altura})`
+    });
   }
 
   function validarFotosObrigatorias() {
@@ -20960,24 +21070,51 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
       painel: 'inputFotoPainel'
     };
 
-    const input = $(mapa[tipo]);
+    const input = document.getElementById(mapa[tipo]);
     if (!input) return;
+
+    if (input.dataset.bindFoto === '1') return;
+    input.dataset.bindFoto = '1';
 
     input.addEventListener('change', async () => {
       try {
         setErro('');
+
         const file = input.files?.[0];
         if (!file) return;
 
-        if (!String(file.type || '').startsWith('image/')) {
+        if (!String(file.type).startsWith('image/')) {
           input.value = '';
           throw new Error('Arquivo de imagem inválido.');
         }
 
-        const base64 = await fileToBase64(file);
-        fotos[tipo] = base64;
-        atualizarPreviewFoto(tipo, base64, file.name || 'Imagem anexada');
+        console.log('[bindInputFoto] Arquivo original selecionado:', {
+          tipo,
+          nome: file.name,
+          tamanhoKB: Math.round(file.size / 1024),
+          mime: file.type
+        });
+
+        const resultado = await comprimirImagemArquivo(file, { quality: 0.75 });
+
+        fotos[tipo] = resultado.dataUrl;
+
+        console.log('[bindInputFoto] Imagem processada para mobile:', {
+          tipo,
+          largura: resultado.largura,
+          altura: resultado.altura,
+          tamanhoBase64: resultado.dataUrl.length
+        });
+
+        atualizarPreviewFoto(
+          tipo,
+          resultado.dataUrl,
+          `${file.name} (${resultado.largura}x${resultado.altura})`
+        );
+
+        input.value = '';
       } catch (err) {
+        console.error('[bindInputFoto] Erro ao processar foto mobile:', err);
         setErro(err?.message || 'Erro ao processar foto.');
       }
     });
@@ -21962,6 +22099,97 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
     let stream_camera = null;
     let foto_aceite_termo = '';
 
+    function is_ios() {
+      return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    function is_android() {
+      return /Android/i.test(navigator.userAgent);
+    }
+
+    function is_mobile_device() {
+      return is_ios() || is_android();
+    }
+
+    function validar_ambiente_camera() {
+      const is_secure =
+        window.isSecureContext ||
+        location.protocol === 'https:' ||
+        location.hostname === 'localhost' ||
+        location.hostname === '127.0.0.1';
+
+      if (!is_secure) {
+        throw new Error('Para usar a câmera no iPhone e Android, acesse o sistema por HTTPS.');
+      }
+    }
+
+    function calcular_dimensoes_hd(largura_original, altura_original) {
+      const MAX_W = 1280;
+      const MAX_H = 720;
+
+      if (!largura_original || !altura_original) {
+        return { largura: MAX_W, altura: MAX_H };
+      }
+
+      const proporcao = largura_original / altura_original;
+      let largura = largura_original;
+      let altura = altura_original;
+
+      if (largura > MAX_W || altura > MAX_H) {
+        if (proporcao >= MAX_W / MAX_H) {
+          largura = MAX_W;
+          altura = Math.round(MAX_W / proporcao);
+        } else {
+          altura = MAX_H;
+          largura = Math.round(MAX_H * proporcao);
+        }
+      }
+
+      return { largura, altura };
+    }
+
+    function comprimir_imagem_arquivo(file, opcoes = {}) {
+      const quality = opcoes.quality || 0.75;
+
+      return new Promise((resolveImg, rejectImg) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          const img = new Image();
+
+          img.onload = () => {
+            const { largura, altura } = calcular_dimensoes_hd(img.width, img.height);
+            const canvas = document.createElement('canvas');
+            canvas.width = largura;
+            canvas.height = altura;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              return rejectImg(new Error('Não foi possível processar a imagem.'));
+            }
+
+            ctx.drawImage(img, 0, 0, largura, altura);
+
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+            resolveImg({
+              dataUrl,
+              largura,
+              altura
+            });
+          };
+
+          img.onerror = () => rejectImg(new Error('Não foi possível carregar a imagem.'));
+          img.src = reader.result;
+        };
+
+        reader.onerror = () => rejectImg(new Error('Não foi possível ler o arquivo.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const mobile = is_mobile_device();
+
     const overlay = document.createElement('div');
     overlay.id = 'termoReservaCarroOverlay';
     overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm z-[190]';
@@ -22043,7 +22271,9 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
                       <div>
                         <h4 class="text-sm font-semibold text-foreground">Foto obrigatória no momento do aceite</h4>
                         <p class="text-xs text-muted-foreground">
-                          A foto deve ser tirada agora pela câmera do dispositivo. Não é permitido enviar arquivo da galeria ou do computador.
+                          ${mobile
+                            ? 'No celular, ao tocar em iniciar, a câmera frontal será aberta para tirar a foto agora.'
+                            : 'A foto deve ser tirada agora pela câmera do dispositivo.'}
                         </p>
                       </div>
                     </div>
@@ -22053,9 +22283,10 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
                     <div class="rounded-2xl overflow-hidden border border-border bg-black/90 relative">
                       <video
                         id="videoAceiteTermoReservaCarro"
-                        class="w-full max-h-80 object-contain bg-black"
+                        class="w-full max-h-80 object-contain bg-black ${mobile ? 'hidden' : ''}"
                         autoplay
                         playsinline
+                        webkit-playsinline
                         muted
                       ></video>
 
@@ -22066,7 +22297,24 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
                         alt="Foto capturada no aceite"
                         class="hidden w-full max-h-80 object-contain bg-black"
                       >
+
+                      <div
+                        id="placeholderFotoAceite"
+                        class="${mobile ? '' : 'hidden '}w-full min-h-[220px] flex items-center justify-center text-center text-xs text-slate-300 px-6"
+                      >
+                        ${mobile
+                          ? 'No celular, toque em "Iniciar câmera" para abrir a câmera frontal.'
+                          : 'A visualização da câmera aparecerá aqui.'}
+                      </div>
                     </div>
+
+                    <input
+                      id="inputFotoAceiteTermoMobile"
+                      type="file"
+                      accept="image/*"
+                      capture="user"
+                      class="hidden"
+                    >
 
                     <div class="flex flex-col sm:flex-row gap-3">
                       <button
@@ -22074,13 +22322,13 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
                         type="button"
                         class="sm:flex-1 rounded-xl border border-border bg-white/80 px-4 py-3 font-medium hover:bg-white transition-all"
                       >
-                        Iniciar câmera
+                        ${mobile ? 'Abrir câmera' : 'Iniciar câmera'}
                       </button>
 
                       <button
                         id="btnCapturarFotoAceite"
                         type="button"
-                        class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all"
+                        class="sm:flex-1 rounded-xl bg-primary text-white px-4 py-3 font-medium hover:opacity-90 transition-all ${mobile ? 'hidden' : ''}"
                         disabled
                       >
                         Tirar foto
@@ -22096,7 +22344,9 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
                     </div>
 
                     <p id="statusCameraAceite" class="text-xs text-muted-foreground">
-                      Clique em "Iniciar câmera" para registrar a foto do aceite.
+                      ${mobile
+                        ? 'Clique em "Abrir câmera" para registrar a foto do aceite.'
+                        : 'Clique em "Iniciar câmera" para registrar a foto do aceite.'}
                     </p>
                   </div>
 
@@ -22163,26 +22413,63 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
       el.classList.toggle('hidden', !msg);
     }
 
-    async function iniciar_camera() {
+    function mostrar_preview(dataUrl) {
       const video = document.getElementById('videoAceiteTermoReservaCarro');
       const img = document.getElementById('imgPreviewFotoAceiteTermoReservaCarro');
+      const placeholder = document.getElementById('placeholderFotoAceite');
+      const btn_capturar = document.getElementById('btnCapturarFotoAceite');
+      const btn_refazer = document.getElementById('btnRefazerFotoAceite');
+
+      foto_aceite_termo = dataUrl;
+
+      if (img) {
+        img.src = dataUrl;
+        img.classList.remove('hidden');
+      }
+
+      if (video) {
+        video.classList.add('hidden');
+      }
+
+      if (placeholder) {
+        placeholder.classList.add('hidden');
+      }
+
+      if (btn_capturar) {
+        btn_capturar.disabled = true;
+      }
+
+      if (btn_refazer) {
+        btn_refazer.classList.remove('hidden');
+      }
+    }
+
+    async function iniciar_camera_desktop() {
+      const video = document.getElementById('videoAceiteTermoReservaCarro');
+      const img = document.getElementById('imgPreviewFotoAceiteTermoReservaCarro');
+      const placeholder = document.getElementById('placeholderFotoAceite');
       const btn_capturar = document.getElementById('btnCapturarFotoAceite');
       const btn_refazer = document.getElementById('btnRefazerFotoAceite');
 
       set_erro('');
       set_camera_indisponivel('');
 
+      try {
+        validar_ambiente_camera();
+      } catch (err) {
+        set_camera_indisponivel(err.message || 'Ambiente inválido para câmera.');
+        set_status_camera('Câmera indisponível.');
+        return;
+      }
+
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        set_camera_indisponivel(
-          'Este dispositivo ou navegador não permite acesso à câmera por este recurso.\nFaça a solicitação usando um celular com câmera.'
-        );
+        set_camera_indisponivel('Este navegador não suporta acesso à câmera.');
         set_status_camera('Câmera indisponível neste dispositivo.');
         return;
       }
 
       try {
         await parar_camera();
-
         foto_aceite_termo = '';
 
         if (img) {
@@ -22194,20 +22481,49 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
           video.classList.remove('hidden');
         }
 
+        if (placeholder) {
+          placeholder.classList.add('hidden');
+        }
+
         if (btn_refazer) {
           btn_refazer.classList.add('hidden');
         }
 
-        stream_camera = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'user',
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
+        const tentativas = [
+          {
+            video: {
+              facingMode: { ideal: 'user' },
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            },
+            audio: false
           },
-          audio: false
-        });
+          {
+            video: true,
+            audio: false
+          }
+        ];
+
+        let ultimo_erro = null;
+
+        for (const constraints of tentativas) {
+          try {
+            stream_camera = await navigator.mediaDevices.getUserMedia(constraints);
+            break;
+          } catch (err) {
+            ultimo_erro = err;
+          }
+        }
+
+        if (!stream_camera) {
+          throw ultimo_erro || new Error('Não foi possível iniciar a câmera.');
+        }
 
         if (video) {
+          video.setAttribute('autoplay', '');
+          video.setAttribute('muted', '');
+          video.setAttribute('playsinline', '');
+          video.setAttribute('webkit-playsinline', '');
           video.srcObject = stream_camera;
           await video.play().catch(() => {});
         }
@@ -22223,33 +22539,77 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
         let mensagem = 'Não foi possível acessar a câmera deste dispositivo.';
 
         if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
-          mensagem = 'O acesso à câmera foi negado. Permita o uso da câmera no navegador ou faça a solicitação pelo celular.';
+          mensagem = 'O acesso à câmera foi negado. Permita o uso da câmera no navegador.';
         } else if (err?.name === 'NotFoundError' || err?.name === 'DevicesNotFoundError') {
-          mensagem = 'Nenhuma câmera foi encontrada neste computador. Faça a solicitação pelo celular.';
+          mensagem = 'Nenhuma câmera foi encontrada neste dispositivo.';
         } else if (err?.name === 'NotReadableError' || err?.name === 'TrackStartError') {
-          mensagem = 'A câmera está ocupada por outro aplicativo. Feche o aplicativo que está usando a câmera ou faça a solicitação pelo celular.';
+          mensagem = 'A câmera está ocupada por outro aplicativo.';
         } else if (err?.name === 'OverconstrainedError' || err?.name === 'ConstraintNotSatisfiedError') {
-          mensagem = 'A câmera disponível não atende aos requisitos mínimos. Faça a solicitação pelo celular.';
+          mensagem = 'A câmera disponível não atende aos requisitos mínimos.';
+        } else if (err?.message) {
+          mensagem = err.message;
         }
 
         set_camera_indisponivel(mensagem);
         set_status_camera('Não foi possível iniciar a câmera.');
 
-        const btn_capturar = document.getElementById('btnCapturarFotoAceite');
         if (btn_capturar) btn_capturar.disabled = true;
       }
     }
 
-    async function capturar_foto() {
-      const video = document.getElementById('videoAceiteTermoReservaCarro');
-      const canvas = document.getElementById('canvasAceiteTermoReservaCarro');
+    async function iniciar_camera_mobile() {
+      const input = document.getElementById('inputFotoAceiteTermoMobile');
       const img = document.getElementById('imgPreviewFotoAceiteTermoReservaCarro');
-      const btn_capturar = document.getElementById('btnCapturarFotoAceite');
+      const video = document.getElementById('videoAceiteTermoReservaCarro');
+      const placeholder = document.getElementById('placeholderFotoAceite');
       const btn_refazer = document.getElementById('btnRefazerFotoAceite');
 
       set_erro('');
+      set_camera_indisponivel('');
 
-      if (!video || !canvas || !img) {
+      try {
+        validar_ambiente_camera();
+      } catch (err) {
+        set_camera_indisponivel(err.message || 'Ambiente inválido para câmera.');
+        set_status_camera('Câmera indisponível.');
+        return;
+      }
+
+      foto_aceite_termo = '';
+
+      if (img) {
+        img.src = '';
+        img.classList.add('hidden');
+      }
+
+      if (video) {
+        video.classList.add('hidden');
+      }
+
+      if (placeholder) {
+        placeholder.classList.remove('hidden');
+      }
+
+      if (btn_refazer) {
+        btn_refazer.classList.add('hidden');
+      }
+
+      if (!input) {
+        return set_erro('Campo de câmera do celular não foi encontrado.');
+      }
+
+      set_status_camera('Abrindo câmera do dispositivo...');
+      input.value = '';
+      input.click();
+    }
+
+    async function capturar_foto_desktop() {
+      const video = document.getElementById('videoAceiteTermoReservaCarro');
+      const canvas = document.getElementById('canvasAceiteTermoReservaCarro');
+
+      set_erro('');
+
+      if (!video || !canvas) {
         return set_erro('Não foi possível preparar a captura da foto.');
       }
 
@@ -22257,12 +22617,14 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
         return set_erro('Inicie a câmera antes de tirar a foto.');
       }
 
-      const largura = video.videoWidth || 1280;
-      const altura = video.videoHeight || 720;
+      const largura_original = video.videoWidth || 1280;
+      const altura_original = video.videoHeight || 720;
 
-      if (!largura || !altura) {
+      if (!largura_original || !altura_original) {
         return set_erro('A câmera ainda não ficou pronta. Aguarde um instante e tente novamente.');
       }
+
+      const { largura, altura } = calcular_dimensoes_hd(largura_original, altura_original);
 
       canvas.width = largura;
       canvas.height = altura;
@@ -22273,16 +22635,10 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
       }
 
       ctx.drawImage(video, 0, 0, largura, altura);
-      foto_aceite_termo = canvas.toDataURL('image/jpeg', 0.92);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
 
-      img.src = foto_aceite_termo;
-      img.classList.remove('hidden');
-      video.classList.add('hidden');
-
-      if (btn_capturar) btn_capturar.disabled = true;
-      if (btn_refazer) btn_refazer.classList.remove('hidden');
-
-      set_status_camera('Foto capturada com sucesso.');
+      mostrar_preview(dataUrl);
+      set_status_camera(`Foto capturada com sucesso (${largura}x${altura}).`);
       await parar_camera();
     }
 
@@ -22296,22 +22652,53 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
     const btn_iniciar_camera = document.getElementById('btnIniciarCameraAceite');
     const btn_capturar_foto = document.getElementById('btnCapturarFotoAceite');
     const btn_refazer_foto = document.getElementById('btnRefazerFotoAceite');
+    const input_mobile = document.getElementById('inputFotoAceiteTermoMobile');
 
     overlay.addEventListener('click', () => fechar(null));
     btn_close?.addEventListener('click', () => fechar(null));
     btn_cancelar?.addEventListener('click', () => fechar(null));
 
     btn_iniciar_camera?.addEventListener('click', async () => {
-      await iniciar_camera();
+      if (mobile) {
+        await iniciar_camera_mobile();
+      } else {
+        await iniciar_camera_desktop();
+      }
     });
 
     btn_capturar_foto?.addEventListener('click', async () => {
-      await capturar_foto();
+      await capturar_foto_desktop();
+    });
+
+    input_mobile?.addEventListener('change', async () => {
+      try {
+        set_erro('');
+
+        const file = input_mobile.files?.[0];
+        if (!file) {
+          set_status_camera('Nenhuma foto foi capturada.');
+          return;
+        }
+
+        if (!String(file.type).startsWith('image/')) {
+          input_mobile.value = '';
+          throw new Error('Arquivo de imagem inválido.');
+        }
+
+        const resultado = await comprimir_imagem_arquivo(file, { quality: 0.75 });
+
+        mostrar_preview(resultado.dataUrl);
+        set_status_camera(`Foto capturada com sucesso (${resultado.largura}x${resultado.altura}).`);
+      } catch (err) {
+        console.error('Erro ao processar foto do aceite no mobile.', err);
+        set_erro(err?.message || 'Erro ao processar a foto capturada.');
+      }
     });
 
     btn_refazer_foto?.addEventListener('click', async () => {
-      const video = document.getElementById('videoAceiteTermoReservaCarro');
       const img = document.getElementById('imgPreviewFotoAceiteTermoReservaCarro');
+      const video = document.getElementById('videoAceiteTermoReservaCarro');
+      const placeholder = document.getElementById('placeholderFotoAceite');
 
       foto_aceite_termo = '';
 
@@ -22320,12 +22707,23 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
         img.classList.add('hidden');
       }
 
-      if (video) {
+      if (video && !mobile) {
         video.classList.remove('hidden');
+      } else if (video && mobile) {
+        video.classList.add('hidden');
+      }
+
+      if (placeholder) {
+        placeholder.classList.remove('hidden');
       }
 
       btn_refazer_foto.classList.add('hidden');
-      await iniciar_camera();
+
+      if (mobile) {
+        set_status_camera('Clique em "Abrir câmera" para capturar uma nova foto.');
+      } else {
+        await iniciar_camera_desktop();
+      }
     });
 
     btn_confirmar?.addEventListener('click', async () => {
@@ -22337,7 +22735,7 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
         }
 
         if (!foto_aceite_termo) {
-          return set_erro('A foto do aceite é obrigatória e deve ser tirada pela câmera neste momento.');
+          return set_erro('A foto do aceite é obrigatória e deve ser tirada neste momento.');
         }
 
         await fechar({
@@ -22375,6 +22773,46 @@ function calcularDimensoesHD(larguraOriginal, alturaOriginal) {
   }
 
   return { largura, altura };
+}
+
+function comprimirImagemArquivo(file, opcoes = {}) {
+  const quality = opcoes.quality || 0.75;
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const img = new Image();
+
+      img.onload = () => {
+        const { largura, altura } = calcularDimensoesHD(img.width, img.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = largura;
+        canvas.height = altura;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          return reject(new Error('Não foi possível processar a imagem.'));
+        }
+
+        ctx.drawImage(img, 0, 0, largura, altura);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+        resolve({
+          dataUrl,
+          largura,
+          altura
+        });
+      };
+
+      img.onerror = () => reject(new Error('Não foi possível carregar a imagem.'));
+      img.src = reader.result;
+    };
+
+    reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
+    reader.readAsDataURL(file);
+  });
 }
 
 // cadastro de veiculos
