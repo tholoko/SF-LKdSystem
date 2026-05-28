@@ -17410,7 +17410,7 @@ async function abrirModalDevolucaoReservaCarro(idReserva) {
 
 
 
-  function atualizarPreviewFoto(tipo, previewUrl, fileName = 'Foto capturada') {
+  function atualizarPreviewFoto(tipo, dataUrl, fileName = 'Foto capturada') {
     const mapa = {
       frente: ['previewFotoFrente', 'placeholderFotoFrente', 'nomeFotoFrente'],
       traseira: ['previewFotoTraseira', 'placeholderFotoTraseira', 'nomeFotoTraseira'],
@@ -17423,15 +17423,14 @@ async function abrirModalDevolucaoReservaCarro(idReserva) {
     if (!ids) return;
 
     const [imgId, placeholderId, nomeId] = ids;
-    const img = id(imgId);
-    const placeholder = id(placeholderId);
-    const nomeEl = id(nomeId);
+    const img = document.getElementById(imgId);
+    const placeholder = document.getElementById(placeholderId);
+    const nomeEl = document.getElementById(nomeId);
 
     if (img) {
-      img.src = previewUrl;
+      img.src = dataUrl;
       img.classList.remove('hidden');
     }
-
     if (placeholder) placeholder.classList.add('hidden');
     if (nomeEl) nomeEl.textContent = fileName;
   }
@@ -17485,50 +17484,21 @@ async function abrirModalDevolucaoReservaCarro(idReserva) {
   }
 
   function capturarFoto(tipo) {
-    return new Promise((resolve, reject) => {
-      if (!streamCamera || !video || !canvas) {
-        return reject(new Error('Inicie a câmera antes de tirar a foto.'));
-      }
+    if (!streamCamera || !video || !canvas) {
+      throw new Error('Inicie a câmera antes de tirar a foto.');
+    }
 
-      const larguraOriginal = video.videoWidth || 1280;
-      const alturaOriginal = video.videoHeight || 720;
+    const largura = video.videoWidth || 1280;
+    const altura = video.videoHeight || 720;
+    canvas.width = largura;
+    canvas.height = altura;
 
-      const maxLado = 1280;
-      let largura = larguraOriginal;
-      let altura = alturaOriginal;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, largura, altura);
 
-      if (largura > altura && largura > maxLado) {
-        altura = Math.round((altura * maxLado) / largura);
-        largura = maxLado;
-      } else if (altura >= largura && altura > maxLado) {
-        largura = Math.round((largura * maxLado) / altura);
-        altura = maxLado;
-      }
-
-      canvas.width = largura;
-      canvas.height = altura;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        return reject(new Error('Não foi possível processar a foto.'));
-      }
-
-      ctx.drawImage(video, 0, 0, largura, altura);
-
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          return reject(new Error('Não foi possível gerar a foto.'));
-        }
-
-        const arquivo = new File([blob], `${tipo}-${Date.now()}.jpg`, {
-          type: 'image/jpeg'
-        });
-
-        fotos[tipo] = arquivo;
-        atualizarPreviewFoto(tipo, URL.createObjectURL(arquivo), arquivo.name);
-        resolve();
-      }, 'image/jpeg', 0.75);
-    });
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    fotos[tipo] = dataUrl;
+    atualizarPreviewFoto(tipo, dataUrl, 'Foto capturada na câmera');
   }
 
   function validarFotosObrigatorias() {
@@ -17550,7 +17520,7 @@ async function abrirModalDevolucaoReservaCarro(idReserva) {
       painel: 'inputFotoPainel'
     };
 
-    const input = id(mapa[tipo]);
+    const input = document.getElementById(mapa[tipo]);
     if (!input) return;
 
     input.addEventListener('change', async () => {
@@ -17564,8 +17534,9 @@ async function abrirModalDevolucaoReservaCarro(idReserva) {
           throw new Error('Arquivo de imagem inválido.');
         }
 
-        fotos[tipo] = file;
-        atualizarPreviewFoto(tipo, URL.createObjectURL(file), file.name || 'Imagem anexada');
+        const base64 = await fileToBase64(file);
+        fotos[tipo] = base64;
+        atualizarPreviewFoto(tipo, base64, file.name || 'Imagem anexada');
       } catch (err) {
         setErro(err?.message || 'Erro ao processar foto.');
       }
@@ -19996,13 +19967,37 @@ async function aprovarReservaGestorCarro(idReserva) {
   return json;
 }
 
-async function aprovarReservaCarro(idReserva, formData) {
+async function aprovarReservaCarro(idReserva, payload = {}) {
   const APIBASE = obterApiBase();
   if (!APIBASE) throw new Error('APIBASE não configurada na sessão.');
 
-  const resp = await fetch(`${APIBASE}api/reservas-carro/${idReserva}/aprovar`, {
+  const usuario = obterUsuarioLogado?.() || '';
+  if (!usuario) throw new Error('Usuário logado não identificado.');
+
+  const nomeColaborador = String(
+    payload?.nome_colaborador ||
+    payload?.usuario_solicitante ||
+    payload?.nome_completo ||
+    ''
+  );
+
+  const ehFormulario = nomeColaborador.toUpperCase().includes('FORMULÁRIO')
+    || nomeColaborador.toUpperCase().includes('FORMULARIO');
+
+  const rotaAprovacao = ehFormulario
+    ? `/api/reservas-carro-formulario/${encodeURIComponent(idReserva)}/aprovar`
+    : `/api/reservas-carro/${encodeURIComponent(idReserva)}/aprovar`;
+
+    console.log(payload);
+
+
+  const resp = await fetch(`${APIBASE}${rotaAprovacao}`, {
     method: 'POST',
-    body: formData
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      usuarioAprovacao: usuario,
+      ...payload
+    })
   });
 
   const json = await resp.json().catch(() => ({}));
@@ -20834,7 +20829,7 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
     });
   }
 
-  function atualizarPreviewFoto(tipo, previewUrl, fileName = 'Foto capturada') {
+  function atualizarPreviewFoto(tipo, dataUrl, fileName = 'Foto capturada') {
     const mapa = {
       frente: ['previewFotoFrente', 'placeholderFotoFrente', 'nomeFotoFrente'],
       traseira: ['previewFotoTraseira', 'placeholderFotoTraseira', 'nomeFotoTraseira'],
@@ -20847,17 +20842,22 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
     if (!ids) return;
 
     const [imgId, placeholderId, nomeId] = ids;
-    const img = id(imgId);
-    const placeholder = id(placeholderId);
-    const nomeEl = id(nomeId);
+    const img = $(imgId);
+    const placeholder = $(placeholderId);
+    const nomeEl = $(nomeId);
 
     if (img) {
-      img.src = previewUrl;
+      img.src = dataUrl;
       img.classList.remove('hidden');
     }
 
-    if (placeholder) placeholder.classList.add('hidden');
-    if (nomeEl) nomeEl.textContent = fileName;
+    if (placeholder) {
+      placeholder.classList.add('hidden');
+    }
+
+    if (nomeEl) {
+      nomeEl.textContent = fileName;
+    }
   }
 
   async function iniciarCamera() {
@@ -20912,50 +20912,22 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
   }
 
   function capturarFoto(tipo) {
-    return new Promise((resolve, reject) => {
-      if (!streamCamera || !video || !canvas) {
-        return reject(new Error('Inicie a câmera antes de tirar a foto.'));
-      }
+    if (!streamCamera || !video || !canvas) {
+      throw new Error('Inicie a câmera antes de tirar a foto.');
+    }
 
-      const larguraOriginal = video.videoWidth || 1280;
-      const alturaOriginal = video.videoHeight || 720;
+    const largura = video.videoWidth || 1280;
+    const altura = video.videoHeight || 720;
 
-      const maxLado = 1280;
-      let largura = larguraOriginal;
-      let altura = alturaOriginal;
+    canvas.width = largura;
+    canvas.height = altura;
 
-      if (largura > altura && largura > maxLado) {
-        altura = Math.round((altura * maxLado) / largura);
-        largura = maxLado;
-      } else if (altura >= largura && altura > maxLado) {
-        largura = Math.round((largura * maxLado) / altura);
-        altura = maxLado;
-      }
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, largura, altura);
 
-      canvas.width = largura;
-      canvas.height = altura;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        return reject(new Error('Não foi possível processar a foto.'));
-      }
-
-      ctx.drawImage(video, 0, 0, largura, altura);
-
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          return reject(new Error('Não foi possível gerar a foto.'));
-        }
-
-        const arquivo = new File([blob], `${tipo}-${Date.now()}.jpg`, {
-          type: 'image/jpeg'
-        });
-
-        fotos[tipo] = arquivo;
-        atualizarPreviewFoto(tipo, URL.createObjectURL(arquivo), arquivo.name);
-        resolve();
-      }, 'image/jpeg', 0.75);
-    });
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    fotos[tipo] = dataUrl;
+    atualizarPreviewFoto(tipo, dataUrl, 'Foto capturada na câmera');
   }
 
   function validarFotosObrigatorias() {
@@ -20977,7 +20949,7 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
       painel: 'inputFotoPainel'
     };
 
-    const input = id(mapa[tipo]);
+    const input = $(mapa[tipo]);
     if (!input) return;
 
     input.addEventListener('change', async () => {
@@ -20991,8 +20963,9 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
           throw new Error('Arquivo de imagem inválido.');
         }
 
-        fotos[tipo] = file;
-        atualizarPreviewFoto(tipo, URL.createObjectURL(file), file.name || 'Imagem anexada');
+        const base64 = await fileToBase64(file);
+        fotos[tipo] = base64;
+        atualizarPreviewFoto(tipo, base64, file.name || 'Imagem anexada');
       } catch (err) {
         setErro(err?.message || 'Erro ao processar foto.');
       }
@@ -21134,48 +21107,27 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
         'origem_solicitacao'
       ) || '';
 
-      const nomeColaborador =
-        getReservaCampo('nomecolaborador', 'nomeColaborador', 'nomecolaborador') ||
-        getReservaCampo('usuariosolicitante', 'usuarioSolicitante', 'usuariosolicitante');
-
-      const origemSolicitacao = getReservaCampo('origemsolicitacao', 'origemSolicitacao', 'origemsolicitacao');
-
-      const checklistSaida = {
-        documentoOk: !!chkDocumento?.checked,
-        pneuOk: !!chkPneu?.checked,
-        latariaOk: !!chkLataria?.checked,
-        luzesOk: !!chkLuzes?.checked,
-        limpezaOk: !!chkLimpeza?.checked,
-        combustivelConferido: !!chkCombustivel?.checked,
-        observacoes: observacaoChecklistReservaCarro?.value?.trim() || ''
+      const payload = {
+        nome_colaborador: nomeColaborador,
+        origem_solicitacao: origemSolicitacao,
+        veiculoId: Number(getVeiculoCampo(veiculoSelecionado, 'id', 'ID')),
+        kmSaida: kmSaidaNumero,
+        nivelCombustivelSaida,
+        checklistSaida: {
+          documentoOk: !!$('chkDocumento')?.checked,
+          pneuOk: !!$('chkPneu')?.checked,
+          latariaOk: !!$('chkLataria')?.checked,
+          luzesOk: !!$('chkLuzes')?.checked,
+          limpezaOk: !!$('chkLimpeza')?.checked,
+          combustivelConferido: !!$('chkCombustivel')?.checked,
+          observacoes: $('observacaoChecklistReservaCarro')?.value?.trim() || ''
+        },
+        fotoFrente: fotos.frente,
+        fotoTraseira: fotos.traseira,
+        fotoLateralEsquerda: fotos.lateralEsquerda,
+        fotoLateralDireita: fotos.lateralDireita,
+        fotoPainel: fotos.painel
       };
-
-      const formData = new FormData();
-      formData.append('nomecolaborador', nomeColaborador || '');
-      formData.append('origemsolicitacao', origemSolicitacao || '');
-      formData.append('veiculoId', String(Number(getVeiculoCampo(veiculoSelecionado, 'id', 'ID'))));
-      formData.append('kmSaida', String(kmSaidaNumero));
-      formData.append('nivelCombustivelSaida', nivelCombustivelSaida || '');
-      formData.append('checklistSaida', JSON.stringify(checklistSaida));
-
-      const usuarioAprovacao =
-        sessionStorage.getItem('nome') ||
-        sessionStorage.getItem('usuario') ||
-        sessionStorage.getItem('user') ||
-        '';
-
-      if (usuarioAprovacao) {
-        formData.append('usuarioAprovacao', usuarioAprovacao);
-      }
-
-      formData.append('fotoFrente', fotos.frente);
-      formData.append('fotoTraseira', fotos.traseira);
-      formData.append('fotoLateralEsquerda', fotos.lateralEsquerda);
-      formData.append('fotoLateralDireita', fotos.lateralDireita);
-      formData.append('fotoPainel', fotos.painel);
-
-      setLoading(true);
-      const json = await aprovarReservaCarro(idReserva, formData);
 
       setLoading(true);
       const json = await aprovarReservaCarro(idReserva, payload);
@@ -21217,10 +21169,10 @@ function isIOS() {
   return /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
 }
 
-async function fileToBase64(file) {
+function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
+    reader.onload = () => resolve(String(reader.result || ''));
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
