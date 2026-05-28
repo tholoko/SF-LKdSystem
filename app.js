@@ -17488,17 +17488,23 @@ async function abrirModalDevolucaoReservaCarro(idReserva) {
       throw new Error('Inicie a câmera antes de tirar a foto.');
     }
 
-    const largura = video.videoWidth || 1280;
-    const altura = video.videoHeight || 720;
+    const larguraOriginal = video.videoWidth || 1280;
+    const alturaOriginal = video.videoHeight || 720;
+    const { largura, altura } = calcularDimensoesHD(larguraOriginal, alturaOriginal);
+
     canvas.width = largura;
     canvas.height = altura;
 
     const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Não foi possível processar a foto.');
+    }
+
     ctx.drawImage(video, 0, 0, largura, altura);
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
     fotos[tipo] = dataUrl;
-    atualizarPreviewFoto(tipo, dataUrl, 'Foto capturada na câmera');
+    atualizarPreviewFoto(tipo, dataUrl, `Foto HD (${largura}x${altura})`);
   }
 
   function validarFotosObrigatorias() {
@@ -20916,18 +20922,23 @@ async function abrirModalAprovacaoReservaCarro(idReserva) {
       throw new Error('Inicie a câmera antes de tirar a foto.');
     }
 
-    const largura = video.videoWidth || 1280;
-    const altura = video.videoHeight || 720;
+    const larguraOriginal = video.videoWidth || 1280;
+    const alturaOriginal = video.videoHeight || 720;
+    const { largura, altura } = calcularDimensoesHD(larguraOriginal, alturaOriginal);
 
     canvas.width = largura;
     canvas.height = altura;
 
     const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Não foi possível processar a foto.');
+    }
+
     ctx.drawImage(video, 0, 0, largura, altura);
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
     fotos[tipo] = dataUrl;
-    atualizarPreviewFoto(tipo, dataUrl, 'Foto capturada na câmera');
+    atualizarPreviewFoto(tipo, dataUrl, `Foto HD (${largura}x${altura})`);
   }
 
   function validarFotosObrigatorias() {
@@ -22339,6 +22350,31 @@ async function abrir_modal_termo_responsabilidade_carro(dados = {}) {
       }
     });
   });
+}
+
+function calcularDimensoesHD(larguraOriginal, alturaOriginal) {
+  const MAX_W = 1280;
+  const MAX_H = 720;
+
+  if (!larguraOriginal || !alturaOriginal) {
+    return { largura: MAX_W, altura: MAX_H };
+  }
+
+  const proporcao = larguraOriginal / alturaOriginal;
+  let largura = larguraOriginal;
+  let altura = alturaOriginal;
+
+  if (largura > MAX_W || altura > MAX_H) {
+    if (proporcao >= MAX_W / MAX_H) {
+      largura = MAX_W;
+      altura = Math.round(MAX_W / proporcao);
+    } else {
+      altura = MAX_H;
+      largura = Math.round(MAX_H * proporcao);
+    }
+  }
+
+  return { largura, altura };
 }
 
 // cadastro de veiculos
