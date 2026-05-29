@@ -21390,6 +21390,7 @@ async function acaoRecusarReservaCarro(idReserva, statusRecebido = '') {
   }
 }
 
+
 async function abrirDetalhesAgendamento(idReserva) {
   try {
     const id = Number(idReserva);
@@ -21511,6 +21512,25 @@ async function abrirDetalhesAgendamento(idReserva) {
       return d.toLocaleDateString('pt-BR');
     };
 
+    const safeJsString = (value) =>
+      String(value ?? '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\r/g, '\\r')
+        .replace(/\n/g, '\\n')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    const criarLinkVisualizacaoImagem = (src, titulo, contentHtml) => `
+      <a
+        href="${escapeHtml(src)}"
+        onclick="event.preventDefault(); abrirVisualizadorImagem('${safeJsString(src)}', '${safeJsString(titulo)}')"
+        class="block cursor-zoom-in"
+      >
+        ${contentHtml}
+      </a>
+    `;
+
     const infoItem = (label, valor, extraClass = '') => `
       <div class="rounded-2xl border border-border/70 bg-white/70 px-4 py-3 ${extraClass}">
         <div class="text-[11px] uppercase tracking-wide text-muted-foreground">${escapeHtml(label)}</div>
@@ -21616,7 +21636,7 @@ async function abrirDetalhesAgendamento(idReserva) {
 
                 <div class="rounded-[24px] border border-border/70 bg-white/60 p-4 space-y-4">
                   ${secaoTitulo('Aceite do termo', 'Dados capturados no momento do aceite.')}
-                  
+
                   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     <div class="rounded-2xl border border-border/70 bg-white/75 px-4 py-3">
                       <div class="text-[11px] uppercase tracking-wide text-muted-foreground">Status do termo</div>
@@ -21651,21 +21671,24 @@ async function abrirDetalhesAgendamento(idReserva) {
                             <div class="text-sm font-medium text-foreground">Foto do aceite</div>
                             <a
                               href="${escapeHtml(fotoAceiteTermo)}"
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              onclick="event.preventDefault(); abrirVisualizadorImagem('${safeJsString(fotoAceiteTermo)}', 'Foto do aceite do termo')"
                               class="text-[12px] text-primary hover:underline"
                             >
                               Abrir imagem
                             </a>
                           </div>
 
-                          <a href="${escapeHtml(fotoAceiteTermo)}" target="_blank" rel="noopener noreferrer" class="block">
-                            <img
-                              src="${escapeHtml(fotoAceiteTermo)}"
-                              alt="Foto do aceite do termo"
-                              class="w-full max-h-[320px] object-contain rounded-[18px] border border-border/70 bg-slate-50"
-                            />
-                          </a>
+                          ${criarLinkVisualizacaoImagem(
+                            fotoAceiteTermo,
+                            'Foto do aceite do termo',
+                            `
+                              <img
+                                src="${escapeHtml(fotoAceiteTermo)}"
+                                alt="Foto do aceite do termo"
+                                class="w-full max-h-[320px] object-contain rounded-[18px] border border-border/70 bg-slate-50 cursor-zoom-in"
+                              />
+                            `
+                          )}
                         </div>
                       `
                       : `
@@ -21734,13 +21757,17 @@ async function abrirDetalhesAgendamento(idReserva) {
                           ? fotos.map(foto => `
                               <div class="rounded-[20px] border border-border/70 bg-white/75 p-3 space-y-2">
                                 <div class="text-[12px] font-medium text-foreground">${escapeHtml(foto.label)}</div>
-                                <a href="${escapeHtml(foto.value)}" target="_blank" rel="noopener noreferrer" class="block">
-                                  <img
-                                    src="${escapeHtml(foto.value)}"
-                                    alt="${escapeHtml(foto.label)}"
-                                    class="w-full h-40 object-cover rounded-[16px] border border-border/70 bg-slate-100"
-                                  />
-                                </a>
+                                ${criarLinkVisualizacaoImagem(
+                                  foto.value,
+                                  foto.label,
+                                  `
+                                    <img
+                                      src="${escapeHtml(foto.value)}"
+                                      alt="${escapeHtml(foto.label)}"
+                                      class="w-full h-40 object-cover rounded-[16px] border border-border/70 bg-slate-100 cursor-zoom-in"
+                                    />
+                                  `
+                                )}
                               </div>
                             `).join('')
                           : `
@@ -21805,13 +21832,17 @@ async function abrirDetalhesAgendamento(idReserva) {
                           ? fotosDevolucao.map(foto => `
                               <div class="rounded-[20px] border border-border/70 bg-white/75 p-3 space-y-2">
                                 <div class="text-[12px] font-medium text-foreground">${escapeHtml(foto.label)}</div>
-                                <a href="${escapeHtml(foto.value)}" target="_blank" rel="noopener noreferrer" class="block">
-                                  <img
-                                    src="${escapeHtml(foto.value)}"
-                                    alt="${escapeHtml(foto.label)}"
-                                    class="w-full h-40 object-cover rounded-[16px] border border-border/70 bg-slate-100"
-                                  />
-                                </a>
+                                ${criarLinkVisualizacaoImagem(
+                                  foto.value,
+                                  `Devolução - ${foto.label}`,
+                                  `
+                                    <img
+                                      src="${escapeHtml(foto.value)}"
+                                      alt="${escapeHtml(foto.label)}"
+                                      class="w-full h-40 object-cover rounded-[16px] border border-border/70 bg-slate-100 cursor-zoom-in"
+                                    />
+                                  `
+                                )}
                               </div>
                             `).join('')
                           : `
@@ -21851,6 +21882,194 @@ async function abrirDetalhesAgendamento(idReserva) {
     document.getElementById('btnFecharDetalhesAgendamento')?.addEventListener('click', fechar);
   } catch (err) {
     alert(err?.message || 'Erro ao abrir detalhes do agendamento.');
+  }
+}
+
+let visualizadorImagemInstancia = null;
+
+function removerVisualizadorImagem() {
+  try {
+    if (visualizadorImagemInstancia && typeof visualizadorImagemInstancia.destroy === 'function') {
+      visualizadorImagemInstancia.destroy();
+    }
+  } catch (_) {}
+
+  visualizadorImagemInstancia = null;
+  document.getElementById('imageViewerOverlay')?.remove();
+  document.getElementById('imageViewerModal')?.remove();
+  document.removeEventListener('keydown', handleImageViewerEsc);
+}
+
+function handleImageViewerEsc(e) {
+  if (e.key === 'Escape') removerVisualizadorImagem();
+}
+
+function abrirVisualizadorImagem(src, titulo = 'Imagem') {
+  if (!src) return;
+
+  removerVisualizadorImagem();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'imageViewerOverlay';
+  overlay.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm z-[299]';
+
+  const modal = document.createElement('div');
+  modal.id = 'imageViewerModal';
+  modal.className = 'fixed inset-0 z-[300] flex items-center justify-center p-2 md:p-6';
+
+  modal.innerHTML = `
+    <div class="relative w-full h-full max-w-7xl max-h-[96vh] rounded-[28px] overflow-hidden bg-black border border-white/10 shadow-2xl">
+      <div class="absolute top-0 left-0 right-0 z-20 flex items-center justify-between gap-3 px-3 py-3 bg-gradient-to-b from-black/60 via-black/40 to-transparent">
+        <div class="min-w-0 px-3 py-2 rounded-2xl bg-black/50 border border-white/10 text-white text-sm truncate">
+          ${escapeHtml(titulo)}
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            id="btnZoomOutImagem"
+            type="button"
+            class="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white text-lg"
+            aria-label="Diminuir zoom"
+            title="Diminuir zoom"
+          >−</button>
+
+          <button
+            id="btnResetImagem"
+            type="button"
+            class="px-4 h-11 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white text-sm font-medium"
+            aria-label="Resetar zoom"
+            title="Resetar zoom"
+          >100%</button>
+
+          <button
+            id="btnZoomInImagem"
+            type="button"
+            class="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white text-lg"
+            aria-label="Aumentar zoom"
+            title="Aumentar zoom"
+          >+</button>
+
+          <a
+            href="${escapeHtml(src)}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-4 h-11 inline-flex items-center rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white text-sm font-medium"
+          >
+            Abrir
+          </a>
+
+          <button
+            id="btnFecharVisualizadorImagem"
+            type="button"
+            class="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white text-lg"
+            aria-label="Fechar imagem"
+            title="Fechar"
+          >×</button>
+        </div>
+      </div>
+
+      <div
+        id="imageViewerStage"
+        class="absolute inset-0 overflow-hidden flex items-center justify-center"
+        style="touch-action: none;"
+      >
+        <img
+          id="imageViewerTarget"
+          src="${escapeHtml(src)}"
+          alt="${escapeHtml(titulo)}"
+          draggable="false"
+          class="block mx-auto"
+          style="
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center center;
+            user-select: none;
+            -webkit-user-drag: none;
+            transform-origin: center center;
+            display: block;
+            margin: auto;
+          "
+        />
+      </div>
+
+      <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 px-3 py-2 rounded-2xl bg-black/45 border border-white/10 text-white/85 text-xs text-center">
+        Arraste para mover, use a roda do mouse para zoom ou faça pinça no celular.
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(modal);
+
+  const fechar = () => removerVisualizadorImagem();
+
+  overlay.addEventListener('click', fechar);
+  document.getElementById('btnFecharVisualizadorImagem')?.addEventListener('click', fechar);
+  document.addEventListener('keydown', handleImageViewerEsc);
+
+  const stage = document.getElementById('imageViewerStage');
+  const img = document.getElementById('imageViewerTarget');
+
+  img.addEventListener('error', () => {
+    img.style.display = 'none';
+    stage.insertAdjacentHTML(
+      'beforeend',
+      `<div class="px-4 py-3 rounded-2xl bg-white/10 border border-white/10 text-white text-sm">
+        Não foi possível carregar a imagem.
+      </div>`
+    );
+  }, { once: true });
+
+  const inicializarPanzoom = () => {
+    if (!img || !stage || typeof Panzoom !== 'function') return;
+
+    visualizadorImagemInstancia = Panzoom(img, {
+      maxScale: 6,
+      minScale: 1,
+      step: 0.3,
+      contain: 'outside',
+      cursor: 'grab',
+      pinchAndPan: true,
+      panOnlyWhenZoomed: true
+    });
+
+    visualizadorImagemInstancia.reset();
+
+    stage.addEventListener('wheel', (event) => {
+      visualizadorImagemInstancia?.zoomWithWheel?.(event);
+    }, { passive: false });
+
+    document.getElementById('btnZoomInImagem')?.addEventListener('click', () => {
+      visualizadorImagemInstancia?.zoomIn?.();
+    });
+
+    document.getElementById('btnZoomOutImagem')?.addEventListener('click', () => {
+      visualizadorImagemInstancia?.zoomOut?.();
+    });
+
+    document.getElementById('btnResetImagem')?.addEventListener('click', () => {
+      visualizadorImagemInstancia?.reset?.();
+    });
+
+    img.addEventListener('dblclick', (ev) => {
+      ev.preventDefault();
+      const escalaAtual = visualizadorImagemInstancia?.getScale?.() || 1;
+
+      if (escalaAtual > 1.05) {
+        visualizadorImagemInstancia?.reset?.();
+      } else if (visualizadorImagemInstancia?.zoomToPoint) {
+        visualizadorImagemInstancia.zoomToPoint(2.5, ev);
+      } else {
+        visualizadorImagemInstancia?.zoom?.(2.5);
+      }
+    });
+  };
+
+  if (img.complete) {
+    inicializarPanzoom();
+  } else {
+    img.addEventListener('load', inicializarPanzoom, { once: true });
   }
 }
 
